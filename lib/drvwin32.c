@@ -554,7 +554,7 @@ dsk_err_t win32_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 	res = DeviceIoControl(w32self->w32_hdisk, IOCTL_DISK_GET_DRIVE_GEOMETRY,
 			NULL, 0, &dg, sizeof(dg), &bytesread, NULL);
 
-	geom->dg_cylinders = dg.Cylinders.QuadPart;
+	geom->dg_cylinders = (unsigned)dg.Cylinders.QuadPart;
 	geom->dg_heads     = dg.TracksPerCylinder;
 	geom->dg_sectors   = dg.SectorsPerTrack;
 	geom->dg_secsize   = dg.BytesPerSector;
@@ -888,7 +888,7 @@ dsk_err_t win32c_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
         DWORD cb;
 	dsk_err_t err;
 	unsigned char *trkbuf;
-	int n;
+	unsigned int n;
 
 	if (!format || !self || !geom || self->dr_class != &dc_win32) return DSK_ERR_BADPTR;
 	w32self = (WIN32_DSK_DRIVER *)self;
@@ -934,6 +934,8 @@ dsk_err_t win32c_secid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
         dsk_err_t err;
         unsigned char *buf = dsk_malloc(geom->dg_secsize);
         unsigned char psect;
+
+	if (geom->dg_fm) return DSK_ERR_NOADDR;
 
         if (!buf) return DSK_ERR_NOMEM;
 

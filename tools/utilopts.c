@@ -25,6 +25,13 @@
 #include <stdio.h>
 #include "config.h"
 #include "utilopts.h"
+#include "libdsk.h"
+
+int version(void)
+{
+	printf("libdsk version %s\n", LIBDSK_VERSION);
+	return 0;
+}
 
 int find_arg(char *arg, int argc, char **argv)
 {

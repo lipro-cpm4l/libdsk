@@ -54,10 +54,12 @@ static DSK_NAMEDGEOM stdg[] =
 {"acorn1600",	{ SIDES_ALT,     80, 2,10,    0,1024, RATE_HD, 0x04, 0x05,   0,  0 }, "Acorn 1600k" }, /* Acorn 1600k */
 {"pcw800",	{ SIDES_ALT,     80, 2,10,    1, 512, RATE_SD, 0x0C, 0x17,   0,  0 }, "PCW 800k" }, /* 800k */
 {"pcw200",	{ SIDES_ALT,     40, 1,10,    1, 512, RATE_SD, 0x0C, 0x17,   0,  0 }, "PCW 200k" }, /* 200k */
+{"bbc100",	{ SIDES_ALT,     40, 1,10,    0, 256, RATE_SD, 0x2A, 0x50,   1,  0 }, "BBC 100k" }, /* 100k */
+{"bbc200",	{ SIDES_ALT,     80, 1,10,    0, 256, RATE_SD, 0x2A, 0x50,   1,  0 }, "BBC 200k" }, /* 200k */
 };
 
 /* Initialise a DSK_GEOMETRY with a standard format */
-dsk_err_t dg_stdformat(DSK_GEOMETRY *self, dsk_format_t formatid,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_stdformat(DSK_GEOMETRY *self, dsk_format_t formatid,
 			dsk_cchar_t *fname, dsk_cchar_t *fdesc)
 {
 	int idx = (formatid - FMT_180K);

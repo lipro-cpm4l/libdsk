@@ -27,7 +27,7 @@
 /* Probe the geometry of a disc. This will use the boot sector or the
  * driver's own probe */
 
-dsk_err_t dsk_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 {
         DRV_CLASS *dc; 
 	DSK_FORMAT secid;
@@ -55,14 +55,30 @@ dsk_err_t dsk_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 	secbuf = dsk_malloc(geom->dg_secsize);
 	if (!secbuf) return DSK_ERR_NOMEM;
 
+
 	/* Check for CPC6128 type discs. Also probe the data rate; if we get a 
 	 * missing address mark, then the data rate is wrong.
 	 */ 
+	e = dg_stdformat(geom, FMT_180K, NULL, NULL);
+	if (e) return e;
 	e = dsk_lsecid(self, geom, 0, &secid);
+	/* Check for HD discs */
 	if (e == DSK_ERR_NOADDR)
 	{
 		geom->dg_datarate = RATE_HD;
 		e = dsk_lsecid(self, geom, 0, &secid);
+	}
+	/* Check for DD 5.25" disc in HD 5.25" drive */
+	if (e == DSK_ERR_NOADDR)
+	{
+		geom->dg_datarate = RATE_DD;
+		e = dsk_lsecid(self, geom, 0, &secid);
+	}
+	/* Check for BBC micro DFS discs (FM encoded) */
+	if (e == DSK_ERR_NOADDR)
+	{
+		e = dg_stdformat(geom, FMT_BBC100, NULL, NULL);
+		if (!e) e = dsk_lsecid(self, geom, 0, &secid);
 	}
 	if (!e)	/* We could get the sector ID */
 	{
@@ -79,22 +95,39 @@ dsk_err_t dsk_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 		/* [v0.6.0] Handle discs with non-512 byte sectors */
 		if (secid.fmt_secsize == 256)
 		{
-			e = dg_stdformat(geom, FMT_ACORN160, NULL, NULL);
-			if (!e) e = dsk_lread(self, geom, secbuf, 0);
-			if (e)
+			if (geom->dg_fm)	/* BBC Micro FM floppy */
 			{
+				unsigned int tot_sectors;
+				e = dsk_lread(self, geom, secbuf, 1);
+
+				tot_sectors = secbuf[7] + 256 * (secbuf[6] & 3);
+			
+/* If disc is FM recorded but does not have 400 or 800 sectors, fail. */	
+				if (e == DSK_ERR_OK && tot_sectors != 400 && tot_sectors != 800) e = DSK_ERR_BADFMT; 
+
+				geom->dg_cylinders = tot_sectors / (geom->dg_heads * geom->dg_sectors);	
 				dsk_free(secbuf);
+				return e;
+			}
+			else	/* MFM */
+			{
+				e = dg_stdformat(geom, FMT_ACORN160, NULL, NULL);
+				if (!e) e = dsk_lread(self, geom, secbuf, 0);
+				if (e)
+				{
+					dsk_free(secbuf);
+					return DSK_ERR_BADFMT;
+				}
+				/* Acorn ADFS discs have a size in sectors at 0xFC in the
+				 * first sector */
+				dsksize = secbuf[0xFC] + 256 * secbuf[0xFD] +
+					65536L * secbuf[0xFE];
+				dsk_free(secbuf);
+				if (dsksize ==  640) return dg_stdformat(geom, FMT_ACORN160, NULL, NULL);
+				if (dsksize == 1280) return dg_stdformat(geom, FMT_ACORN320, NULL, NULL);
+				if (dsksize == 2560) return dg_stdformat(geom, FMT_ACORN640, NULL, NULL);
 				return DSK_ERR_BADFMT;
 			}
-			/* Acorn ADFS discs have a size in sectors at 0xFC in the
-			 * first sector */
-			dsksize = secbuf[0xFC] + 256 * secbuf[0xFD] +
-				65536L * secbuf[0xFE];
-			dsk_free(secbuf);
-			if (dsksize ==  640) return dg_stdformat(geom, FMT_ACORN160, NULL, NULL);
-			if (dsksize == 1280) return dg_stdformat(geom, FMT_ACORN320, NULL, NULL);
-			if (dsksize == 2560) return dg_stdformat(geom, FMT_ACORN640, NULL, NULL);
-			return DSK_ERR_BADFMT;
 		}
 		if (secid.fmt_secsize == 1024)
 		{
@@ -157,7 +190,7 @@ dsk_err_t dsk_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 
 
 /* Interpret a DOS superblock */
-dsk_err_t dg_dosgeom(DSK_GEOMETRY *self, const unsigned char *bootsect)
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_dosgeom(DSK_GEOMETRY *self, const unsigned char *bootsect)
 {
 	dsk_lsect_t lsmax;
 
@@ -187,7 +220,7 @@ dsk_err_t dg_dosgeom(DSK_GEOMETRY *self, const unsigned char *bootsect)
 	lsmax = bootsect[19] + 256 * bootsect[20];
 	lsmax /= self->dg_heads;
 	lsmax /= self->dg_sectors;
-	self->dg_cylinders = lsmax; 
+	self->dg_cylinders = (dsk_pcyl_t)lsmax; 
 	/* DOS boot sector doesn't store the data rate. We guess that if there are >12
 	 * sectors per track, it must have used high density to get them all in */
 	self->dg_datarate  = (self->dg_sectors >= 12) ? RATE_HD : RATE_SD;
@@ -209,7 +242,7 @@ dsk_err_t dg_dosgeom(DSK_GEOMETRY *self, const unsigned char *bootsect)
 
 
 /* Interpret a PCW superblock */
-dsk_err_t dg_pcwgeom(DSK_GEOMETRY *dg, const unsigned char *bootsec)
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_pcwgeom(DSK_GEOMETRY *dg, const unsigned char *bootsec)
 {
 	static unsigned char defsec[10] = { 0, 0, 40, 9, 2, 1, 3, 2, 42, 82 };
 	static unsigned char alle5[10]  = { 0xE5, 0xE5, 0xE5, 0xE5, 0xE5,
@@ -250,7 +283,7 @@ dsk_err_t dg_pcwgeom(DSK_GEOMETRY *dg, const unsigned char *bootsec)
 }
 
 /* Interpret a CP/M86 (floppy) superblock */
-dsk_err_t dg_cpm86geom(DSK_GEOMETRY *dg, const unsigned char *bootsec)
+LDPUBLIC32 dsk_err_t LDPUBLIC16  dg_cpm86geom(DSK_GEOMETRY *dg, const unsigned char *bootsec)
 {
 	switch(bootsec[511])
 	{

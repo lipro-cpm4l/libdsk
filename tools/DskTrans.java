@@ -30,16 +30,11 @@ class DskTrans
 	static boolean logical = false;
 	static int     format  = -1;
 
-	public static void main(String args[])
+	static void help()
 	{
-		String intyp, outtyp;
-		int inside, outside;
-
-		if (args.length < 2)
-		{
-			System.err.println("Syntax: \n" +
-                        "      java DskTrans in-image out-image { options }");
-			System.err.println("\nOptions are:\n" +
+		System.err.println("Syntax: \n" +
+                       "      java DskTrans in-image out-image { options }");
+		System.err.println("\nOptions are:\n" +
 			       "-itype <type>   type of input disc image\n" +
                                "-otype <type>   type of output disc image\n" +
                                "-iside <side>   Force side 0 or side 1 of input\n" +
@@ -49,17 +44,31 @@ class DskTrans
                                "                (Only useful when out-image type is 'raw' and reading discs\n" +
 			       "                with non-IBM track layout (eg: 144FEAT 1.4Mb or ADFS 640k)\n" +
 			       "-format         Force a specified format name");
-			System.err.println("\nDefault in-image type is autodetect." +
+		System.err.println("\nDefault in-image type is autodetect." +
 		             		   "\nDefault out-image type is DSK.\n");
-			System.err.println("eg: java DskTrans /dev/fd0 myfile1.DSK\n" +
+		System.err.println("eg: java DskTrans /dev/fd0 myfile1.DSK\n" +
                                 "    java DskTrans /dev/fd0 myfile2.DSK -side 1\n" +
                                 "    java DskTrans /dev/fd0 md3boot.dsk -md3\n" +
                                 "    java DskTrans myfile.DSK /dev/fd0 -otype floppy"); 
-                        FormatNames.validFormats();
-                        System.exit(1);
-		}	
+               FormatNames.validFormats();
+               System.exit(1);
+	}
+
+
+	public static void main(String args[])
+	{
+		String intyp, outtyp;
+		String incomp, outcomp;
+		int inside, outside;
+
+                if (UtilOpts.findArg("--help", args) >= 0) help();
+                if (UtilOpts.findArg("--version", args) >= 0) UtilOpts.version();
+		if (args.length < 2) help();
+
 		intyp     = UtilOpts.checkType("-itype", args); 
 	        outtyp    = UtilOpts.checkType("-otype", args);
+		incomp    = UtilOpts.checkType("-icomp", args); 
+	        outcomp   = UtilOpts.checkType("-ocomp", args);
        		inside    = UtilOpts.checkForceHead("-iside", args);
 	        outside   = UtilOpts.checkForceHead("-oside", args);
 		if (UtilOpts.findArg("-md3", args) > 0) md3 = true;
@@ -67,12 +76,14 @@ class DskTrans
 		if (outtyp == null) outtyp = "dsk";
  	        format    = FormatNames.checkFormat("-format", args);
 		
-		doCopy(args[0], args[1], intyp, outtyp, inside, outside);
+		doCopy(args[0], args[1], intyp, outtyp, 
+				incomp, outcomp, inside, outside);
 	}
 
 
 	static void doCopy(String infile, String outfile, 
 		    String intyp,  String outtyp,
+		    String incomp, String outcomp,
 		    int inside, int outside)
 	{
 		Drive indr = null, outdr = null;
@@ -83,9 +94,9 @@ class DskTrans
 
 		try
 		{
-			indr  = LibDsk.open(infile, intyp);
+			indr  = LibDsk.open(infile, intyp, incomp);
 			indr.setForceHead(inside);
-			outdr = LibDsk.create(outfile, outtyp);
+			outdr = LibDsk.create(outfile, outtyp, outcomp);
 			outdr.setForceHead(outside);
 
 			if (format == -1)

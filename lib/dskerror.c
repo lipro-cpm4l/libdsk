@@ -27,7 +27,7 @@
 #include <errno.h>
 #endif
 
-char *dsk_strerror(dsk_err_t err)
+LDPUBLIC32 char * LDPUBLIC16 dsk_strerror(dsk_err_t err)
 {
 	switch(err)
 	{
@@ -53,6 +53,7 @@ char *dsk_strerror(dsk_err_t err)
 		case DSK_ERR_OVERRUN:	return "Overrun.";
 		case DSK_ERR_ACCESS:	return "Access denied.";
                 case DSK_ERR_CTRLR:	return "Controller failed.";
+                case DSK_ERR_COMPRESS:	return "Compressed file is corrupt.";
 		case DSK_ERR_UNKNOWN:	return "Controller returned unknown error.";
  	}
 	return "Unknown error.";

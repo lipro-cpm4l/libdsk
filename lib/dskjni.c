@@ -35,10 +35,7 @@ static int check_error(JNIEnv *env, dsk_err_t error)
 	return 1;	
 }
 
-/* Mapping between integer IDs and DSK_DRIVER structs... */
-typedef DSK_DRIVER *PDSKDRVR;
-
-static PDSKDRVR *mapping;
+static DSK_PDRIVER *mapping;
 int maplen;
 
 static int check_mapping(JNIEnv *env)
@@ -46,7 +43,7 @@ static int check_mapping(JNIEnv *env)
 	int n;
 	if (!mapping)
 	{
-		mapping = malloc(16 * sizeof(PDSKDRVR));
+		mapping = malloc(16 * sizeof(DSK_PDRIVER));
 		if (!mapping) 
 		{
 			maplen = 0;
@@ -60,10 +57,10 @@ static int check_mapping(JNIEnv *env)
 }
 
 /* Note that entry 0 must always be NULL */
-static jint add_map(JNIEnv *env, DSK_DRIVER *ptr)
+static jint add_map(JNIEnv *env, DSK_PDRIVER ptr)
 {
 	int n;
-	PDSKDRVR *newmap;
+	DSK_PDRIVER *newmap;
 
 	if (check_mapping(env)) return 0;
 	for (n = 1; n < maplen; n++) if (mapping[n] == NULL)
@@ -72,7 +69,7 @@ static jint add_map(JNIEnv *env, DSK_DRIVER *ptr)
 		return n;	
 	}
 	/* All slots used... */
-	newmap = malloc(maplen * 2 * sizeof(PDSKDRVR));
+	newmap = malloc(maplen * 2 * sizeof(DSK_PDRIVER));
 	if (!newmap)
 	{
 		check_error(env, DSK_ERR_NOMEM);
@@ -105,7 +102,7 @@ static void del_map(JNIEnv *env, jint index)
 }
 
 
-static jobject driver_new(JNIEnv *env, DSK_DRIVER *ptr)
+static jobject driver_new(JNIEnv *env, DSK_PDRIVER ptr)
 {
 	jclass clazz;
 	jmethodID mid;
@@ -140,7 +137,7 @@ static void driver_delete(JNIEnv *env, jobject self)
 }
 
 
-static DSK_DRIVER *driver_from_java(JNIEnv *env, jobject obj)
+static DSK_PDRIVER driver_from_java(JNIEnv *env, jobject obj)
 {	
 	jfieldID fid;
 	jclass clazz;
@@ -184,6 +181,7 @@ static dsk_err_t geom_from_java  (JNIEnv *env, jobject geom, DSK_GEOMETRY *dg)
 	fid = (*env)->GetFieldID(env, clazz, "fmtgap",    "B"); if (!fid) return DSK_ERR_BADPTR; dg->dg_fmtgap    = (*env)->GetByteField(env, geom, fid);
 	fid = (*env)->GetFieldID(env, clazz, "fm",        "Z"); if (!fid) return DSK_ERR_BADPTR; dg->dg_fm        = (*env)->GetBooleanField(env, geom, fid);
 	fid = (*env)->GetFieldID(env, clazz, "nomulti",   "Z"); if (!fid) return DSK_ERR_BADPTR; dg->dg_nomulti   = (*env)->GetBooleanField(env, geom, fid);
+	fid = (*env)->GetFieldID(env, clazz, "noskip",    "Z"); if (!fid) return DSK_ERR_BADPTR; dg->dg_noskip    = (*env)->GetBooleanField(env, geom, fid);
 	return DSK_ERR_OK;
 }
 
@@ -209,6 +207,7 @@ static dsk_err_t geom_to_java  (JNIEnv *env, jobject geom, DSK_GEOMETRY *dg)
 	fid = (*env)->GetFieldID(env, clazz, "fmtgap",    "B"); if (!fid) return DSK_ERR_BADPTR; (*env)->SetByteField(env, geom, fid, dg->dg_fmtgap);
 	fid = (*env)->GetFieldID(env, clazz, "fm",        "Z"); if (!fid) return DSK_ERR_BADPTR; (*env)->SetBooleanField(env, geom, fid, dg->dg_fm);
 	fid = (*env)->GetFieldID(env, clazz, "nomulti",   "Z"); if (!fid) return DSK_ERR_BADPTR; (*env)->SetBooleanField(env, geom, fid, dg->dg_nomulti);
+	fid = (*env)->GetFieldID(env, clazz, "noskip",    "Z"); if (!fid) return DSK_ERR_BADPTR; (*env)->SetBooleanField(env, geom, fid, dg->dg_noskip);
 	return DSK_ERR_OK;
 }
 
@@ -261,25 +260,30 @@ JNIEXPORT jbyte JNICALL Java_uk_co_demon_seasip_libdsk_LibDsk_getPsh
 
 
 static jobject open_or_create
-  (JNIEnv *env, jclass clazz, jstring filename, jstring type, int create)
+  (JNIEnv *env, jclass clazz, jstring filename, jstring type, jstring comp, int create)
 {
 	const char *utfname = NULL;
 	const char *utftype = NULL;
+	const char *utfcomp = NULL;
 	dsk_err_t error;	
-	DSK_DRIVER *ptr;
+	DSK_PDRIVER ptr;
 
 	if (filename != NULL) 
 		utfname = (*env)->GetStringUTFChars(env, filename, NULL);
 	if (type != NULL)
 		utftype = (*env)->GetStringUTFChars(env, type, NULL);
+	if (comp != NULL)
+		utfcomp = (*env)->GetStringUTFChars(env, comp, NULL);
 	
-	if (create) error = dsk_creat(&ptr, utfname, utftype);
-	else	    error = dsk_open (&ptr, utfname, utftype);
+	if (create) error = dsk_creat(&ptr, utfname, utftype, utfcomp);
+	else	    error = dsk_open (&ptr, utfname, utftype, utfcomp);
 
 	if (utfname != NULL) 
 		(*env)->ReleaseStringUTFChars(env, filename, utfname);
 	if (utftype != NULL) 
 		(*env)->ReleaseStringUTFChars(env, type, utftype);
+	if (utfcomp != NULL) 
+		(*env)->ReleaseStringUTFChars(env, comp, utfcomp);
 		
 	if (check_error(env, error)) return NULL;
 
@@ -292,9 +296,9 @@ static jobject open_or_create
  * Signature: (Ljava/lang/String;Ljava/lang/String;)Luk/co/demon/seasip/libdsk/Drive;
  */
 JNIEXPORT jobject JNICALL Java_uk_co_demon_seasip_libdsk_LibDsk_open
-  (JNIEnv *env, jclass clazz, jstring filename, jstring type)
+  (JNIEnv *env, jclass clazz, jstring filename, jstring type, jstring comp)
 {
-	return open_or_create(env, clazz, filename, type, 0);
+	return open_or_create(env, clazz, filename, type, comp, 0);
 }
 
 /*
@@ -303,9 +307,9 @@ JNIEXPORT jobject JNICALL Java_uk_co_demon_seasip_libdsk_LibDsk_open
  * Signature: (Ljava/lang/String;Ljava/lang/String;)Luk/co/demon/seasip/libdsk/Drive;
  */
 JNIEXPORT jobject JNICALL Java_uk_co_demon_seasip_libdsk_LibDsk_create
-  (JNIEnv *env, jclass clazz, jstring filename, jstring type)
+  (JNIEnv *env, jclass clazz, jstring filename, jstring type, jstring comp)
 {
-	return open_or_create(env, clazz, filename, type, 1);
+	return open_or_create(env, clazz, filename, type, comp, 1);
 }
 
 
@@ -320,9 +324,9 @@ JNIEXPORT jobject JNICALL Java_uk_co_demon_seasip_libdsk_LibDsk_create
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_setForceHead
   (JNIEnv *env, jobject self, jint force)
 {
-	DSK_DRIVER *drv = driver_from_java(env, self);
+	DSK_PDRIVER drv = driver_from_java(env, self);
 	
-	drv->dr_forcehead = force;
+	dsk_set_forcehead(drv, force);
 }
 
 /*
@@ -333,9 +337,11 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_setForceHead
 JNIEXPORT jint JNICALL Java_uk_co_demon_seasip_libdsk_Drive_getForceHead
   (JNIEnv *env, jobject self)
 {
-	DSK_DRIVER *drv = driver_from_java(env, self);
+	DSK_PDRIVER drv = driver_from_java(env, self);
+	int force;
 	
-	return drv->dr_forcehead;
+	dsk_get_forcehead(drv, &force);	
+	return force;
 }
 
 /*
@@ -346,7 +352,7 @@ JNIEXPORT jint JNICALL Java_uk_co_demon_seasip_libdsk_Drive_getForceHead
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_close
   (JNIEnv *env, jobject self)
 {
-	DSK_DRIVER *drv = driver_from_java(env, self);
+	DSK_PDRIVER drv = driver_from_java(env, self);
 	dsk_close(&drv);	
 	driver_delete(env, self);
 }
@@ -359,7 +365,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_close
 JNIEXPORT jbyte JNICALL Java_uk_co_demon_seasip_libdsk_Drive_status
   (JNIEnv *env, jobject self, jobject jg, jint head)
 {	
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	unsigned char status;
@@ -380,7 +386,7 @@ JNIEXPORT jbyte JNICALL Java_uk_co_demon_seasip_libdsk_Drive_status
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_read__Luk_co_demon_seasip_libdsk_Geometry_2_3BIII
   (JNIEnv *env, jobject self, jobject jg, jbyteArray arr, jint cyl, jint head, jint sec)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	jbyte *buf;
@@ -403,7 +409,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_read__Luk_co_demon_s
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_read__Luk_co_demon_seasip_libdsk_Geometry_2_3BI
   (JNIEnv *env, jobject self, jobject jg, jbyteArray arr, jint lsec)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	jbyte *buf;
@@ -424,19 +430,26 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_read__Luk_co_demon_s
  */
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_read__Luk_co_demon_seasip_libdsk_Geometry_2_3BIIIIII
   (JNIEnv *env, jobject self, jobject jg, jbyteArray arr, jint cyl, jint head, 
-		jint cyl_expected, jint head_expected, jint sector, jint sector_len)
+		jint cyl_expected, jint head_expected, jint sector, jint sector_len,
+		jarray jdeleted)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	jbyte *buf;
+	jboolean *bools;
+	int deleted;
 	
 	drv   = driver_from_java(env, self);
 	err   = geom_from_java  (env, jg, &dg);
 
 	buf = (*env)->GetByteArrayElements(env, arr, NULL);
-	if (!err) err = dsk_xread(drv, &dg, buf, cyl, head, cyl_expected, head_expected, sector, sector_len);
+	bools = (*env)->GetBooleanArrayElements(env, jdeleted, NULL);
+	deleted = bools[0];
+	if (!err) err = dsk_xread(drv, &dg, buf, cyl, head, cyl_expected, head_expected, sector, sector_len, &deleted);
+	bools[0] = deleted;
 	(*env)->ReleaseByteArrayElements(env, arr, buf, 0);
+	(*env)->ReleaseByteArrayElements(env, jdeleted, bools, 0);
 	check_error(env, err);
 }
 
@@ -448,7 +461,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_read__Luk_co_demon_s
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_write__Luk_co_demon_seasip_libdsk_Geometry_2_3BIII
   (JNIEnv *env, jobject self, jobject jg, jbyteArray arr, jint cyl, jint head, jint sec)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	jbyte *buf;
@@ -471,7 +484,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_write__Luk_co_demon_
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_write__Luk_co_demon_seasip_libdsk_Geometry_2_3BI
   (JNIEnv *env, jobject self, jobject jg, jbyteArray arr, jint lsec)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	jbyte *buf;
@@ -492,9 +505,10 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_write__Luk_co_demon_
  */
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_write__Luk_co_demon_seasip_libdsk_Geometry_2_3BIIIIII
   (JNIEnv *env, jobject self, jobject jg, jbyteArray arr, jint cyl, jint head, 
-		jint cyl_expected, jint head_expected, jint sector, jint sector_len)
+		jint cyl_expected, jint head_expected, jint sector, jint sector_len,
+		jboolean deleted)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	jbyte *buf;
@@ -503,7 +517,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_write__Luk_co_demon_
 	err   = geom_from_java  (env, jg, &dg);
 
 	buf = (*env)->GetByteArrayElements(env, arr, NULL);
-	if (!err) err = dsk_xwrite(drv, &dg, buf, cyl, head, cyl_expected, head_expected, sector, sector_len);
+	if (!err) err = dsk_xwrite(drv, &dg, buf, cyl, head, cyl_expected, head_expected, sector, sector_len, deleted);
 	(*env)->ReleaseByteArrayElements(env, arr, buf, 0);
 	check_error(env, err);
 }
@@ -517,7 +531,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_write__Luk_co_demon_
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_verify__Luk_co_demon_seasip_libdsk_Geometry_2_3BIII
   (JNIEnv *env, jobject self, jobject jg, jbyteArray arr, jint cyl, jint head, jint sec)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	jbyte *buf;
@@ -541,7 +555,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_verify__Luk_co_demon
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_verify__Luk_co_demon_seasip_libdsk_Geometry_2_3BI
   (JNIEnv *env, jobject self, jobject jg, jbyteArray arr, jint lsec)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	jbyte *buf;
@@ -565,7 +579,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_verify__Luk_co_demon
   (JNIEnv *env, jobject self, jobject jg, jbyteArray arr, jint cyl, jint head, 
 		jint cyl_expected, jint head_expected, jint sector, jint sector_len)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	jbyte *buf;
@@ -588,7 +602,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_verify__Luk_co_demon
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_format__Luk_co_demon_seasip_libdsk_Geometry_2IILuk_co_demon_seasip_libdsk_FormatData_2B
   (JNIEnv *env, jobject self, jobject jg, jint cyl, jint head, jobjectArray spec, jbyte filler)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	DSK_FORMAT   *fmt = NULL;
 	dsk_err_t err;
@@ -625,7 +639,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_format__Luk_co_demon
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_format__Luk_co_demon_seasip_libdsk_Geometry_2ILuk_co_demon_seasip_libdsk_FormatData_2B
   (JNIEnv *env, jobject self, jobject jg, jint track, jobjectArray spec, jbyte filler)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	DSK_FORMAT   *fmt = NULL;
 	dsk_err_t err;
@@ -668,7 +682,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_readTrack__Luk_co_de
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_readTrack__Luk_co_demon_seasip_libdsk_Geometry_2_3BII
   (JNIEnv *env, jobject self, jobject jg, jbyteArray arr, jint cyl, jint head)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	jbyte *buf;
@@ -690,7 +704,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_readTrack__Luk_co_de
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_readTrack__Luk_co_demon_seasip_libdsk_Geometry_2_3BI
   (JNIEnv *env, jobject self, jobject jg, jbyteArray arr, jint track)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	jbyte *buf;
@@ -712,7 +726,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_readTrack__Luk_co_de
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_autoFormat__Luk_co_demon_seasip_libdsk_Geometry_2IIB
   (JNIEnv *env, jobject self, jobject jg, jint cyl, jint head, jbyte filler)
 {
-	DSK_DRIVER   *drv, *drv2;
+	DSK_PDRIVER   drv, drv2;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	
@@ -735,7 +749,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_autoFormat__Luk_co_d
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_autoFormat__Luk_co_demon_seasip_libdsk_Geometry_2IB
   (JNIEnv *env, jobject self, jobject jg, jint track, jbyte filler)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	
@@ -753,7 +767,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_autoFormat__Luk_co_d
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_probeGeometry
   (JNIEnv *env, jobject self, jobject jg)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	
@@ -773,7 +787,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_probeGeometry
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_sectorID__Luk_co_demon_seasip_libdsk_Geometry_2ILuk_co_demon_seasip_libdsk_FormatData_2
   (JNIEnv *env, jobject self, jobject jg, jint track, jobject result)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	DSK_FORMAT buf;	
@@ -794,7 +808,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_sectorID__Luk_co_dem
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_sectorID__Luk_co_demon_seasip_libdsk_Geometry_2IILuk_co_demon_seasip_libdsk_FormatData_2
   (JNIEnv *env, jobject self, jobject jg, jint cyl, jint sec, jobject result)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	DSK_FORMAT buf;	
@@ -817,7 +831,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_sectorID__Luk_co_dem
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_seek__Luk_co_demon_seasip_libdsk_Geometry_2I
   (JNIEnv *env, jobject self, jobject jg, jint track)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	
@@ -836,7 +850,7 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_seek__Luk_co_demon_s
 JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_seek__Luk_co_demon_seasip_libdsk_Geometry_2II
   (JNIEnv *env, jobject self, jobject jg, jint cyl, jint head)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	DSK_GEOMETRY dg;
 	dsk_err_t err;
 	
@@ -872,7 +886,7 @@ JNIEXPORT jstring JNICALL Java_uk_co_demon_seasip_libdsk_Drive_enumDrivers
 JNIEXPORT jstring JNICALL Java_uk_co_demon_seasip_libdsk_Drive_getDriverName
   (JNIEnv *env, jobject self)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	const char *s;	
 	drv   = driver_from_java(env, self);
 	s = dsk_drvname(drv);
@@ -888,13 +902,47 @@ JNIEXPORT jstring JNICALL Java_uk_co_demon_seasip_libdsk_Drive_getDriverName
 JNIEXPORT jstring JNICALL Java_uk_co_demon_seasip_libdsk_Drive_getDriverDesc
   (JNIEnv *env, jobject self)
 {
-	DSK_DRIVER   *drv;
+	DSK_PDRIVER   drv;
 	const char *s;	
 	drv   = driver_from_java(env, self);
 	s = dsk_drvdesc(drv);
 	if (!s) return NULL;
 	return (*env)->NewStringUTF(env, s);	
 }
+
+
+/*
+ * Class:     uk_co_demon_seasip_libdsk_Drive
+ * Method:    getCompressName
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_uk_co_demon_seasip_libdsk_Drive_getCompressName
+  (JNIEnv *env, jobject self)
+{
+	DSK_PDRIVER   drv;
+	const char *s;	
+	drv   = driver_from_java(env, self);
+	s = dsk_compname(drv);
+	if (!s) return NULL;
+	return (*env)->NewStringUTF(env, s);	
+}
+
+/*
+ * Class:     uk_co_demon_seasip_libdsk_Drive
+ * Method:    getCompressDesc
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_uk_co_demon_seasip_libdsk_Drive_getCompressDesc
+  (JNIEnv *env, jobject self)
+{
+	DSK_PDRIVER   drv;
+	const char *s;	
+	drv   = driver_from_java(env, self);
+	s = dsk_compdesc(drv);
+	if (!s) return NULL;
+	return (*env)->NewStringUTF(env, s);	
+}
+
 
 /*************************** The Geometry class *****************************/
 
@@ -1075,5 +1123,12 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_FormatType_stdFormat
 		(*env)->SetObjectArrayElement(env, descs, 1, sdesc);
 	}
 }
+
+JNIEXPORT jstring JNICALL Java_uk_co_demon_seasip_libdsk_LibDsk_version
+  (JNIEnv *env, jclass clazz)
+{
+	return (*env)->NewStringUTF(env, LIBDSK_VERSION);
+}
+
 
 #endif /* def HAVE_JNI_H */

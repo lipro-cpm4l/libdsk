@@ -53,11 +53,11 @@ dsk_err_t linux_xseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 dsk_err_t linux_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
                               dsk_pcyl_t cylinder, dsk_phead_t head,
                               dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
-                              dsk_psect_t sector, size_t sector_size);
+                              dsk_psect_t sector, size_t sector_size, int *deleted);
 dsk_err_t linux_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, const void *buf,
                               dsk_pcyl_t cylinder, dsk_phead_t head,
                               dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
-                              dsk_psect_t sector, size_t sector_size);
+                              dsk_psect_t sector, size_t sector_size, int deleted);
 dsk_err_t linux_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                               dsk_phead_t head, unsigned char *result);
 dsk_err_t linux_tread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,

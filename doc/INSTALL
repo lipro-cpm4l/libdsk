@@ -15,13 +15,15 @@ install manual pages, you will also need to do a "make install-man".
 You can use "--disable-floppy" to leave out the code that attempts to access 
 the host computer's native floppy drivers. 
 
+You can use "--without-zlib" or "--without-bzlib" to remove support for 
+on-the-fly .gz and .bz2 decompression.
+
 You can use "--with-jni" to include Java Native Interface bindings. In this
 case, after you've built LibDsk, you have to add /usr/local/lib/libdsk.jar 
 to your CLASSPATH.
 
   The library will also compile with Borland C++ 5.0, which probably means
 that it will compile with the free version 5.5 as well. It should also compile
-with Visual C++ 6. Since these systems don't support autoconf, you'll need to
-rename "config-w32.h" to "config.h" and construct one or more 
-projects/workspaces/Makefiles to do the build.
+with Visual C++ 1 or Visual C++ 6. Since these systems don't support autoconf, 
+you'll need to use the provided workspaces and ready-made config.h files.
 

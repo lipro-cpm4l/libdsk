@@ -90,7 +90,7 @@ VERSION = @VERSION@
 _ACJNI_JAVAC = @_ACJNI_JAVAC@
 uudecode = @uudecode@
 
-man_MANS = dskform.1 dsktrans.1 dskid.1
+man_MANS = dskform.1 dsktrans.1 dskid.1 md3serial.1
 EXTRA_DIST = $(man_MANS)
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = ../config.h
@@ -109,7 +109,7 @@ GZIP_ENV = --best
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps man/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --foreign --include-deps man/Makefile
 
 Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) \

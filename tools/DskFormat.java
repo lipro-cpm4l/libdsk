@@ -33,35 +33,42 @@ class DskFormat
 	static byte spec720 [] = { 3, (byte)0x81, 80, 9, 2, 1, 4, 4, 0x2A, 0x52 };
 	static byte spec800 [] = { 3, (byte)0x81, 80,10, 2, 1, 4, 4, 0x0C, 0x17 };
 
+	static void help()
+	{
+		System.err.println("Syntax: \n" +
+                "      java DskFormat dskimage { -format <format> } " +
+                " { -type <type> } { -side <side> }");
+		System.err.println("\nDefault type is DSK.\nDefault format is PCW 180k.\n");
+		
+		System.err.println("eg: java DskFormat myfile.DSK\n" +
+                              "    java DskFormat /dev/fd0 -type floppy -format cpcsys -side 1");
+
+		FormatNames.validFormats();
+		System.exit(1);
+	}
+
+
 	public static void main(String args[])
 	{
-		String outType;
+		String outType, outComp;
 		int forceHead;
 		int format;
 
-		if (args.length < 2)
-		{
-			System.err.println("Syntax: \n" +
-                        "      java DskFormat dskimage { -format <format> } " +
-                        " { -type <type> } { -side <side> }");
-			System.err.println("\nDefault type is DSK.\nDefault format is PCW 180k.\n");
+		if (UtilOpts.findArg("--help", args) >= 0) help();	
+		if (UtilOpts.findArg("--version", args) >= 0) UtilOpts.version();	
+		if (args.length < 1) help(); 
 		
-			System.err.println("eg: java DskFormat myfile.DSK\n" +
-                                "    java DskFormat /dev/fd0 -type floppy -format cpcsys -side 1");
-
-			FormatNames.validFormats();
-			System.exit(1);
-		}
 		outType = UtilOpts.checkType("-type", args);
+		outComp = UtilOpts.checkType("-comp", args);
 		if (outType == null) outType = "dsk";
 		forceHead = UtilOpts.checkForceHead("-side", args);
 		format    = FormatNames.checkFormat("-format", args);
 		if (format == -1) format = FormatType.FMT_180K;
 
-		doFormat(args[0], outType, forceHead, format);
+		doFormat(args[0], outType, outComp, forceHead, format);
 	}
 
-	private static void doFormat(String outfile, String outtyp, int forceHead, int format)
+	private static void doFormat(String outfile, String outtyp, String compress, int forceHead, int format)
 	{
 		Drive outdr = null;
 		int cyl, head;
@@ -70,7 +77,7 @@ class DskFormat
 	
 		try
 		{
-			outdr = LibDsk.create(outfile, outtyp);
+			outdr = LibDsk.create(outfile, outtyp, compress);
 			outdr.setForceHead(forceHead);
 			FormatType.stdFormat(format, dg, desc);
 	

@@ -16,4 +16,4 @@
 char *check_type(char *arg, int argc, char **argv);
 int check_forcehead(char *arg, int argc, char **argv);
 int find_arg(char *arg, int argc, char **argv);
-
+int version(void);

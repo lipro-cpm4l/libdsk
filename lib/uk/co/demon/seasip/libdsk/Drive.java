@@ -124,12 +124,15 @@ public class Drive
   * @param sector The number of the sector.
   * @param sectorLen The number of bytes to transfer (may be less than a 
   *                 full sector).
+  * @param deleted On entry, deleted[0] is true to read deleted data, false 
+  *               for normal. On return, it's true if the other sort of data
+  *               was read, false if the expected sort was read.
   * @exception DskException If the read failed for any reason, or the driver
   *                  does not provide this call. */
 	public native void read(Geometry g, byte[] buf, 
 			int cyl, int head, 
 			int cylExpected, int headExpected,
-			int sector, int sectorLen) throws DskException;
+			int sector, int sectorLen, boolean[] deleted) throws DskException;
 
 /** Write a disc sector using a physical sector address.
   * @param g The drive geometry to use.
@@ -166,13 +169,14 @@ public class Drive
   * @param sector The number of the sector.
   * @param sectorLen The number of bytes to transfer (may be less than a 
   *                 full sector).
+  * @param deleted True to write deleted data, otherwise false.
   * @exception DskException If the write failed for any reason, or the driver
   *                     does not provide this functionality.
   */
 	public native void write(Geometry g, byte[] buf, 
 			int cyl, int head, 
 			int cylExpected, int headExpected,
-			int sector, int sectorLen) throws DskException;
+			int sector, int sectorLen, boolean deleted) throws DskException;
 
 /** Verify a disc sector using a physical sector address.
   * @param g The drive geometry to use.
@@ -374,6 +378,12 @@ public class Drive
 /** Get the description of the driver being used for this drive. 
  * for example: "CPCEMU .DSK driver" */
 	public native String getDriverDesc();
+/** Get the name of the compression scheme being used. 
+ * for example: "gz". If uncompressed returns null */
+	public native String getCompressName();
+/** Get the description of the compression scheme being used for this drive. 
+ * for example: "Squeezed (Huffman coding)" */
+	public native String getCompressDesc();
 }
 
 

@@ -20,6 +20,18 @@
  *                                                                         *
  ***************************************************************************/
 
+/* Moved here from libdsk.h; there's no need for it to be public */
+typedef struct dsk_driver
+{
+        struct drv_class *dr_class;
+        struct compress_data *dr_compress;      /* Compressed? */
+        int dr_forcehead;       /* Force drive to use head 0 or head 1? */
+	int dr_dirty;		/* Has this device been written to? 
+				 * Set to 1 by writes and formats */
+} DSK_DRIVER;
+
+
+
 /* Functions a driver must provide. If you are implementing a driver, 
  * create instances of these functions and have pointers to them (see
  * eg. drvposix.c) */
@@ -90,13 +102,15 @@ typedef struct drv_class
 			      void *buf, 
 			      dsk_pcyl_t cylinder, dsk_phead_t head, 
 			      dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
-			      dsk_psect_t sector, size_t sector_len);
+			      dsk_psect_t sector, size_t sector_len,
+			      int *deleted);
 	/* Write a sector whose ID doesn't match its location on disc */
 	dsk_err_t (*dc_xwrite)(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
 			      const void *buf,
 			      dsk_pcyl_t cylinder, dsk_phead_t head, 
 			      dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
-			      dsk_psect_t sector, size_t sector_len);
+			      dsk_psect_t sector, size_t sector_len,
+			      int deleted);
 	/* Read a track (8272 READ TRACK command) */
 	dsk_err_t (*dc_tread)(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
 			      void *buf, dsk_pcyl_t cylinder, 

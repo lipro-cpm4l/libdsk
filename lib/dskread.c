@@ -22,7 +22,7 @@
 
 #include "drvi.h"
 
-dsk_err_t dsk_pread(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_pread(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                               void *buf, dsk_pcyl_t cylinder,
                               dsk_phead_t head, dsk_psect_t sector)
 {
@@ -36,7 +36,7 @@ dsk_err_t dsk_pread(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 }
 
 
-dsk_err_t dsk_lread(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_lread(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                               void *buf, dsk_lsect_t sector)
 {
         dsk_pcyl_t  c;
@@ -50,10 +50,10 @@ dsk_err_t dsk_lread(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 }
 
 
-dsk_err_t dsk_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf, 
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf, 
 			dsk_pcyl_t cylinder,   dsk_phead_t head, 
 			dsk_pcyl_t cyl_expect, dsk_phead_t head_expect, 
-			dsk_psect_t sector, size_t sector_len)
+			dsk_psect_t sector, size_t sector_len, int *deleted)
 {
 	DRV_CLASS *dc;
 	if (!self || !geom || !buf || !self->dr_class) return DSK_ERR_BADPTR;
@@ -62,6 +62,6 @@ dsk_err_t dsk_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 
         if (!dc->dc_xread) return DSK_ERR_NOTIMPL;
 	return (dc->dc_xread)(self,geom,buf,cylinder,head,
-				cyl_expect, head_expect, sector, sector_len);	
+				cyl_expect, head_expect, sector, sector_len, deleted);	
 }
 

@@ -28,16 +28,22 @@ EXTRA_DIST=$(CLASSDPRE)/Drive.java \
 # If interfaces have been removed set the right-hand number to 0.
 # 
 #
-libdsk_la_LDFLAGS = -version-info 1:0:1
+libdsk_la_LDFLAGS = -version-info 2:2:0
 libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   dsklphys.c dskfmt.c   dskopen.c  dskpars.c \
 		   dskerror.c dskseek.c  dsksecid.c dskgeom.c \
 		   dsktread.c dsksgeom.c dskjni.c \
+		   comp.h compi.h compress.h compress.inc compress.c \
+		   compsq.c compsq.h \
+		   compgz.c compgz.h \
+		   compbz2.c compbz2.h \
 		   drv.h drvi.h drivers.h drivers.inc \
 		   drvlinux.h drvlinux.c \
 		   drvwin32.h drvwin32.c w95defs.h \
+		   drvwin16.h drvwin16.c w16defs.h \
+		   drvdos16.h drvdos16.c \
+		   drvdos32.h drvdos32.c \
 		   drvcpcem.h drvcpcem.c \
-		   drvdqk.h   drvdqk.c \
 		   drvposix.h drvposix.c \
 		   drvmyz80.h drvmyz80.c \
 		   drvcfi.h   drvcfi.c 
@@ -56,7 +62,7 @@ CLEANFILES=$(JARCLASSES) $(JARHEADERS)
 
 libdsk.jar:	$(JARCLASSES)
 	$(JAR) c0f $@ uk/*
-	$(JAVADOC) -d $(top_srcdir)/doc $(CLASSCPRE)
+	$(JAVADOC) -d $(top_srcdir)/doc/jni $(CLASSCPRE)
 
 $(CLASSDPRE)/%.class:   $(srcdir)/$(CLASSDPRE)/%.java
 	here=`pwd` && cd $(srcdir) && $(JAVAC) -d $$here $<

@@ -22,10 +22,10 @@
 
 #include "drvi.h"
 
-dsk_err_t dsk_ptread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_ptread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
                                 dsk_pcyl_t cylinder, dsk_phead_t head)
 {
-	int sec;
+	unsigned int sec;
 	dsk_err_t err;
 	unsigned char *b;
 	DRV_CLASS *dc;
@@ -48,7 +48,7 @@ dsk_err_t dsk_ptread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 }
 
 
-dsk_err_t dsk_ltread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf, 
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_ltread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf, 
 			dsk_ltrack_t track)
 {
         dsk_pcyl_t  c;
@@ -60,12 +60,12 @@ dsk_err_t dsk_ltread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
         return dsk_ptread(self, geom, buf, c, h);
 }
 
-dsk_err_t dsk_xtread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_xtread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
                                 dsk_pcyl_t cylinder, dsk_phead_t head,
 				dsk_pcyl_t cyl_expected, 
 				dsk_phead_t head_expected)
 {
-	int sec;
+	unsigned sec;
 	dsk_err_t err;
 	unsigned char *b;
 	DRV_CLASS *dc;
@@ -84,7 +84,7 @@ dsk_err_t dsk_xtread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 		err = dsk_xread(self, geom, b + sec * geom->dg_secsize,
 			cylinder, head, 
 			cyl_expected, head_expected, sec + geom->dg_secbase,
-			geom->dg_secsize);
+			geom->dg_secsize, 0);
 		if (err) return err;
 	}
 	return DSK_ERR_OK;

@@ -29,17 +29,35 @@
 #include "drv.h"
 
 #ifndef DISABLE_FLOPPY
-# if defined (HAVE_LINUX_FD_H) && defined(HAVE_LINUX_FDREG_H)
-#  define LINUXFLOPPY 
-#  include <linux/fd.h>
-#  include <linux/fdreg.h>
+# ifdef HAVE_LINUX_FD_H
+#  include "linux/fd.h"
+#  ifdef HAVE_LINUX_FDREG_H
+#   define LINUXFLOPPY 
+#   include "linux/fdreg.h"
+#  endif
 # endif
 
-# if defined (HAVE_WINDOWS_H) && defined(HAVE_WINIOCTL_H)
-#  define WIN32FLOPPY 
+# ifdef HAVE_WINDOWS_H 
 #  include <windows.h>
+# endif
+
+#ifdef HAVE_WINIOCTL_H
+#  define WIN32FLOPPY 
 #  include <winioctl.h>
 # endif
 #endif
 
+/* See if we have any floppy drivers that take parameters of the form A: */
+#ifdef WIN32FLOPPY 
+# define ANYFLOPPY
+#endif
+#ifdef WIN16FLOPPY 
+# define ANYFLOPPY
+#endif
+#ifdef DOS32FLOPPY 
+# define ANYFLOPPY
+#endif
+#ifdef DOS16FLOPPY 
+# define ANYFLOPPY
+#endif
 

@@ -46,6 +46,10 @@ public class LibDsk
 
 	}
 
+/** Get LibDsk version string.
+ * @return The library version - eg, "0.9.0" */
+	public static native String version();
+
 /** Convert sector size to a physical sector shift as used by the controller.
  * To go the other way, size = 128 &lt;&lt; psh  
  * @param sectorSize Sector size in bytes: 128, 256, 512, ...
@@ -56,6 +60,7 @@ public class LibDsk
 /** Open a DSK file, POSIX image, drive or whatever. 
  * @param filename The file specification to open.
  * @param type The LibDsk driver to use. Can be null to autodetect.
+ * @param comp The compression system to use. null to autodetect.
  * @exception DskException If the drive could not be opened. 
  * <p>Supported drivers are:
  * <dl>
@@ -67,7 +72,7 @@ public class LibDsk
  * <dt>"cfi"   <dd> CFI image file
  * </dl>
  */
-	public static native Drive open(String filename, String type) throws DskException;
+	public static native Drive open(String filename, String type, String comp) throws DskException;
 
 
 /** Create a new DSK file, POSIX image, etc.
@@ -77,6 +82,7 @@ public class LibDsk
  * Note that "type" cannot be NULL. 
  * @param filename The file specification to open.
  * @param type The LibDsk driver to use. Must not be null.
+ * @param comp The compression type to use. null for uncompressed.
  * @exception DskException If the drive could not be created. */
-	public static native Drive create(String filename, String type) throws DskException;
+	public static native Drive create(String filename, String type, String comp) throws DskException;
 }

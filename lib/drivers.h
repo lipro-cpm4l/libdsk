@@ -24,6 +24,7 @@
  * not matter in this file. */
 
 extern DRV_CLASS dc_cpcemu;	/* CPCEMU DSK driver */
+extern DRV_CLASS dc_cpcext;	/* CPCEMU DSK driver: create in ext. format */
 extern DRV_CLASS dc_dqk;	/* Compressed CPCEMU driver */
 extern DRV_CLASS dc_posix;	/* POSIX driver */
 extern DRV_CLASS dc_myz80;	/* MYZ80 driver */
@@ -34,3 +35,13 @@ extern DRV_CLASS dc_linux;	/* Linux driver */
 #ifdef WIN32FLOPPY
 extern DRV_CLASS dc_win32;	/* Win32 driver */
 #endif
+#ifdef WIN16FLOPPY
+extern DRV_CLASS dc_win16;	/* Win16 driver */
+#endif
+#ifdef DOS32FLOPPY
+extern DRV_CLASS dc_dos32;	/* DOS32 driver */
+#endif
+#ifdef DOS16FLOPPY
+extern DRV_CLASS dc_dos16;	/* DOS16 driver */
+#endif
+

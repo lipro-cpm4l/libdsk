@@ -21,24 +21,34 @@
  ***************************************************************************/
 
 #include "drvi.h"
+#include "compi.h"
 
 /* Get the status (ST3) of a drive.  */
-dsk_err_t dsk_drive_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_drive_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
                                 dsk_phead_t head, unsigned char *status)
 {
 	DRV_CLASS *dc;
+	dsk_err_t err;
+	unsigned char ro = 0;
+
 	if (!self || !geom || !status || !self->dr_class) return DSK_ERR_BADPTR;
+
+        if (self && self->dr_compress && self->dr_compress->cd_readonly)
+		ro = DSK_ST3_RO;
 
 	/* Generate a default status. If the driver doesn't provide this 
 	 * function, the default status will be used. */
 
-	*status = DSK_ST3_READY;
+	*status = DSK_ST3_READY | ro;
 	if (geom->dg_heads > 1) *status |= DSK_ST3_DSDRIVE;	
 	if (head)               *status |= DSK_ST3_HEAD1;
-
+	
 	dc = self->dr_class;
         if (!dc->dc_status) return DSK_ERR_OK;
-	return (dc->dc_status)(self,geom,head,status);	
+	err = (dc->dc_status)(self,geom,head,status);	
+	
+	*status |= ro;
+	return err;
 }
 
 

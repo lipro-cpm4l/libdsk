@@ -23,40 +23,51 @@
 /* Wrapper functions for FORMAT calls */
 
 #include "drvi.h"
+#include "compi.h"
 
-dsk_err_t dsk_pformat(DSK_DRIVER *self, DSK_GEOMETRY *geom,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_pformat(DSK_DRIVER *self, DSK_GEOMETRY *geom,
                                 dsk_pcyl_t cylinder, dsk_phead_t head,
                                 const DSK_FORMAT *format, unsigned char filler)
 {
         DRV_CLASS *dc;
+	dsk_err_t e;
         if (!self || !geom || !format || !self->dr_class) return DSK_ERR_BADPTR;
 
         dc = self->dr_class;
 
-        if (!dc->dc_format) return DSK_ERR_NOTIMPL;
-        return (dc->dc_format)(self,geom,cylinder,head,format,filler);      
+        if (self && self->dr_compress && self->dr_compress->cd_readonly)
+                return DSK_ERR_RDONLY;
 
+        if (!dc->dc_format) return DSK_ERR_NOTIMPL;
+        e = (dc->dc_format)(self,geom,cylinder,head,format,filler);      
+	if (e == DSK_ERR_OK) self->dr_dirty = 1;
+	return e;
 }
 
 
-dsk_err_t dsk_lformat(DSK_DRIVER *self, DSK_GEOMETRY *geom,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_lformat(DSK_DRIVER *self, DSK_GEOMETRY *geom,
                                 dsk_ltrack_t track, const DSK_FORMAT *format, 
                                 unsigned char filler)
 {
         dsk_err_t e;
         dsk_pcyl_t c;
         dsk_phead_t h;
+
+        if (self && self->dr_compress && self->dr_compress->cd_readonly)
+                return DSK_ERR_RDONLY;
  
         e = dg_lt2pt(geom, track, &c, &h);
         if (e != DSK_ERR_OK) return e;
-        return dsk_pformat(self, geom, c, h, format, filler);                          
+        e = dsk_pformat(self, geom, c, h, format, filler);                          
+	if (e == DSK_ERR_OK) self->dr_dirty = 1;
+	return e;
 }
 
 
-static DSK_FORMAT *dsk_formauto(const DSK_GEOMETRY *dg, 
+static DSK_FORMAT * dsk_formauto(const DSK_GEOMETRY *dg, 
 				dsk_pcyl_t cylinder, dsk_phead_t head)
 {
-	int ns;
+	unsigned int ns;
 	DSK_FORMAT *fmt = calloc(dg->dg_sectors, sizeof(DSK_FORMAT));
 
 	if (!fmt) return NULL;
@@ -71,7 +82,7 @@ static DSK_FORMAT *dsk_formauto(const DSK_GEOMETRY *dg,
 }
 
 /* Auto-format: generates the sector headers from "geom" */
-dsk_err_t dsk_apform(DSK_DRIVER *self, DSK_GEOMETRY *geom,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_apform(DSK_DRIVER *self, DSK_GEOMETRY *geom,
                                 dsk_pcyl_t cylinder, dsk_phead_t head,
                                 unsigned char filler)
 {
@@ -89,7 +100,7 @@ dsk_err_t dsk_apform(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 
 
 
-dsk_err_t dsk_alform(DSK_DRIVER *self, DSK_GEOMETRY *geom,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_alform(DSK_DRIVER *self, DSK_GEOMETRY *geom,
                                 dsk_ltrack_t track, unsigned char filler)
 {
 	dsk_pcyl_t cylinder; 

@@ -30,6 +30,15 @@
 #ifdef WIN32FLOPPY
 	&dc_win32,
 #endif
+#ifdef WIN16FLOPPY
+	&dc_win16,
+#endif
+#ifdef DOS16FLOPPY
+	&dc_dos16,
+#endif
+#ifdef DOS32FLOPPY
+	&dc_dos32,
+#endif
 /* 2. Disc images which can be detected by magic numbers or other means. This 
  *    includes CPCEMU discs and Linux floppy drives. Linux floppy comes first
  *    because it makes detection of CPC formats much faster. */
@@ -37,7 +46,9 @@
 	&dc_linux,
 #endif
 	&dc_cpcemu,	/* Normal .DSK */
-	&dc_dqk,	/* Compressed .DSK */
+	&dc_cpcext,	/* Extended .DSK */
+/*	&dc_dqk,	 * Compressed .DSK - now subsumed by compression
+                         * library. */
 
 /* 3. Raw files with no magic number. */
 	&dc_posix,
@@ -45,4 +56,8 @@
  *   the MYZ80 drive image cannot be reliably identified, so it must be 
  *   explicitly specified. */
 	&dc_myz80,
-	&dc_cfi,
+	&dc_cfi,	/* RLE-compressed raw. The reasons that this isn't 
+			 * handled by the general compression system are:
+			 * 1. No magic number, so can't autodetect.
+			 * 2. Compression is per track, not for the file. 
+			 */

@@ -63,12 +63,12 @@ static dsk_err_t cfi_ensure_size(CFI_DSK_DRIVER *self, dsk_ltrack_t trk)
 	if (maxtrks != self->cfi_ntracks)
 	{
 		/* Create new array of tracks */
-		CFI_TRACK *t = malloc(maxtrks * sizeof(CFI_TRACK));
+		CFI_TRACK *t = dsk_malloc(maxtrks * sizeof(CFI_TRACK));
 		if (!t) return DSK_ERR_NOMEM;
 		memset(t, 0, maxtrks * sizeof(CFI_TRACK));
 		/* Copy over existing array */
 		memcpy(t, self->cfi_tracks, self->cfi_ntracks * sizeof(CFI_TRACK));
-		free(self->cfi_tracks);
+		dsk_free(self->cfi_tracks);
 		self->cfi_tracks = t;
 		self->cfi_ntracks = maxtrks;
 	}
@@ -92,7 +92,7 @@ void cfi_free_track(CFI_TRACK *ltrk)
 {
 	if (ltrk && ltrk->cfit_data) 
 	{
-		free(ltrk->cfit_data);
+		dsk_free(ltrk->cfit_data);
 		ltrk->cfit_data = NULL;
 	}
 }
@@ -110,7 +110,7 @@ static dsk_err_t cfi_size_track(CFI_TRACK *ltrk, unsigned char *buf,
 	bufp = buf;
 	if (pass)	/* Pass 2: Allocate the data buffer whose */
 	{		/* size we found on pass 1. */
-		ltrk->cfit_data = malloc(ltrk->cfit_length);
+		ltrk->cfit_data = dsk_malloc(ltrk->cfit_length);
 		if (!ltrk->cfit_data) return DSK_ERR_NOMEM;
 		wrp = ltrk->cfit_data;
 	}
@@ -171,12 +171,12 @@ static dsk_err_t cfi_load_track(CFI_DSK_DRIVER *self, dsk_ltrack_t trk, FILE *fp
 	if (err == DSK_ERR_SEEKFAIL) return DSK_ERR_OVERRUN;
 	/* Compressed length must be at least 3; a block can't be any smaller! */
 	if (clen < 3) return DSK_ERR_NOTME;
-	buf = malloc(clen);
+	buf = dsk_malloc(clen);
 	if (buf == NULL) return DSK_ERR_NOMEM;
 	/* Try to load the track buffer. If that fails, bail out */
 	if (fread(buf, 1, clen, fp) < clen) 
 	{
-		free(buf);
+		dsk_free(buf);
 		return DSK_ERR_NOTME;	
 	}
 	ltrk = &self->cfi_tracks[trk];
@@ -185,7 +185,7 @@ static dsk_err_t cfi_load_track(CFI_DSK_DRIVER *self, dsk_ltrack_t trk, FILE *fp
 	err = cfi_size_track(ltrk, buf, clen, 0);
 	/* Pass 2: Decompress */
 	if (!err) err = cfi_size_track(ltrk, buf, clen, 1);
-	free(buf);
+	dsk_free(buf);
 	if (err) 
 	{
 		cfi_free_track(ltrk);
@@ -222,7 +222,9 @@ static dsk_err_t cfi_save_track(CFI_DSK_DRIVER *self, dsk_ltrack_t trk, FILE *fp
 	if (!t->cfit_data) return DSK_ERR_OK;	/* Vacuous track */
 
 	/* Compress the track using RLE. */
-	buf = malloc(t->cfit_length + 4);
+	buf = dsk_malloc(t->cfit_length + 4);
+	if (!buf) return DSK_ERR_NOMEM;
+
 	tlen = t->cfit_length;
 
 	rdptr  = t->cfit_data;	/* -> current byte */
@@ -277,10 +279,10 @@ static dsk_err_t cfi_save_track(CFI_DSK_DRIVER *self, dsk_ltrack_t trk, FILE *fp
 	
 	if (fwrite(buf, 1, tlen + 2, fp) < (tlen + 2)) 
 	{
-		free(buf);
+		dsk_free(buf);
 		return DSK_ERR_SYSERR;
 	}
-	free(buf);
+	dsk_free(buf);
 	return DSK_ERR_OK;
 }
 
@@ -306,17 +308,17 @@ dsk_err_t cfi_open(DSK_DRIVER *self, const char *filename)
 
 	cfiself->cfi_dirty = 0;
 	/* Keep a copy of the filename; when writing back, we will need it */
-	cfiself->cfi_filename = malloc(1 + strlen(filename));
+	cfiself->cfi_filename = dsk_malloc(1 + strlen(filename));
 	if (!cfiself->cfi_filename) return DSK_ERR_NOMEM;
 	strcpy(cfiself->cfi_filename, filename);	
 
 	/* Now to load the tracks. Allow 200; if there are more than
 	 * that, we dynamically grow the array. */
 	cfiself->cfi_ntracks = 200;
-	cfiself->cfi_tracks = malloc(200 * sizeof(CFI_TRACK));
+	cfiself->cfi_tracks = dsk_malloc(200 * sizeof(CFI_TRACK));
 	if (!cfiself->cfi_tracks) 
 	{
-		free(cfiself->cfi_filename);
+		dsk_free(cfiself->cfi_filename);
 		return DSK_ERR_NOMEM;
 	}
 	memset(cfiself->cfi_tracks, 0, 200 * sizeof(CFI_TRACK));
@@ -328,8 +330,8 @@ dsk_err_t cfi_open(DSK_DRIVER *self, const char *filename)
 		if (err == DSK_ERR_OVERRUN) return DSK_ERR_OK;
 		if (err) 
 		{
-			free(cfiself->cfi_filename);
-			free(cfiself->cfi_tracks);
+			dsk_free(cfiself->cfi_filename);
+			dsk_free(cfiself->cfi_tracks);
 			return err;
 		}
 	} 
@@ -354,7 +356,7 @@ dsk_err_t cfi_creat(DSK_DRIVER *self, const char *filename)
 	cfiself->cfi_dirty = 1;
 
 	/* Keep a copy of the filename, for writing back */
-	cfiself->cfi_filename = malloc(1 + strlen(filename));
+	cfiself->cfi_filename = dsk_malloc(1 + strlen(filename));
 	if (!cfiself->cfi_filename) return DSK_ERR_NOMEM;
 	strcpy(cfiself->cfi_filename, filename);	
 	
@@ -392,18 +394,18 @@ dsk_err_t cfi_close(DSK_DRIVER *self)
 /* Free track buffers if we have them */
 	if (cfiself->cfi_tracks)
 	{
-		int n;
+		unsigned int n;
 		for (n = 0; n < cfiself->cfi_ntracks; n++)
 		{
 			cfi_free_track(&cfiself->cfi_tracks[n]);
 		}
-		free(cfiself->cfi_tracks);
+		dsk_free(cfiself->cfi_tracks);
 		cfiself->cfi_tracks = NULL;
 		cfiself->cfi_ntracks = 0;
 	}
 	if (cfiself->cfi_filename) 
 	{
-		free(cfiself->cfi_filename);
+		dsk_free(cfiself->cfi_filename);
 		cfiself->cfi_filename = NULL;
 	}
 	return err;
@@ -415,7 +417,7 @@ static dsk_err_t cfi_find_sector(CFI_DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 {
 	dsk_ltrack_t track;
 	CFI_TRACK *ltrk;
-	long offset;
+	unsigned long offset;
 
 	/* Convert from physical to logical sector. However, unlike the dg_* 
 	 * functions, this _always_ uses "SIDES_ALT" mapping; this is the 
@@ -524,11 +526,11 @@ dsk_err_t cfi_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 	cfi_free_track(ltrk);
 
 	trklen = geom->dg_sectors * geom->dg_secsize;
-	ltrk->cfit_data = malloc(trklen);
+	ltrk->cfit_data = dsk_malloc((unsigned)trklen);
 	if (!ltrk->cfit_data) return DSK_ERR_NOMEM;
-	ltrk->cfit_length = trklen;
+	ltrk->cfit_length = (unsigned)trklen;
 
-	memset(ltrk->cfit_data, filler, trklen);	
+	memset(ltrk->cfit_data, filler, (unsigned)trklen);	
 	cfiself->cfi_dirty = 1;
 	return DSK_ERR_OK;
 }
@@ -539,7 +541,7 @@ dsk_err_t cfi_xseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                       dsk_pcyl_t cylinder, dsk_phead_t head)
 {
 	CFI_DSK_DRIVER *cfiself;
-	long offset;
+	unsigned long offset;
 
 	if (!self || !geom || self->dr_class != &dc_cfi) return DSK_ERR_BADPTR;
 	cfiself = (CFI_DSK_DRIVER *)self;

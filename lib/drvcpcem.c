@@ -29,6 +29,10 @@
 /* This struct contains function pointers to the driver's functions, and the
  * size of its DSK_DRIVER subclass */
 
+/* The CPCEMU drivers for normal and extended modes are in fact the same,
+ * except for the "open" and "create" functions; these have been separated
+ * simply so EDSKs can be created. */
+
 DRV_CLASS dc_cpcemu = 
 {
 	sizeof(CPCEMU_DSK_DRIVER),
@@ -48,13 +52,63 @@ DRV_CLASS dc_cpcemu =
 	cpcemu_xwrite,	/* write sector */ 
 };
 
-/* Open DSK image, checking for the magic number */
+DRV_CLASS dc_cpcext = 
+{
+	sizeof(CPCEMU_DSK_DRIVER),
+	"edsk",
+	"Extended .DSK driver",
+	cpcext_open,	/* open */
+	cpcext_creat,	/* create new */
+	cpcemu_close,	/* close */
+	cpcemu_read,	/* read sector, working from physical address */
+	cpcemu_write,	/* write sector, working from physical address */
+	cpcemu_format,	/* format track, physical */
+	NULL,		/* get geometry */
+	cpcemu_secid,	/* logical sector ID */
+	cpcemu_xseek,	/* seek to track */
+	cpcemu_status,	/* get drive status */
+	cpcemu_xread,	/* read sector */
+	cpcemu_xwrite,	/* write sector */ 
+};              
+            
+
+
+static dsk_err_t cpc_open(DSK_DRIVER *self, const char *filename, int ext);
+static dsk_err_t cpc_creat(DSK_DRIVER *self, const char *filename, int ext);
+
+
 dsk_err_t cpcemu_open(DSK_DRIVER *self, const char *filename)
+{
+	return cpc_open(self, filename, 0);
+}
+
+dsk_err_t cpcext_open(DSK_DRIVER *self, const char *filename)
+{
+	return cpc_open(self, filename, 1);
+}
+
+dsk_err_t cpcemu_creat(DSK_DRIVER *self, const char *filename)
+{
+	return cpc_creat(self, filename, 0);
+}
+
+dsk_err_t cpcext_creat(DSK_DRIVER *self, const char *filename)
+{
+	return cpc_creat(self, filename, 1);
+}
+
+
+#define DC_CHECK(self) if (self->dr_class != &dc_cpcemu && \
+			   self->dr_class != &dc_cpcext) return DSK_ERR_BADPTR;
+
+
+/* Open DSK image, checking for the magic number */
+static dsk_err_t cpc_open(DSK_DRIVER *self, const char *filename, int extended)
 {
 	CPCEMU_DSK_DRIVER *cpc_self;
 	
 	/* Sanity check: Is this meant for our driver? */
-	if (self->dr_class != &dc_cpcemu) return DSK_ERR_BADPTR;
+	DC_CHECK(self)
 	cpc_self = (CPCEMU_DSK_DRIVER *)self;
 
 	cpc_self->cpc_fp = fopen(filename, "r+b");
@@ -68,27 +122,36 @@ dsk_err_t cpcemu_open(DSK_DRIVER *self, const char *filename)
 	if (fread(cpc_self->cpc_dskhead, 1, 256, cpc_self->cpc_fp) < 256) 
 		return DSK_ERR_NOTME;
 
-        if (memcmp("MV - CPC", cpc_self->cpc_dskhead, 8) &&
-            memcmp("EXTENDED", cpc_self->cpc_dskhead, 8)) return DSK_ERR_NOTME; 
+	if (extended)
+	{
+		if (memcmp("EXTENDED", cpc_self->cpc_dskhead, 8)) return DSK_ERR_NOTME; 
+	}
+        else 
+	{
+		if (memcmp("MV - CPC", cpc_self->cpc_dskhead, 8)) return DSK_ERR_NOTME; 
+	}
 	/* OK, got signature. */
 	cpc_self->cpc_trkhead[0] = 0;
 	return DSK_ERR_OK;
 }
 
 /* Create DSK image */
-dsk_err_t cpcemu_creat(DSK_DRIVER *self, const char *filename)
+static dsk_err_t cpc_creat(DSK_DRIVER *self, const char *filename, int extended)
 {
 	CPCEMU_DSK_DRIVER *cpc_self;
 	
 	/* Sanity check: Is this meant for our driver? */
-	if (self->dr_class != &dc_cpcemu) return DSK_ERR_BADPTR;
+	DC_CHECK(self)
 	cpc_self = (CPCEMU_DSK_DRIVER *)self;
 
 	cpc_self->cpc_fp = fopen(filename, "w+b");
 	cpc_self->cpc_readonly = 0;
 	if (!cpc_self->cpc_fp) return DSK_ERR_SYSERR;
         memset(cpc_self->cpc_dskhead, 0, 256);
-        strcpy((char *)cpc_self->cpc_dskhead,
+        
+	if (extended) strcpy((char *)cpc_self->cpc_dskhead,
+		"EXTENDED CPC DSK File\r\nDisk-Info\r\n(LIBDSK)");
+        else strcpy((char *)cpc_self->cpc_dskhead,
 		"MV - CPCEMU Disk-File\r\nDisk-Info\r\n(LIBDSK)");
         if (fwrite(cpc_self->cpc_dskhead, 1 , 256, cpc_self->cpc_fp) < 256) return DSK_ERR_SYSERR;
 	cpc_self->cpc_trkhead[0] = 0;
@@ -100,7 +163,7 @@ dsk_err_t cpcemu_close(DSK_DRIVER *self)
 {
 	CPCEMU_DSK_DRIVER *cpc_self;
 
-	if (self->dr_class != &dc_cpcemu) return DSK_ERR_BADPTR;
+	DC_CHECK(self)
 	cpc_self = (CPCEMU_DSK_DRIVER *)self;
 
 	if (cpc_self->cpc_fp) 
@@ -128,7 +191,7 @@ static long lookup_track(CPCEMU_DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	unsigned char *b;
 	dsk_ltrack_t track;
 	long trk_offset;
-	int nt;
+	unsigned int nt;
 
 	if (!self->cpc_fp) return -1;
 
@@ -155,7 +218,7 @@ static long lookup_track(CPCEMU_DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 		b = self->cpc_dskhead + 0x34;
 		for (nt = 0; nt < track; nt++)
 		{
-			trk_offset += 256 * (1 + b[nt]);
+			trk_offset += 256 * b[nt]; /* [v0.9.0] */
 		}
 	}
 	else	/* Normal; all tracks have the same length */
@@ -220,8 +283,9 @@ dsk_err_t cpcemu_secid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	dsk_err_t e;
 	int offs;
 
-	if (!self || !geom || !result || self->dr_class != &dc_cpcemu) 
+	if (!self || !geom || !result)
 		return DSK_ERR_BADPTR;
+	DC_CHECK(self)
 	cpc_self = (CPCEMU_DSK_DRIVER *)self;
 	
 	if (!cpc_self->cpc_fp) return DSK_ERR_NOTRDY;
@@ -263,7 +327,7 @@ static long sector_offset(CPCEMU_DSK_DRIVER *self, dsk_psect_t sector, size_t *s
 	{
 		for (n = 0; n < maxsec; n++)
 		{
-			*seclen = (*secid)[7] + 256 * (*secid)[8];
+			*seclen = (*secid)[6] + 256 * (*secid)[7]; /* [v0.9.0] */
                        if ((*secid)[2] == sector) return offset;
 			offset   += (*seclen);
 			(*secid) += 8;
@@ -282,6 +346,19 @@ static long sector_offset(CPCEMU_DSK_DRIVER *self, dsk_psect_t sector, size_t *s
 }
 
 
+static unsigned char *sector_head(CPCEMU_DSK_DRIVER *self, int sector)
+{
+	int ms = self->cpc_trkhead[0x15];
+	int sec;
+
+	for (sec = 0; sec < ms; sec++)
+	{
+		if (self->cpc_trkhead[0x1A + 8 * sec] == sector)
+			return self->cpc_trkhead + 0x18 + 8 * sec;
+	}
+	return NULL;	
+}
+
 
 /* Seek within the DSK file to a given head & sector in the current cylinder. */
 static dsk_err_t seekto_sector(CPCEMU_DSK_DRIVER *self, const DSK_GEOMETRY *geom,
@@ -297,7 +374,8 @@ static dsk_err_t seekto_sector(CPCEMU_DSK_DRIVER *self, const DSK_GEOMETRY *geom
         err = load_track_header(self, geom, cylinder, head);
         if (err) return err;
 	trkbase = ftell(self->cpc_fp);
-	offs = sector_offset(self, sector, &seclen, &secid);
+	offs = (int)sector_offset(self, sector, &seclen, &secid);
+	
 	if (offs < 0) return DSK_ERR_NOADDR;	/* Sector not found */
 
 	if (cyl_expected != secid[0] || head_expected != secid[1])
@@ -328,30 +406,79 @@ dsk_err_t cpcemu_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                               dsk_phead_t head, dsk_psect_t sector)
 {
 	return cpcemu_xread(self, geom, buf, cylinder, head, cylinder,
-			    head, sector, geom->dg_secsize);
+			    head, sector, geom->dg_secsize, 0);
 }
 
 dsk_err_t cpcemu_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf, 
 			      dsk_pcyl_t cylinder,   dsk_phead_t head, 
 			      dsk_pcyl_t cyl_expect, dsk_phead_t head_expect,
-			      dsk_psect_t sector, size_t sector_size)
+			      dsk_psect_t sector, size_t sector_size, int *deleted)
 {
 	CPCEMU_DSK_DRIVER *cpc_self;
 	dsk_err_t err;
 	size_t len = geom->dg_secsize;
+	int rdeleted = 0;
+	int try_again = 0;
+	unsigned char *sh;
 
 	if (!buf || !geom || !self) return DSK_ERR_BADPTR;
-	if (self->dr_class != &dc_cpcemu) return DSK_ERR_BADPTR;
+	DC_CHECK(self)
 	cpc_self = (CPCEMU_DSK_DRIVER *)self;
 
-	err  = seekto_sector(cpc_self, geom, cylinder,head, 
-					cyl_expect, head_expect, sector, &len);
-	if (err == DSK_ERR_DATAERR || err == DSK_ERR_OK)
+	if (deleted && *deleted) rdeleted = 0x40;
+
+	do
 	{
+		err  = seekto_sector(cpc_self, geom, cylinder,head, 
+					cyl_expect, head_expect, sector, &len);
+/* Are we retrying because we are looking for deleted data and found 
+ * nondeleted or vice versa?
+ *
+ * If so, and we have run out of sectors in this track, AND we are on head 0,
+ * AND the disc has 2 heads, AND we are in multitrack mode, then look on head 1
+ * as well. Amazing.
+ * */
+		if (try_again == 1 && err == DSK_ERR_NOADDR)
+		{
+			err = DSK_ERR_NODATA;
+			if ((!geom->dg_nomulti) && head == 0 && 
+			      cpc_self->cpc_dskhead[0x31] > 0)
+			{
+				head++;
+				sector = geom->dg_secbase;	
+				continue;	
+			}
+		}
+		try_again = 0;
+		if (err != DSK_ERR_DATAERR && err != DSK_ERR_OK)
+			return err;
+		/* We have the sector. But does it contain deleted data? */
+		sh = sector_head(cpc_self, sector);
+		if (!sh) return DSK_ERR_NODATA;
+
+		if (deleted) *deleted = 0;
+		if (rdeleted != (sh[5] & 0x40))	/* Mismatch! */
+		{
+			if (geom->dg_noskip) 
+			{
+				if (deleted) *deleted = 1;
+			}
+			else
+			{
+/* Try the next sector. */
+				try_again = 1;
+				++sector;
+				continue;
+			}
+		}
 		if (len > sector_size) len = sector_size;
 		if (fread(buf, 1, len, cpc_self->cpc_fp) < len) 
 			err = DSK_ERR_DATAERR;
+/* Sector header ST2: If bit 5 set, data error 
+ * Maybe need to emulate some other bits in a similar way */
+		if (sh[5] & 0x20) err = DSK_ERR_DATAERR;
 	}
+	while (try_again);
 	return err;
 }		
 
@@ -362,21 +489,22 @@ dsk_err_t cpcemu_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                               dsk_phead_t head, dsk_psect_t sector)
 {
 	return cpcemu_xwrite(self, geom, buf, cylinder, head, cylinder,head,
-				sector, geom->dg_secsize);
+				sector, geom->dg_secsize, 0);
 }
 
 dsk_err_t cpcemu_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
 			      const void *buf, 
 			      dsk_pcyl_t cylinder,   dsk_phead_t head, 
 			      dsk_pcyl_t cyl_expect, dsk_phead_t head_expect,
-			      dsk_psect_t sector, size_t sector_size)
+			      dsk_psect_t sector, size_t sector_size,
+			      int deleted)
 {
 	CPCEMU_DSK_DRIVER *cpc_self;
 	dsk_err_t err;
 	size_t len = geom->dg_secsize;
 
 	if (!buf || !geom || !self) return DSK_ERR_BADPTR;
-	if (self->dr_class != &dc_cpcemu) return DSK_ERR_BADPTR;
+	DC_CHECK(self)
 	cpc_self = (CPCEMU_DSK_DRIVER *)self;
 
 	if (cpc_self->cpc_readonly) return DSK_ERR_RDONLY;
@@ -385,9 +513,25 @@ dsk_err_t cpcemu_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 				cyl_expect, head_expect, sector, &len);
 	if (err == DSK_ERR_DATAERR || err == DSK_ERR_OK)
 	{
+                unsigned char odel, *sh = sector_head(cpc_self, sector);
+		err = DSK_ERR_OK;	/* Ignore data error (disc sector bigger than expected) */
 		if (len > sector_size) len = sector_size;
 		if (fwrite(buf, 1, len, cpc_self->cpc_fp) < len)
 			err = DSK_ERR_DATAERR;
+
+/* If writing deleted data, update the sector header accordingly */
+		odel = sh[5];
+                if (deleted) sh[5] |= 0x40;
+		else	     sh[5] &= ~0x40;
+
+		if (sh[5] != odel)
+		{
+			long track = lookup_track(cpc_self, geom, cylinder, head);
+		        if (track < 0) return DSK_ERR_SEEKFAIL;       /* Bad track */
+		        fseek(cpc_self->cpc_fp, track, SEEK_SET);
+		        if (fwrite(cpc_self->cpc_trkhead, 1, 256, cpc_self->cpc_fp) < 256)
+		                return DSK_ERR_DATAERR;              /* Missing address mark */
+		}
         }
 	return err;
 }
@@ -399,11 +543,15 @@ dsk_err_t cpcemu_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
                                 const DSK_FORMAT *format, unsigned char filler)
 {
 	CPCEMU_DSK_DRIVER *cpc_self;
-	int n, img_trklen, trklen, trkoff, trkno, ext, seclen;
+	int ext;
+	long trkoff;	/* Make these longs for 16-bit systems */
+	unsigned long img_trklen;
 	unsigned char oldhead[256];
-
+	unsigned char *blanksec;
+	unsigned n, trkno, trklen, seclen;
+    
 	if (!format || !geom || !self) return DSK_ERR_BADPTR;
-	if (self->dr_class != &dc_cpcemu) return DSK_ERR_BADPTR;
+	DC_CHECK(self)
 	cpc_self = (CPCEMU_DSK_DRIVER *)self;
 
 	if (!cpc_self->cpc_fp)      return DSK_ERR_NOTRDY;
@@ -452,7 +600,7 @@ dsk_err_t cpcemu_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 		 * others */
 
 		ext = 1;
-		img_trklen = (cpc_self->cpc_dskhead[0x34 + trkno] * 256) + 256;
+		img_trklen = (cpc_self->cpc_dskhead[0x34 + trkno] * 256);
 		if (img_trklen)
 		{
 			if (trklen > img_trklen) return DSK_ERR_RDONLY;
@@ -470,14 +618,14 @@ dsk_err_t cpcemu_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
        		trkoff = 256; 
 	        for (n = 0; n < trkno; n++)
                 {
-                        trkoff += 256 * (1 + b[n]);
+                        trkoff += 256 * b[n];
                 }
-		/* Store the length of the new track */
-		if (!b[n]) b[n] = (unsigned char)((trklen >> 8) - 1);
+		/* Store the length of the new track (rounding up)*/
+		b[n] = (unsigned char)((trklen + 255) >> 8);
 	}
 	else
 	{
-		img_trklen = cpc_self->cpc_dskhead[0x32] + 256 * 
+		img_trklen = cpc_self->cpc_dskhead[0x32] + 256 *
 			     cpc_self->cpc_dskhead[0x33];
 		/* If no tracks formatted, or just the one track, length can
                  * be what we like */
@@ -497,7 +645,7 @@ dsk_err_t cpcemu_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 			memcpy(cpc_self->cpc_dskhead, oldhead, 256);
 			return DSK_ERR_RDONLY;
 		}
-		trkoff = 256 + (trkno * img_trklen);
+		trkoff = 256 + (img_trklen * trkno);
 	}
 /* Seek to the track. */
 	fseek(cpc_self->cpc_fp, trkoff, SEEK_SET);
@@ -533,16 +681,20 @@ dsk_err_t cpcemu_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 	/* Track header written. Write sectors */
 	for (n = 0; n < geom->dg_sectors; n++)
 	{
-		int m;
 		seclen = format[n].fmt_secsize;
-		for (m = 0; m < seclen; m++)
+		blanksec = dsk_malloc(seclen);
+		if (!blanksec)
 		{
-			if (fputc(filler, cpc_self->cpc_fp) == EOF)
-			{
-				memcpy(cpc_self->cpc_dskhead, oldhead, 256);
-				return DSK_ERR_RDONLY;
-			}
+			memcpy(cpc_self->cpc_dskhead, oldhead, 256);
+			return DSK_ERR_NOMEM;
 		}
+		memset(blanksec, filler, seclen);
+		if (fwrite(blanksec, 1, seclen, cpc_self->cpc_fp) < seclen)
+		{
+			memcpy(cpc_self->cpc_dskhead, oldhead, 256);
+			return DSK_ERR_SYSERR;
+		}
+		dsk_free(blanksec);
 	}
 	if (cylinder >= cpc_self->cpc_dskhead[0x30])
 	{
@@ -557,11 +709,11 @@ dsk_err_t cpcemu_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 	}
 	/* If the disc image has grown because of this, record this in the
 	 * disc geometry struct */
-	
-	if (geom->dg_heads     < cpc_self->cpc_dskhead[0x31]) 
+
+	if (geom->dg_heads     < cpc_self->cpc_dskhead[0x31])
 		geom->dg_heads     = cpc_self->cpc_dskhead[0x31];
 	if (geom->dg_cylinders < cpc_self->cpc_dskhead[0x30])
-		geom->dg_cylinders = cpc_self->cpc_dskhead[0x30]; 
+		geom->dg_cylinders = cpc_self->cpc_dskhead[0x30];
 		
 	return DSK_ERR_OK;
 }
@@ -574,8 +726,8 @@ dsk_err_t cpcemu_xseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 {
 	CPCEMU_DSK_DRIVER *cpc_self;
 
-	if (!self || !geom || self->dr_class != &dc_cpcemu) 
-		return DSK_ERR_BADPTR;
+	if (!self || !geom) return DSK_ERR_BADPTR;
+	DC_CHECK(self)
 	cpc_self = (CPCEMU_DSK_DRIVER *)self;
 	
 	if (!cpc_self->cpc_fp) return DSK_ERR_NOTRDY;
@@ -592,7 +744,8 @@ dsk_err_t cpcemu_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 {
         CPCEMU_DSK_DRIVER *cpc_self;
 
-        if (!self || !geom || self->dr_class != &dc_cpcemu) return DSK_ERR_BADPTR;
+        if (!self || !geom) return DSK_ERR_BADPTR;
+	DC_CHECK(self)
         cpc_self = (CPCEMU_DSK_DRIVER *)self;
 
         if (!cpc_self->cpc_fp) *result &= ~DSK_ST3_READY;

@@ -77,6 +77,13 @@ dsk_err_t myz80_open(DSK_DRIVER *self, const char *filename)
 		fclose(mzself->mz_fp);
 		return DSK_ERR_NOTME;
 	}
+/* v0.9.5: Record exact size, so we can tell if we're writing off the end
+ * of the file. Under Windows, writing off the end of the file fills the 
+ * gaps with random data, which can cause mess to appear in the directory;
+ * and under UNIX, the entire directory is filled with zeroes. */
+	if (fseek(mzself->mz_fp, 0, SEEK_END)) return DSK_ERR_SYSERR;
+	mzself->mz_filesize = ftell(mzself->mz_fp);
+
 	return DSK_ERR_OK;
 }
 
@@ -128,7 +135,7 @@ dsk_err_t myz80_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 {
 	MYZ80_DSK_DRIVER *mzself;
 	long offset;
-	int aread;
+	unsigned aread;
 
 	if (!buf || !self || !geom || self->dr_class != &dc_myz80) return DSK_ERR_BADPTR;
 	mzself = (MYZ80_DSK_DRIVER *)self;
@@ -136,7 +143,7 @@ dsk_err_t myz80_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	if (!mzself->mz_fp) return DSK_ERR_NOTRDY;
 
 	/* Convert from physical to logical sector, using the fixed geometry. */
-	offset = (cylinder * 131072L) + (sector * 1024L) + 256;
+	offset = (131072L * cylinder) + (1024L * sector) + 256;
 
 	if (fseek(mzself->mz_fp, offset, SEEK_SET)) return DSK_ERR_SYSERR;
 
@@ -159,7 +166,7 @@ dsk_err_t myz80_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                               dsk_phead_t head, dsk_psect_t sector)
 {
 	MYZ80_DSK_DRIVER *mzself;
-	long offset;
+	unsigned long offset;
 
 	if (!buf || !self || !geom || self->dr_class != &dc_myz80) return DSK_ERR_BADPTR;
 	mzself = (MYZ80_DSK_DRIVER *)self;
@@ -168,14 +175,29 @@ dsk_err_t myz80_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	if (mzself->mz_readonly) return DSK_ERR_RDONLY;
 
 	/* Convert from physical to logical sector, using the fixed geometry. */
-	offset = (cylinder * 131072L) + (sector * 1024L) + 256;
+	offset = (131072L * cylinder) + (1024L * sector) + 256;
 
+	/* v0.9.5: If the file is extended, it must be with zeroes. Otherwise
+	 * the intervening blocks get filled with zeroes (Unix) / 
+	 * rubbish (Windows). Not a problem for data blocks, but dangerous
+	 * for the directory. */
+	if (mzself->mz_filesize < offset)
+	{
+		if (fseek(mzself->mz_fp, mzself->mz_filesize, SEEK_SET)) return DSK_ERR_SYSERR;
+		while (mzself->mz_filesize < (offset + geom->dg_secsize))
+		{
+			if (fputc(0xE5, mzself->mz_fp) == EOF) return DSK_ERR_SYSERR;
+			++mzself->mz_filesize;
+		}
+	}	
 	if (fseek(mzself->mz_fp, offset, SEEK_SET)) return DSK_ERR_SYSERR;
 
 	if (fwrite(buf, 1, geom->dg_secsize, mzself->mz_fp) < geom->dg_secsize)
 	{
 		return DSK_ERR_NOADDR;
 	}
+	if (fseek(mzself->mz_fp, 0, SEEK_END)) return DSK_ERR_SYSERR;
+	mzself->mz_filesize = ftell(mzself->mz_fp);
 	return DSK_ERR_OK;
 }
 
@@ -189,7 +211,7 @@ dsk_err_t myz80_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
  * images don't hold track headers.
  */
 	MYZ80_DSK_DRIVER *mzself;
-	long offset;
+	unsigned long offset;
 	long trklen;
 
 	(void)format;
@@ -204,13 +226,28 @@ dsk_err_t myz80_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 	 * mapping that both the Linux and NT floppy drivers use to convert 
 	 * offsets back into C/H/S. */
 	/* Convert from physical to logical sector, using the fixed geometry. */
-	offset = (cylinder * 131072L) + 256;
+	offset = (131072L * cylinder) + 256;
 	trklen = 131072L;
 
+	/* v0.9.5: If the file is extended, it must be with zeroes. Otherwise
+	 * the intervening blocks get filled with zeroes (Unix) / 
+	 * rubbish (Windows). Not a problem for data blocks, but dangerous
+	 * for the directory. */
+	if (mzself->mz_filesize < offset)
+	{
+		if (fseek(mzself->mz_fp, mzself->mz_filesize, SEEK_SET)) return DSK_ERR_SYSERR;
+		while (mzself->mz_filesize < offset + trklen)
+		{
+			if (fputc(0xE5, mzself->mz_fp) == EOF) return DSK_ERR_SYSERR;
+			++mzself->mz_filesize;
+		}
+	}	
 	if (fseek(mzself->mz_fp, offset, SEEK_SET)) return DSK_ERR_SYSERR;
 
 	while (trklen--) 
 		if (fputc(filler, mzself->mz_fp) == EOF) return DSK_ERR_SYSERR;	
+	if (fseek(mzself->mz_fp, 0, SEEK_END)) return DSK_ERR_SYSERR;
+	mzself->mz_filesize = ftell(mzself->mz_fp);
 
 	return DSK_ERR_OK;
 }

@@ -15,6 +15,12 @@
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
+/* Define if you have the GetTempFileName function.  */
+#undef HAVE_GETTEMPFILENAME
+
+/* Define if you have the mkstemp function.  */
+#undef HAVE_MKSTEMP
+
 /* Define if you have the strcasecmp function.  */
 #undef HAVE_STRCASECMP
 
@@ -26,6 +32,9 @@
 
 /* Define if you have the stricmp function.  */
 #undef HAVE_STRICMP
+
+/* Define if you have the <bzlib.h> header file.  */
+#undef HAVE_BZLIB_H
 
 /* Define if you have the <errno.h> header file.  */
 #undef HAVE_ERRNO_H
@@ -56,6 +65,15 @@
 
 /* Define if you have the <winioctl.h> header file.  */
 #undef HAVE_WINIOCTL_H
+
+/* Define if you have the <zlib.h> header file.  */
+#undef HAVE_ZLIB_H
+
+/* Define if you have the bz2 library (-lbz2).  */
+#undef HAVE_LIBBZ2
+
+/* Define if you have the z library (-lz).  */
+#undef HAVE_LIBZ
 
 /* Name of package */
 #undef PACKAGE

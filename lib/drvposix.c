@@ -64,6 +64,13 @@ dsk_err_t posix_open(DSK_DRIVER *self, const char *filename)
 		pxself->px_fp = fopen(filename, "rb");
 	}
 	if (!pxself->px_fp) return DSK_ERR_NOTME;
+/* v0.9.5: Record exact size, so we can tell if we're writing off the end
+ * of the file. Under Windows, writing off the end of the file fills the 
+ * gaps with random data, which can cause mess to appear in the directory;
+ * and under UNIX, the entire directory is filled with zeroes. */
+        if (fseek(pxself->px_fp, 0, SEEK_END)) return DSK_ERR_SYSERR;
+        pxself->px_filesize = ftell(pxself->px_fp);
+
 	return DSK_ERR_OK;
 }
 
@@ -79,6 +86,7 @@ dsk_err_t posix_creat(DSK_DRIVER *self, const char *filename)
 	pxself->px_fp = fopen(filename, "w+b");
 	pxself->px_readonly = 0;
 	if (!pxself->px_fp) return DSK_ERR_SYSERR;
+	pxself->px_filesize = 0;
 	return DSK_ERR_OK;
 }
 
@@ -130,13 +138,31 @@ dsk_err_t posix_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 }
 
 
+static dsk_err_t seekto(POSIX_DSK_DRIVER *self, unsigned long offset)
+{
+	/* 0.9.5: Fill any "holes" in the file with 0xE5. Otherwise, UNIX would
+	 * fill them with zeroes and Windows would fill them with whatever
+	 * happened to be lying around */
+	if (self->px_filesize < offset)
+	{
+		if (fseek(self->px_fp, self->px_filesize, SEEK_SET)) return DSK_ERR_SYSERR;
+		while (self->px_filesize < offset)
+		{
+			if (fputc(0xE5, self->px_fp) == EOF) return DSK_ERR_SYSERR;
+			++self->px_filesize;
+		}
+	}
+	if (fseek(self->px_fp, offset, SEEK_SET)) return DSK_ERR_SYSERR;
+	return DSK_ERR_OK;
+}
 
 dsk_err_t posix_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                              const void *buf, dsk_pcyl_t cylinder,
                               dsk_phead_t head, dsk_psect_t sector)
 {
 	POSIX_DSK_DRIVER *pxself;
-	long offset;
+	unsigned long offset;
+	dsk_err_t err;
 
 	if (!buf || !self || !geom || self->dr_class != &dc_posix) return DSK_ERR_BADPTR;
 	pxself = (POSIX_DSK_DRIVER *)self;
@@ -153,12 +179,15 @@ dsk_err_t posix_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	offset += (sector - geom->dg_secbase);
 	offset *=  geom->dg_secsize;
 
-	if (fseek(pxself->px_fp, offset, SEEK_SET)) return DSK_ERR_SYSERR;
+	err = seekto(pxself, offset);
+	if (err) return err;
 
 	if (fwrite(buf, 1, geom->dg_secsize, pxself->px_fp) < geom->dg_secsize)
 	{
 		return DSK_ERR_NOADDR;
 	}
+	if (pxself->px_filesize < offset + geom->dg_secsize)
+		pxself->px_filesize = offset + geom->dg_secsize;
 	return DSK_ERR_OK;
 }
 
@@ -172,8 +201,9 @@ dsk_err_t posix_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
  * images don't hold track headers.
  */
 	POSIX_DSK_DRIVER *pxself;
-	long offset;
-	long trklen;
+	unsigned long offset;
+	unsigned long trklen;
+	dsk_err_t err;
 
    (void)format;
 	if (!self || !geom || self->dr_class != &dc_posix) return DSK_ERR_BADPTR;
@@ -190,7 +220,10 @@ dsk_err_t posix_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 	trklen = geom->dg_sectors * geom->dg_secsize;
 	offset *= trklen;
 
-	if (fseek(pxself->px_fp, offset, SEEK_SET)) return DSK_ERR_SYSERR;
+	err = seekto(pxself, offset);
+	if (err) return err;
+	if (pxself->px_filesize < offset + trklen)
+		pxself->px_filesize = offset + trklen;
 
 	while (trklen--) 
 		if (fputc(filler, pxself->px_fp) == EOF) return DSK_ERR_SYSERR;	

@@ -89,6 +89,8 @@ public class Geometry
 	public boolean fm;	
 	/** True to disable multitrack operation. */
 	public boolean nomulti;	
+	/** True not to skip deleted data. */
+	public boolean noskip;	
 
 	/** Convert physical cylinder/head/sector to logical sector. 
 	 * @param cyl Physical cylinder.

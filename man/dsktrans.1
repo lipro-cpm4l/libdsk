@@ -20,7 +20,7 @@
 .\" Author contact information:
 .\" John Elliott: email: jce@seasip.demon.co.uk
 .\"
-.TH dsktrans 1 "7 April, 2002" "Version 0.8.2" "Emulators"
+.TH dsktrans 1 "20 April, 2002" "Version 0.9.0" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -38,6 +38,8 @@ dsktrans - floppy or image file formatter for emulated machines
 .RI [ "-otype TYPE" ]
 .RI [ "-iside SIDE" ]
 .RI [ "-oside SIDE" ]
+.RI [ "-icomp COMP" ]
+.RI [ "-ocomp COMP" ]
 .RI [ -md3 ]
 .RI [ -logical ]
 .P
@@ -62,8 +64,8 @@ Select according to the disk image file. This is the default.
 .B dsk
 Use the DSK (CPCEmu format) image driver.
 .TP
-.B dqk
-Use the DQK (compressed CPCEmu format) image driver.
+.B edsk
+Use the extended version of the DSK format.
 .TP
 .B floppy
 Use the floppy driver.
@@ -86,6 +88,30 @@ Determines which driver is to be used to write to the destination disk. The
 drivers are as for -itype.
 
 .TP
+.B -icomp COMP
+Select the compression method used on the source disc image file (has no
+effect when reading a floppy disc).
+.RS
+.TP 8
+.B auto
+Detect from the first few bytes of the file. This is the default.
+.TP
+.B sq
+Huffman coded (SQ / USQ).
+.TP
+.B gz
+Gzipped (gzip / gunzip).
+.TP
+.B bz2
+Burrows-Wheeler compressed (bzip2 / bunzip2).
+.RE
+
+.TP
+.B -ocomp COMP
+Select the compression to be used on output. Compression methods are as for
+-icomp, except that bz2 cannot be used.
+
+.TP
 .B -iside SIDE
 Determines which side (0 or 1) of the source disk is to be read from.
 
@@ -94,7 +120,11 @@ Determines which side (0 or 1) of the destination disk is to be written to.
 
 .TP
 .B -md3
-Defeat MicroDesign 3 copy protection.
+Defeat MicroDesign 3 copy protection. Note that this does not make
+.I dsktrans
+a circumvention device, since the authors of MicroDesign have placed it in
+the public domain and given permission for the copy-protection to be reverse
+engineered.
 
 .TP
 .B -logical

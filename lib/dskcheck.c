@@ -25,7 +25,7 @@
 
 #include "drvi.h"
 
-dsk_err_t dsk_pcheck(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_pcheck(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                               const void *buf, dsk_pcyl_t cylinder,
                               dsk_phead_t head, dsk_psect_t sector)
 {
@@ -48,7 +48,7 @@ dsk_err_t dsk_pcheck(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 }
 
 
-dsk_err_t dsk_lcheck(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_lcheck(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                               const void *buf, dsk_lsect_t sector)
 {
  	void *buf2;
@@ -66,7 +66,7 @@ dsk_err_t dsk_lcheck(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 }
 
 
-dsk_err_t dsk_xcheck(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_xcheck(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
 			const void *buf, 
                         dsk_pcyl_t cylinder,   dsk_phead_t head,
                         dsk_pcyl_t cyl_expect, dsk_phead_t head_expect,
@@ -85,7 +85,7 @@ dsk_err_t dsk_xcheck(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	if (!buf2) return DSK_ERR_NOMEM;
 
 	e = (dc->dc_xread)(self,geom,buf2,cylinder,head,
-				cyl_expect, head_expect, sector, sector_len);
+				cyl_expect, head_expect, sector, sector_len, 0);
 	if (e == 0 && memcmp(buf, buf2, geom->dg_secsize)) e = DSK_ERR_MISMATCH;
 	dsk_free(buf2);
 	return e;	

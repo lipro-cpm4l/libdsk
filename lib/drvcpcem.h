@@ -32,6 +32,11 @@ typedef struct
 	unsigned char cpc_trkhead[256];	/* Track header */
 } CPCEMU_DSK_DRIVER;
 
+/* v0.9.0: Use subclassing to create separate drivers for normal and 
+ * extended .DSK images. This way we can create extended images by 
+ * using "-type edsk" or similar */
+dsk_err_t cpcext_open(DSK_DRIVER *self, const char *filename);
+dsk_err_t cpcext_creat(DSK_DRIVER *self, const char *filename);
 dsk_err_t cpcemu_open(DSK_DRIVER *self, const char *filename);
 dsk_err_t cpcemu_creat(DSK_DRIVER *self, const char *filename);
 dsk_err_t cpcemu_close(DSK_DRIVER *self);
@@ -52,11 +57,11 @@ dsk_err_t cpcemu_xseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 dsk_err_t cpcemu_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
                               dsk_pcyl_t cylinder, dsk_phead_t head,
                               dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
-                              dsk_psect_t sector, size_t sector_size);
+                              dsk_psect_t sector, size_t sector_size, int *deleted);
 dsk_err_t cpcemu_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, const void *buf,
                               dsk_pcyl_t cylinder, dsk_phead_t head,
                               dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
-                              dsk_psect_t sector, size_t sector_size);
+                              dsk_psect_t sector, size_t sector_size, int deleted);
 dsk_err_t cpcemu_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                       dsk_phead_t head, unsigned char *result);
 

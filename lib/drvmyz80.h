@@ -27,7 +27,7 @@ typedef struct
         DSK_DRIVER mz_super;
         FILE *mz_fp;
 	int   mz_readonly;
-
+	unsigned long  mz_filesize;	/* True length of the .DSK file */
 } MYZ80_DSK_DRIVER;
 
 dsk_err_t myz80_open(DSK_DRIVER *self, const char *filename);

@@ -24,7 +24,7 @@
 
 
 /* Seek to a track */
-dsk_err_t dsk_pseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_pseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                                 dsk_pcyl_t cylinder, dsk_phead_t head)
 {
 	DRV_CLASS *dc;
@@ -38,7 +38,7 @@ dsk_err_t dsk_pseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 }
 
 
-dsk_err_t dsk_lseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_lseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                                 dsk_ltrack_t track)
 {
         dsk_err_t e;

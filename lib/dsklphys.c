@@ -25,7 +25,7 @@
 #include "drvi.h"
 
 /* Convert physical sector to logical */
-dsk_err_t dg_ps2ls(const DSK_GEOMETRY *self,  
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_ps2ls(const DSK_GEOMETRY *self,  
 	/* in */	dsk_pcyl_t cyl, dsk_phead_t head, dsk_psect_t sec,
 	/* out */	dsk_lsect_t *logical)
 {
@@ -48,7 +48,7 @@ dsk_err_t dg_ps2ls(const DSK_GEOMETRY *self,
 }
 
 /* Convert logical sector to physical */
-dsk_err_t dg_ls2ps(const DSK_GEOMETRY *self, 
+LDPUBLIC32 dsk_err_t LDPUBLIC16  dg_ls2ps(const DSK_GEOMETRY *self, 
 	/* in */	dsk_lsect_t logical, 
 	/* out */	dsk_pcyl_t *cyl, dsk_phead_t *head, dsk_psect_t *sec)
 {
@@ -58,17 +58,17 @@ dsk_err_t dg_ls2ps(const DSK_GEOMETRY *self,
 	if (logical >= self->dg_cylinders * self->dg_heads * self->dg_sectors)
 		return DSK_ERR_BADPARM;
 
-	if (sec) *sec = (logical % self->dg_sectors) + self->dg_secbase;
+	if (sec) *sec = (dsk_psect_t)((logical % self->dg_sectors) + self->dg_secbase);
 
 	logical /= self->dg_sectors;
-	return dg_lt2pt(self, logical, cyl, head);
+	return dg_lt2pt(self, (dsk_ltrack_t)logical, cyl, head);
 }
 
 
 
  
 /* Convert physical cyl/head to logical track */
-dsk_err_t dg_pt2lt(const DSK_GEOMETRY *self,  
+LDPUBLIC32 dsk_err_t LDPUBLIC16  dg_pt2lt(const DSK_GEOMETRY *self,  
 	/* in */	dsk_pcyl_t cyl, dsk_phead_t head,
 	/* out */	dsk_ltrack_t *logical)
 {
@@ -87,7 +87,7 @@ dsk_err_t dg_pt2lt(const DSK_GEOMETRY *self,
 					if (!head)	track = cyl;
 					else		track = (2 * self->dg_cylinders) - (1 + cyl); 
 					break;
-		case SIDES_OUTOUT:	track = (head * self->dg_cylinders) + cyl; break;
+		case SIDES_OUTOUT:	track = (head * self->dg_cylinders) + cyl;
 					break;
 	}
 
@@ -97,7 +97,7 @@ dsk_err_t dg_pt2lt(const DSK_GEOMETRY *self,
 }
 
 /* Convert logical track to physical */
-dsk_err_t dg_lt2pt(const DSK_GEOMETRY *self, 
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_lt2pt(const DSK_GEOMETRY *self, 
 	/* in */	dsk_ltrack_t logical, 
 	/* out */	dsk_pcyl_t *cyl, dsk_phead_t *head)
 {

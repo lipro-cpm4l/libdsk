@@ -1,0 +1,4 @@
+KNOWN BUGS in 0.9.x & earlier:
+
+* Extending a MYZ80 .DSK file: Gaps are filled with zeroes (unix) or random
+ bytes (Windows). Need to be filled with 0xE5.

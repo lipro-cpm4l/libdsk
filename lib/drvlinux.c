@@ -150,7 +150,7 @@ static dsk_err_t check_geom(LINUX_DSK_DRIVER *self, const DSK_GEOMETRY *dg)
 	str.fmt_gap = dg->dg_fmtgap;
 
 	if (ioctl(self->lx_fd, FDSETPRM, &str)) return DSK_ERR_SYSERR;
-	
+
 	memcpy(&self->lx_geom, dg, sizeof(*dg));
 	return DSK_ERR_OK;
 }
@@ -173,11 +173,15 @@ dsk_err_t linux_open(DSK_DRIVER *self, const char *filename)
 	if (major(st.st_rdev) != 2) return DSK_ERR_NOTME;
 
 	lxself->lx_cylinder = ~0;	
-	lxself->lx_fd = open(filename, O_RDWR);
+/* [v0.8.3] fdutils uses O_NONBLOCK when opening drives in fdrawcmd. This 
+ * seems to allow FM-encoded discs and other discs which the Linux kernel
+ * can't probe to be accepted, and it omits the long delay detecting CPC-
+ * format discs. */
+	lxself->lx_fd = open(filename, O_NONBLOCK | O_RDWR);
 	if (lxself->lx_fd < 0)
 	{
 		lxself->lx_readonly = 1;
-		lxself->lx_fd = open(filename, O_RDONLY);
+		lxself->lx_fd = open(filename, O_NONBLOCK | O_RDONLY);
 	}
 	if (lxself->lx_fd < 0) return DSK_ERR_SYSERR;
 
@@ -220,13 +224,13 @@ dsk_err_t linux_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                               dsk_phead_t head, dsk_psect_t sector)
 {
 	return linux_xread(self, geom, buf, cylinder, head, 
-			   cylinder, head, sector, geom->dg_secsize);
+			   cylinder, head, sector, geom->dg_secsize, 0);
 }
 
 dsk_err_t linux_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
                               dsk_pcyl_t cylinder, dsk_phead_t head,
                               dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
-                              dsk_psect_t sector, size_t sector_size)
+                              dsk_psect_t sector, size_t sector_size, int *deleted)
 {
 	struct floppy_raw_cmd raw_cmd;
 	LINUX_DSK_DRIVER *lxself;
@@ -241,8 +245,9 @@ dsk_err_t linux_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 	err = check_geom(lxself, geom);
 	if (err) return err;
 
-	if (geom->dg_fm)      mask &= ~0x40;
-	if (geom->dg_nomulti) mask &= ~0x80;
+	if (geom->dg_noskip)  mask &= ~0x20;	/* Don't skip deleted data */
+	if (geom->dg_fm)      mask &= ~0x40;	/* FM recording mode */
+	if (geom->dg_nomulti) mask &= ~0x80;	/* Disable multitrack */
 
 	init_raw_cmd(&raw_cmd);
 	raw_cmd.flags = FD_RAW_READ | FD_RAW_INTR;
@@ -251,8 +256,10 @@ dsk_err_t linux_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 	raw_cmd.rate  = get_rate(geom);
 	raw_cmd.length= sector_size;
 	raw_cmd.data  = buf;
-		
-	raw_cmd.cmd[raw_cmd.cmd_count++] = FD_READ & mask;
+
+	if (deleted && (*deleted))
+			raw_cmd.cmd[raw_cmd.cmd_count++] = 0xEC    & mask;
+	else		raw_cmd.cmd[raw_cmd.cmd_count++] = FD_READ & mask;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = encode_head(self, head);
 	raw_cmd.cmd[raw_cmd.cmd_count++] = cyl_expected;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = head_expected;
@@ -265,6 +272,8 @@ dsk_err_t linux_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 	if (ioctl(lxself->lx_fd, FDRAWCMD, &raw_cmd) < 0) return DSK_ERR_SYSERR;
 
 	if (raw_cmd.reply[0] & 0x40) return xlt_error(raw_cmd.reply);
+
+	if (deleted) deleted[0] = (raw_cmd.reply[2] & 0x40) ? 1 : 0;
 	lxself->lx_cylinder = cylinder;
 	return DSK_ERR_OK;
 }
@@ -275,14 +284,14 @@ dsk_err_t linux_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                               dsk_phead_t head, dsk_psect_t sector)
 {
 	return linux_xwrite(self, geom, buf, cylinder, head, cylinder, head,
-				sector, geom->dg_secsize);
+				sector, geom->dg_secsize, 0);
 }
 
 
 dsk_err_t linux_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, const void *buf,
                               dsk_pcyl_t cylinder, dsk_phead_t head,
                               dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
-                              dsk_psect_t sector, size_t sector_size)
+                              dsk_psect_t sector, size_t sector_size, int deleted)
 {
 	struct floppy_raw_cmd raw_cmd;
 	LINUX_DSK_DRIVER *lxself;
@@ -297,6 +306,7 @@ dsk_err_t linux_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, const void *b
 	err = check_geom(lxself, geom);
 	if (err) return err;
 
+	if (geom->dg_noskip)  mask &= ~0x20;	/* Don't skip deleted data */
 	if (geom->dg_fm)      mask &= ~0x40;
 	if (geom->dg_nomulti) mask &= ~0x80;
 
@@ -308,7 +318,8 @@ dsk_err_t linux_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, const void *b
 	raw_cmd.length= sector_size;
 	raw_cmd.data  = (void *)buf;
 		
-	raw_cmd.cmd[raw_cmd.cmd_count++] = FD_WRITE & mask;
+	if (deleted)	raw_cmd.cmd[raw_cmd.cmd_count++] = 0xE9     & mask;
+	else		raw_cmd.cmd[raw_cmd.cmd_count++] = FD_WRITE & mask;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = encode_head(self, head);
 	raw_cmd.cmd[raw_cmd.cmd_count++] = cyl_expected;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = head_expected;
@@ -394,6 +405,7 @@ dsk_err_t linux_secid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	struct floppy_raw_cmd raw_cmd;
 	LINUX_DSK_DRIVER *lxself;
 	unsigned char mask = 0xFF;
+	dsk_err_t err;
 
 	if (!self || !geom || !result) return DSK_ERR_BADPTR;
 	if (self->dr_class != &dc_linux) return DSK_ERR_BADPTR;
@@ -403,9 +415,14 @@ dsk_err_t linux_secid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	if (geom->dg_fm)      mask &= ~0x40;
 	if (geom->dg_nomulti) mask &= ~0x80;
 
+/* [v0.8.3] It was necessary to add this check correctly to detect 100k 
+ * FM-recorded discs in a 5.25" drive */
+	err = check_geom(lxself, geom);
+	if (err) return err;
+
 	init_raw_cmd(&raw_cmd);
 	raw_cmd.flags = FD_RAW_INTR;
-	if (cylinder != lxself->lx_cylinder) raw_cmd.flags |= FD_RAW_NEED_SEEK;
+	if (cylinder != lxself->lx_cylinder)  raw_cmd.flags |= FD_RAW_NEED_SEEK;
 	raw_cmd.track = cylinder;
 	raw_cmd.rate  = get_rate(geom);
 	raw_cmd.cmd[raw_cmd.cmd_count++] = FD_READID & mask;

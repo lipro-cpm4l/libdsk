@@ -6,10 +6,11 @@ LDADD=../lib/libdsk.la
 CLASSPATH=@CLASSPATH@
 JAVAC=@JAVAC@ 
 
-bin_PROGRAMS=dsktrans dskform dskid
-dsktrans_SOURCES=dsktrans.c utilopts.c utilopts.h formnames.c formnames.h
-dskform_SOURCES=dskform.c utilopts.c utilopts.h formnames.c formnames.h
+bin_PROGRAMS=dsktrans dskform dskid md3serial
+dsktrans_SOURCES=dsktrans.c utilopts.c utilopts.h formname.c formname.h
+dskform_SOURCES=dskform.c utilopts.c utilopts.h formname.c formname.h
 dskid_SOURCES=dskid.c utilopts.c utilopts.h
+md3serial_SOURCES=md3serial.c utilopts.c utilopts.h
 
 noinst_PROGRAMS=@TOOLCLASSES@
 EXTRA_PROGRAMS=

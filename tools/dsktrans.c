@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include "libdsk.h"
 #include "utilopts.h"
-#include "formnames.h"
+#include "formname.h"
 #include <errno.h>
 
 #ifdef CPM
@@ -38,42 +38,51 @@
 static int md3 = 0;
 static int logical = 0;
 static dsk_format_t format = -1;
+static	char *intyp = NULL, *outtyp = NULL;
+static	char *incomp = NULL, *outcomp = NULL;
+static	int inside = -1, outside = -1;
 
-int do_copy(char *infile, char *outfile, char *intyp, char *outtyp, int inside, int outside);
+int do_copy(char *infile, char *outfile);
+
+
+int help(int argc, char **argv)
+{
+	fprintf(stderr, "Syntax: \n"
+                       "      %s in-image out-image { options }\n",
+			AV0);
+	fprintf(stderr,"\nOptions are:\n"
+		       "-itype <type>   type of input disc image\n"
+                       "-otype <type>   type of output disc image\n"
+                       "-iside <side>   Force side 0 or side 1 of input\n"
+                       "-oside <side>   Force side 0 or side 1 of output\n"
+                       "-md3            Defeat MicroDesign 3 copy protection\n"
+		       "-logical        Rearrange tracks in logical order\n"
+                       "                (Only useful when out-image type is 'raw' and reading discs\n"
+		       "                with non-IBM track layout (eg: 144FEAT 1.4Mb or ADFS 640k)\n"
+		       "-format         Force a specified format name\n");
+	fprintf(stderr,"\nDefault in-image type is autodetect."
+		               "\nDefault out-image type is DSK.\n\n");
+		
+	fprintf(stderr, "eg: %s /dev/fd0 myfile1.DSK\n"
+                        "    %s /dev/fd0 myfile2.DSK -side 1\n" 
+                        "    %s /dev/fd0 md3boot.dsk -md3\n" 
+                        "    %s myfile.DSK /dev/fd0 -otype floppy\n", 
+			AV0, AV0, AV0, AV0);
+	valid_formats();
+	return 1;
+}
+
 
 int main(int argc, char **argv)
 {
-	char *intyp, *outtyp;
-	int inside, outside;
 
-	if (argc < 3)
-	{
-		fprintf(stderr, "Syntax: \n"
-                        "      %s in-image out-image { options }\n",
-			AV0);
-		fprintf(stderr,"\nOptions are:\n"
-			       "-itype <type>   type of input disc image\n"
-                               "-otype <type>   type of output disc image\n"
-                               "-iside <side>   Force side 0 or side 1 of input\n"
-                               "-oside <side>   Force side 0 or side 1 of output\n"
-                               "-md3            Defeat MicroDesign 3 copy protection\n"
-			       "-logical        Rearrange tracks in logical order\n"
-                               "                (Only useful when out-image type is 'raw' and reading discs\n"
-			       "                with non-IBM track layout (eg: 144FEAT 1.4Mb or ADFS 640k)\n"
-			       "-format         Force a specified format name\n");
-		fprintf(stderr,"\nDefault in-image type is autodetect."
-		               "\nDefault out-image type is DSK.\n\n");
-		
-		fprintf(stderr, "eg: %s /dev/fd0 myfile1.DSK\n"
-                                "    %s /dev/fd0 myfile2.DSK -side 1\n" 
-                                "    %s /dev/fd0 md3boot.dsk -md3\n" 
-                                "    %s myfile.DSK /dev/fd0 -otype floppy\n", 
-				AV0, AV0, AV0, AV0);
-		valid_formats();
-		return 1;
-	}
+	if (find_arg("--version", argc, argv) > 0) return version(); 
+	if (argc < 3) return help(argc, argv);
+	if (find_arg("--help",    argc, argv) > 0) return help(argc, argv);
 	intyp     = check_type("-itype", argc, argv); 
         outtyp    = check_type("-otype", argc, argv);
+	incomp    = check_type("-icomp", argc, argv); 
+        outcomp   = check_type("-ocomp", argc, argv);
         inside    = check_forcehead("-iside", argc, argv);
         outside   = check_forcehead("-oside", argc, argv);
 	if (find_arg("-md3", argc, argv) > 0) md3 = 1;
@@ -81,15 +90,14 @@ int main(int argc, char **argv)
 	if (!outtyp) outtyp = "dsk";
         format    = check_format("-format", argc, argv);
 
-	return do_copy(argv[1], argv[2], intyp, outtyp, inside, outside);
+	return do_copy(argv[1], argv[2]);
 }
 
 
 
-int do_copy(char *infile, char *outfile, char *intyp, char *outtyp,
-	    int inside, int outside)
+int do_copy(char *infile, char *outfile)
 {
-	DSK_DRIVER *indr = NULL, *outdr = NULL;
+	DSK_PDRIVER indr = NULL, outdr = NULL;
 	dsk_err_t e;
 	dsk_pcyl_t cyl;
 	dsk_phead_t head;
@@ -98,9 +106,9 @@ int do_copy(char *infile, char *outfile, char *intyp, char *outtyp,
 	DSK_GEOMETRY dg;
 	char *op = "Opening";
 
-	        e = dsk_open (&indr,  infile,  intyp);
+	        e = dsk_open (&indr,  infile,  intyp, incomp);
 	if (!e) e = dsk_set_forcehead(indr, inside);
-	if (!e) e = dsk_creat(&outdr, outfile, outtyp);
+	if (!e) e = dsk_creat(&outdr, outfile, outtyp, outcomp);
 	if (!e) e = dsk_set_forcehead(outdr, outside);
 	if (format == -1)
 	{

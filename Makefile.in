@@ -90,15 +90,16 @@ VERSION = @VERSION@
 _ACJNI_JAVAC = @_ACJNI_JAVAC@
 uudecode = @uudecode@
 
-SUBDIRS = . include lib tools man
+SUBDIRS = . include lib tools man doc
 
-EXTRA_DIST = $(srcdir)/config/* $(srcdir)/doc/* config-w32.h $(srcdir)/dskwrite/*
+EXTRA_DIST = $(srcdir)/config/* 	    $(srcdir)/dskwrite/* 	    $(srcdir)/dos16ppd/Makefile      	    $(srcdir)/dos16ppd/errno.h       	    $(srcdir)/dos16ppd/config.h	     	    $(srcdir)/dos32gcc/Makefile	     	    $(srcdir)/dos32gcc/config.h      	    $(srcdir)/win16vc1/*.MAK         	    $(srcdir)/win16vc1/config.h      	    $(srcdir)/win16vc1/linux/*.h     	    $(srcdir)/win16vc1/sys/*.h       	    $(srcdir)/win16vc1/libdsk.def    	    $(srcdir)/win16bc5/*.ide         	    $(srcdir)/win16bc5/libdsk.def    	    $(srcdir)/win16bc5/config.h	     	    $(srcdir)/win32bc5/*.ide         	    $(srcdir)/win32bc5/libdsk.def    	    $(srcdir)/win32bc5/config.h	     	    $(srcdir)/win32vc6/config.h      	    $(srcdir)/win32vc6/*.dsp         	    $(srcdir)/win32vc6/*.dsw         
+
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = 
-DIST_COMMON =  README ./stamp-h.in Makefile.am Makefile.in acinclude.m4 \
-aclocal.m4 config.h.in configure configure.in
+DIST_COMMON =  README ./stamp-h.in ChangeLog Makefile.am Makefile.in \
+TODO acinclude.m4 aclocal.m4 config.h.in configure configure.in
 
 
 DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
@@ -277,8 +278,13 @@ distdir: $(DISTFILES)
 	-rm -rf $(distdir)
 	mkdir $(distdir)
 	-chmod 777 $(distdir)
-	$(mkinstalldirs) $(distdir)/$(srcdir)/config $(distdir)/$(srcdir)/doc \
-	   $(distdir)/$(srcdir)/dskwrite
+	$(mkinstalldirs) $(distdir)/$(srcdir)/config \
+	   $(distdir)/$(srcdir)/dos16ppd $(distdir)/$(srcdir)/dos32gcc \
+	   $(distdir)/$(srcdir)/dskwrite $(distdir)/$(srcdir)/win16bc5 \
+	   $(distdir)/$(srcdir)/win16vc1 \
+	   $(distdir)/$(srcdir)/win16vc1/linux \
+	   $(distdir)/$(srcdir)/win16vc1/sys \
+	   $(distdir)/$(srcdir)/win32bc5 $(distdir)/$(srcdir)/win32vc6
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \

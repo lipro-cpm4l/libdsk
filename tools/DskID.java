@@ -27,20 +27,29 @@ import uk.co.demon.seasip.libdsk.*;
 
 public class DskID
 {
+	static void help()
+	{
+		System.err.println("Syntax: java DskID <dskimage> { -type <type> } { -side <side> }");
+		System.err.println("Default type is autodetect.\n");
+		System.err.println("eg: java DskID myfile.DSK");
+		System.err.println("    java DskID /dev/fd0 -type floppy -side 1");	
+		System.exit(1);
+	}
+
+
 	public static void main(String args[])
 	{
 		String outtyp = null;
+		String outcomp = null;
 		int forcehead = -1;
 
-		if (args.length < 1)
-		{
-			System.err.println("Syntax: java DskID <dskimage> { -type <type> } { -side <side> }");
-			System.err.println("Default type is autodetect.\n");
-			System.err.println("eg: java DskID myfile.DSK");
-			System.err.println("    java DskID /dev/fd0 -type floppy -side 1");	
-			System.exit(1);
-		}
+
+                if (UtilOpts.findArg("--help", args) >= 0) help();
+                if (UtilOpts.findArg("--version", args) >= 0) UtilOpts.version();
+                if (args.length < 1) help();
+
 		outtyp    = UtilOpts.checkType("-type", args);
+		outcomp   = UtilOpts.checkType("-comp", args);
 		forcehead = UtilOpts.checkForceHead("-side", args);	
 
 		Drive outdr = null;
@@ -49,11 +58,12 @@ public class DskID
 
 		try
 		{
-			outdr = LibDsk.open(args[0], outtyp);
+			outdr = LibDsk.open(args[0], outtyp, outcomp);
 			outdr.setForceHead(forcehead);
 			outdr.probeGeometry(dg);
 				
-			System.out.println("Driver: " + outdr.getDriverDesc());
+			System.out.println("Driver:        " + outdr.getDriverDesc());
+			System.out.println("Compression:   " + outdr.getCompressDesc());
 			
 			if (forcehead >= 0) System.out.println("[Forced to read from side"
 					+ Integer.toString(forcehead) +" ]");

@@ -37,11 +37,11 @@ int main(int argc, char **argv)
 int do_test()
 {	
 	DSK_GEOMETRY dg;
-	DSK_DRIVER *dr;
+	DSK_PDRIVER dr;
 	dsk_err_t e;
 	char buf[512];
 
-	e = dsk_open(&dr, "/dev/fd0", NULL);
+	e = dsk_open(&dr, "/dev/fd0", NULL, NULL);
 	if (!e) e = dsk_getgeom(dr, &dg);
 	if (!e) e = dsk_pread(dr, &dg, buf, 0, 1, 1);
 	if (!e) e = dsk_close(&dr);

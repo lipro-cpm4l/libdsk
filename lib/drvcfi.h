@@ -34,7 +34,7 @@ typedef struct
 	char *cfi_filename;
 	int   cfi_readonly;
 	CFI_TRACK *cfi_tracks;
-	int   cfi_ntracks;
+	dsk_ltrack_t cfi_ntracks;
 	int   cfi_dirty;
 
 } CFI_DSK_DRIVER;

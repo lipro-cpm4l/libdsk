@@ -20,7 +20,7 @@
 .\" Author contact information:
 .\" John Elliott: email: jce@seasip.demon.co.uk
 .\"
-.TH dskform 1 "7 April, 2002" "Version 0.8.2" "Emulators"
+.TH dskform 1 "20 April, 2002" "Version 0.9.0" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -36,6 +36,7 @@ dskform - floppy or image file formatter for emulated machines
 .RI [ "-format FORMAT" ]
 .RI [ "-type TYPE" ]
 .RI [ "-side SIDE" ]
+.RI [ "-comp COMP" ]
 .P
 .PD 1
 .\"
@@ -67,8 +68,8 @@ Select according to the disk image file. This is the default.
 .B dsk
 Use the DSK (CPCEmu format) image driver.
 .TP
-.B dqk
-Use the DQK (compressed CPCEmu format) image driver.
+.B edsk
+Use the extended version of the DSK format.
 .TP
 .B floppy
 Use the floppy driver.
@@ -83,6 +84,18 @@ Use the CFI (DOS fdcopy format) image driver.
 .TP
 .B raw
 Use the raw driver.
+.RE
+.TP
+.B -comp COMP
+Compress the disc image that is being generated (has no
+effect when formatting a real floppy disc).
+.RS
+.TP 8
+.B sq
+Huffman compressed (SQ / USQ).
+.TP
+.B gz
+Gzipped (gzip / gunzip).
 .RE
 
 .TP
@@ -135,6 +148,12 @@ PCW 800K (XCF2DD)
 .TP
 .I pcw200
 PCW 200K (XCF2)
+.TP
+.I bbc100
+BBC Micro DFS (single sided, 40 tracks)
+.TP
+.I bbc200
+BBC Micro DFS (single sided, 80 tracks)
 
 .\"
 .\"------------------------------------------------------------------

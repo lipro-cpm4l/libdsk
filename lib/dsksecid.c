@@ -24,7 +24,7 @@
 
 
 /* Read a random sector header from current track */
-dsk_err_t dsk_psecid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_psecid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                                 dsk_pcyl_t cylinder, dsk_phead_t head,
                                 DSK_FORMAT *result)
 {
@@ -39,7 +39,7 @@ dsk_err_t dsk_psecid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 }
 
 
-dsk_err_t dsk_lsecid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_lsecid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                                 dsk_ltrack_t track, DSK_FORMAT *result)
 {
         dsk_err_t e;

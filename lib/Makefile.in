@@ -109,8 +109,8 @@ EXTRA_DIST = $(CLASSDPRE)/Drive.java 	   $(CLASSDPRE)/DskException.java 	   $(CL
 # If interfaces have been removed set the right-hand number to 0.
 # 
 #
-libdsk_la_LDFLAGS = -version-info 1:0:1
-libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c 		   dsklphys.c dskfmt.c   dskopen.c  dskpars.c 		   dskerror.c dskseek.c  dsksecid.c dskgeom.c 		   dsktread.c dsksgeom.c dskjni.c 		   drv.h drvi.h drivers.h drivers.inc 		   drvlinux.h drvlinux.c 		   drvwin32.h drvwin32.c w95defs.h 		   drvcpcem.h drvcpcem.c 		   drvdqk.h   drvdqk.c 		   drvposix.h drvposix.c 		   drvmyz80.h drvmyz80.c 		   drvcfi.h   drvcfi.c 
+libdsk_la_LDFLAGS = -version-info 2:2:0
+libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c 		   dsklphys.c dskfmt.c   dskopen.c  dskpars.c 		   dskerror.c dskseek.c  dsksecid.c dskgeom.c 		   dsktread.c dsksgeom.c dskjni.c 		   comp.h compi.h compress.h compress.inc compress.c 		   compsq.c compsq.h 		   compgz.c compgz.h 		   compbz2.c compbz2.h 		   drv.h drvi.h drivers.h drivers.inc 		   drvlinux.h drvlinux.c 		   drvwin32.h drvwin32.c w95defs.h 		   drvwin16.h drvwin16.c w16defs.h 		   drvdos16.h drvdos16.c 		   drvdos32.h drvdos32.c 		   drvcpcem.h drvcpcem.c 		   drvposix.h drvposix.c 		   drvmyz80.h drvmyz80.c 		   drvcfi.h   drvcfi.c 
 
 
 JARCLASSES = $(CLASSDPRE)/Drive.class 	   $(CLASSDPRE)/DskException.class 	   $(CLASSDPRE)/FormatData.class 	   $(CLASSDPRE)/FormatType.class 	   $(CLASSDPRE)/Geometry.class 	   $(CLASSDPRE)/LibDsk.class
@@ -131,8 +131,9 @@ LIBS = @LIBS@
 libdsk_la_LIBADD = 
 libdsk_la_OBJECTS =  dskread.lo dskwrite.lo dskcheck.lo dskstat.lo \
 dsklphys.lo dskfmt.lo dskopen.lo dskpars.lo dskerror.lo dskseek.lo \
-dsksecid.lo dskgeom.lo dsktread.lo dsksgeom.lo dskjni.lo drvlinux.lo \
-drvwin32.lo drvcpcem.lo drvdqk.lo drvposix.lo drvmyz80.lo drvcfi.lo
+dsksecid.lo dskgeom.lo dsktread.lo dsksgeom.lo dskjni.lo compress.lo \
+compsq.lo compgz.lo compbz2.lo drvlinux.lo drvwin32.lo drvwin16.lo \
+drvdos16.lo drvdos32.lo drvcpcem.lo drvposix.lo drvmyz80.lo drvcfi.lo
 noinst_PROGRAMS =  @LIBDSKJAR@
 PROGRAMS =  $(noinst_PROGRAMS)
 
@@ -288,10 +289,23 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
+compbz2.lo compbz2.o : compbz2.c compi.h ../config.h ../include/libdsk.h \
+	compress.h compbz2.h
+compgz.lo compgz.o : compgz.c compi.h ../config.h ../include/libdsk.h \
+	compress.h compgz.h
+compress.lo compress.o : compress.c drvi.h ../config.h \
+	../include/libdsk.h drv.h compi.h compress.h comp.h compsq.h \
+	compgz.h compbz2.h compress.inc
+compsq.lo compsq.o : compsq.c compi.h ../config.h ../include/libdsk.h \
+	compress.h compsq.h
 drvcfi.lo drvcfi.o : drvcfi.c ../include/libdsk.h drvi.h ../config.h \
 	drv.h drvcfi.h
 drvcpcem.lo drvcpcem.o : drvcpcem.c drvi.h ../config.h \
 	../include/libdsk.h drv.h drvcpcem.h
+drvdos16.lo drvdos16.o : drvdos16.c drvi.h ../config.h \
+	../include/libdsk.h drv.h drvdos16.h
+drvdos32.lo drvdos32.o : drvdos32.c drvi.h ../config.h \
+	../include/libdsk.h drv.h drvdos32.h
 drvdqk.lo drvdqk.o : drvdqk.c drvi.h ../config.h ../include/libdsk.h \
 	drv.h drvdqk.h
 drvlinux.lo drvlinux.o : drvlinux.c drvi.h ../config.h \
@@ -300,6 +314,8 @@ drvmyz80.lo drvmyz80.o : drvmyz80.c ../include/libdsk.h drvi.h \
 	../config.h drv.h drvmyz80.h
 drvposix.lo drvposix.o : drvposix.c ../include/libdsk.h drvi.h \
 	../config.h drv.h drvposix.h
+drvwin16.lo drvwin16.o : drvwin16.c drvi.h ../config.h \
+	../include/libdsk.h drv.h drvwin16.h
 drvwin32.lo drvwin32.o : drvwin32.c drvi.h ../config.h \
 	../include/libdsk.h drv.h drvwin32.h
 dskcheck.lo dskcheck.o : dskcheck.c drvi.h ../config.h \
@@ -307,7 +323,7 @@ dskcheck.lo dskcheck.o : dskcheck.c drvi.h ../config.h \
 dskerror.lo dskerror.o : dskerror.c drvi.h ../config.h \
 	../include/libdsk.h drv.h
 dskfmt.lo dskfmt.o : dskfmt.c drvi.h ../config.h ../include/libdsk.h \
-	drv.h
+	drv.h compi.h compress.h
 dskgeom.lo dskgeom.o : dskgeom.c drvi.h ../config.h ../include/libdsk.h \
 	drv.h
 dskjni.lo dskjni.o : dskjni.c ../config.h ../include/libdsk.h \
@@ -318,7 +334,7 @@ dskjni.lo dskjni.o : dskjni.c ../config.h ../include/libdsk.h \
 dsklphys.lo dsklphys.o : dsklphys.c drvi.h ../config.h \
 	../include/libdsk.h drv.h
 dskopen.lo dskopen.o : dskopen.c drvi.h ../config.h ../include/libdsk.h \
-	drv.h drivers.h drivers.inc
+	drv.h drivers.h compress.h drivers.inc
 dskpars.lo dskpars.o : dskpars.c drvi.h ../config.h ../include/libdsk.h \
 	drv.h
 dskread.lo dskread.o : dskread.c drvi.h ../config.h ../include/libdsk.h \
@@ -330,11 +346,11 @@ dskseek.lo dskseek.o : dskseek.c drvi.h ../config.h ../include/libdsk.h \
 dsksgeom.lo dsksgeom.o : dsksgeom.c drvi.h ../config.h \
 	../include/libdsk.h drv.h
 dskstat.lo dskstat.o : dskstat.c drvi.h ../config.h ../include/libdsk.h \
-	drv.h
+	drv.h compi.h compress.h
 dsktread.lo dsktread.o : dsktread.c drvi.h ../config.h \
 	../include/libdsk.h drv.h
 dskwrite.lo dskwrite.o : dskwrite.c drvi.h ../config.h \
-	../include/libdsk.h drv.h
+	../include/libdsk.h drv.h compi.h compress.h
 
 info-am:
 info: info-am
@@ -419,7 +435,7 @@ maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 libdsk.jar:	$(JARCLASSES)
 	$(JAR) c0f $@ uk/*
-	$(JAVADOC) -d $(top_srcdir)/doc $(CLASSCPRE)
+	$(JAVADOC) -d $(top_srcdir)/doc/jni $(CLASSCPRE)
 
 $(CLASSDPRE)/%.class:   $(srcdir)/$(CLASSDPRE)/%.java
 	here=`pwd` && cd $(srcdir) && $(JAVAC) -d $$here $<

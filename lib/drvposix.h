@@ -27,7 +27,7 @@ typedef struct
         DSK_DRIVER px_super;
         FILE *px_fp;
 	int   px_readonly;
-
+	unsigned long  px_filesize;
 } POSIX_DSK_DRIVER;
 
 dsk_err_t posix_open(DSK_DRIVER *self, const char *filename);

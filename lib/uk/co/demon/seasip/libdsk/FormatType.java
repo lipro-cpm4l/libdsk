@@ -83,6 +83,12 @@ public class FormatType
 /** 10 sectors, 1 side, 40 tracks, 512 byte sectors. 
    First sector number is 1. This corresponds to the PCW XCF2 format. */
 	public static final int FMT_200K = 17;
+/** 10 sectors, 1 side, 40 tracks, 256 byte sectors, MFM. 
+   First sector number is 0. This corresponds to the Acorn DFS 40-track format. */
+	public static final int FMT_BBC100 = 18;
+/** 10 sectors, 1 side, 80 tracks, 256 byte sectors, MFM.
+   First sector number is 0. This corresponds to the Acorn DFS 80-track format. */
+	public static final int FMT_BBC200 = 19;
 
 /** Initialise a Geometry object with a standard format. 
  * @param formatId One of the format IDs provided by this class.

@@ -22,7 +22,7 @@
 
 #include "drvi.h"
 
-dsk_err_t dsk_set_forcehead(DSK_DRIVER *self, int force)
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_set_forcehead(DSK_DRIVER *self, int force)
 {
 	if (!self) return DSK_ERR_BADPTR;
 	switch(force)
@@ -36,7 +36,7 @@ dsk_err_t dsk_set_forcehead(DSK_DRIVER *self, int force)
 }
 
 
-dsk_err_t dsk_get_forcehead(DSK_DRIVER *self, int *force)
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_get_forcehead(DSK_DRIVER *self, int *force)
 {
 	if (!self) return DSK_ERR_BADPTR;
 	if (force) *force = self->dr_forcehead;

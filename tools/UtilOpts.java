@@ -23,6 +23,14 @@
 
 class UtilOpts
 {
+	static void version()
+	{
+		System.out.print("libdsk version ");
+		System.out.println(uk.co.demon.seasip.libdsk.LibDsk.version());
+		System.exit(0);
+	}
+
+
 	static int findArg(String arg, String args[])
 	{
 		int n;
