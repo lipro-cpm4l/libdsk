@@ -1,0 +1,842 @@
+LIBDSK v0.8.2
+=============
+
+  This library is free software, released under the GNU Library GPL. See
+COPYING for details.
+
+LIBDSK is a library for accessing floppy drives and disc images transparently. 
+It currently supports the following disc image formats:
+
+* Raw "dd if=foo of=bar" images;
+* CPCEMU-format .DSK images (normal and extended);
+* Huffman-compressed CPCEMU files (.DQK); 
+* MYZ80-format hard drive images;
+* CFI-format disc images, as produced by FDCOPY.COM under DOS and used to 
+ distribute some Amstrad system discs;
+* The floppy drive under Linux;
+* The floppy drive under Windows NT/2000/XP (Win32);
+* The floppy drive under Windows 95/98/ME   (Win32c).
+
+Note that the two Windows cases are, to all intents and purposes, separate 
+drivers. The functionality exposed by the underlying OS is completely
+different, with Win32c being considerably more flexible than Win32.
+
+What's new?
+===========
+
+* [0.8.2] Initial support for .DQK (compressed CPCEMU .DSK) added. This 
+ has not been extensively tested, but the example utilities are able to
+ create and read correct .DQK files.
+  200k (XCF2) format added to list of standard formats.
+
+* [0.8.1] Darren Salt's manual pages have been added to the main distribution.
+
+* [0.8.0] Java Native Interface bindings (requires JDK v1.1 or later). These are 
+ not built by default; to build them, configure with "--with-jni".
+ Example Java versions of dskid, dskform and dsktrans are included.
+
+Architecture
+============
+
+  LIBDSK is composed of a fixed core (files named dsk*.c) and a number of 
+drivers (files named drv*.c). When you open an image or a drive (using
+dsk_open() or dsk_creat() ) then a driver is chosen. This driver is then
+used until it's closed (dsk_close()).
+  Each driver is identified by a name. To get a list of available drivers, use 
+dsk_type_enum(). To get the driver that is being used by an open DSK image,
+use dsk_drvname() or dsk_drvdesc().
+
+Logical and physical sectors
+============================
+
+  LIBDSK has two models of disc geometry. One is as a linear array of 
+"logical" sectors - for example, a 720k floppy appears as 1440 512-byte sectors
+numbered 0 to 1439. The other locates each sector using a 
+(Cylinder, Head, Sector) triple - so on the 720k floppy described earlier, 
+sectors would run from (0,0,1) to (79,1,9).
+  Internally, all LIBDSK drivers are written to use the Cylinder/Head/Sector
+model. For those calls which take parameters in logical sectors, LIBDSK uses
+the information in a DSK_GEOMETRY structure to convert to C/H/S. DSK_GEOMETRY
+also contains information such as the sector size and data rate used to 
+access a given disc.
+  Those functions which deal with whole tracks (such as the command to format
+a track) use logical tracks and (cylinder,head) pairs instead.
+  To initialise a DSK_GEOMETRY structure, either:
+	* call dsk_getgeom() to try and detect it from the disc;
+or	* call dg_stdformat() to select one of the "standard" formats that
+	 LIBDSK knows about;
+or	* call dg_dosgeom() / dg_cpm86geom() / dg_pcwgeom() to initialise
+	 it from a copy of a DOS / CP/M86 / PCW boot sector;
+or	* Set all the members manually.
+
+_______________________________________________________________________________
+
+LIBDSK Function Reference
+=========================
+
+dsk_open
+========
+
+Open an existing disc image.
+
+dsk_err_t dsk_open(DSK_DRIVER **self, const char *filename, const char *type)
+
+Enter with:
+	* "self" is the address of a pointer to a DSK_DRIVER. On return, the
+	  pointer will be a valid pointer (if the operation succeeded) or 
+	  NULL (if the operation failed).
+	* "filename" is the name of the disc image file. On Win32, "A:" and
+	  "B:" refer to the two floppy drives. 
+	* "type" is NULL to detect the disc image format automatically, or
+	  the name of a LIBDSK driver to force that driver to be used. See
+	  dsk_type_enum() below.
+Returns:
+	A dsk_err_t, which will be 0 (DSK_ERR_OK) if successful, or a 
+	negative integer if failed. See dsk_strerror().
+	The error DSK_ERR_NOTME means either that no driver was able to open
+	the disc / disc image (if "type" was NULL) or that the requested 
+	driver could not open the file (if "type" was not NULL).
+
+Standard LIBDSK drivers are:
+ "dsk"   : Disc image in the DSK/EDSK format used by CPCEMU.
+ "dqk"   : Disc image in the DSK/EDSK format used by CPCEMU, compressed by
+          Richard Greenlaw's "Squeeze" algorithm (Huffman coding). For 
+	  more details see the section "DQK files", below.
+ "raw"   : Raw disc image - as produced by "dd if=/dev/fd0 of=image"
+ "floppy": Host system's floppy drive.
+ "myz80" : MYZ80 hard drive image, which is /nearly/ the same as "raw" but 
+	  has a 256 byte header.
+ "cfi"   : Compressed floppy image, as produced by FDCOPY.COM under DOS. 
+          Its format is described in cfi.html.
+
+DQK Files
+=========
+
+  A DQK file is a .DSK file compressed using Richard Greenlaw's Squeeze 
+file format (originally from CP/M as SQ.COM, and later built in to NSWP.COM; 
+versions also exist for DOS and UNIX). SQ was used in preference to 
+more efficient compressors such as gzip because it can be readily decoded 
+on 8-bit and 16-bit computers.
+
+  The original reason for DQK files was software distribution. A disc image of
+a 180k disc won't fit on a 180k disc, owing to various overheads. However,
+the compressed DQK version may fit onto such a disc, and leave room for 
+a tool to write the DQK back out as well. 
+
+  Such a tool has been included in the "dskwrite" directory in this 
+distribution. It contains the following files:
+
+* dskwrite.com: Program to write .DSK or .DQK files out to a real disc. The
+               .COM file works on PCs, Amstrad PCWs and Sinclair Spectrum +3s.
+* dskwrite.txt: Documentation for dskwrite.
+* dskwrite.z80: Z80 source for the CP/M version.
+* dskwrite.asm: 8086 source for the DOS version.
+* dskwrsea.com: The dskwrite distribution file - a self-extracting archive. 
+	       It will self-extract under CP/M or DOS.
+
+  Note that the files in the "dskwrite" directory are not GPLed or LGPLed. 
+They are public domain. You may do whatsoever you please with it.
+
+  LibDsk has been given .DQK support so that .DQK files don't have to be
+created and compressed in a two-state process. 
+
+dsk_creat
+=========
+
+Create a new disc image.
+
+dsk_err_t dsk_creat(DSK_DRIVER **self, const char *filename, const char *type)
+
+In the case of floppy drives, this acts exactly as dsk_open(). For image 
+files, the file will be deleted and recreated. 
+Parameters and results are as for dsk_open(), except that "type" cannot be
+NULL. Instead it must specify the type of disc image to be created.
+
+dsk_close
+=========
+
+Close a disc image.
+
+dsk_err_t dsk_close(DSK_DRIVER **self)
+
+Pass the address of a valid pointer to a DSK_DRIVER. On return, the pointer
+will have been set to NULL and memory freed. 
+
+dsk_pread, dsk_lread
+====================
+
+dsk_err_t dsk_pread(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              void *buf, dsk_pcyl_t cylinder,
+                              dsk_phead_t head, dsk_psect_t sector)
+dsk_err_t dsk_lread(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              void *buf, dsk_lsect_t sector)
+
+  These functions read a single sector from the disc. There are two of
+them, depending on whether you are using logical or physical sector addresses.
+
+Enter with:
+	* "self" is a pointer to an open DSK_DRIVER structure 
+	* "geom" points to the geometry for the drive
+	* "buf"  is the buffer into which data will be loaded
+	* "cylinder", "head" and "sector" (dsk_pread) or "sector" (dsk_lread)
+	 give the location of the sector.
+Returns:
+	* If successful, DSK_ERR_OK. Otherwise, a negative DSK_ERR_* value.
+  	* If the driver cannot read sectors, DSK_ERR_NOTIMPL will be returned.
+
+dsk_pwrite, dsk_lwrite
+======================
+dsk_err_t dsk_pwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              const void *buf, dsk_pcyl_t cylinder,
+                              dsk_phead_t head, dsk_psect_t sector)
+dsk_err_t dsk_lwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              const void *buf, dsk_lsect_t sector)
+
+  As dsk_pread / dsk_lread, but write their buffers to disc rather than 
+reading them from disc.
+  If the driver cannot write sectors, DSK_ERR_NOTIMPL will be returned.
+
+dsk_pcheck, dsk_lcheck
+======================
+dsk_err_t dsk_pcheck(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              const void *buf, dsk_pcyl_t cylinder,
+                              dsk_phead_t head, dsk_psect_t sector)
+dsk_err_t dsk_lcheck(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              const void *buf, dsk_lsect_t sector)
+
+  As dsk_pread / dsk_lread, but rather than reading their buffers from disc, 
+they compare the contents of their buffers with the data already on the disc.
+If the data match, the functions return DSK_ERR_OK. If there is a mismatch, 
+they return DSK_ERR_MISMATCH. In case of error, other DSK_ERR_* values are
+returned.
+  If the driver cannot read sectors, DSK_ERR_NOTIMPL will be returned.
+
+dsk_pformat, dsk_lformat
+========================
+dsk_err_t dsk_pformat(DSK_DRIVER *self, /*const*/ DSK_GEOMETRY *geom,
+				dsk_pcyl_t cylinder, dsk_phead_t head,
+				const DSK_FORMAT *format, unsigned char filler)
+dsk_err_t dsk_lformat(DSK_DRIVER *self, /*const*/ DSK_GEOMETRY *geom,
+				dsk_ltrack_t track, const DSK_FORMAT *format, 
+				unsigned char filler)
+
+  Format a disc track. Enter with:
+	* "self" is a pointer to an open DSK_DRIVER structure 
+	* "geom" points to the geometry for the drive. The formatter
+          may modify this if (for example) it's asked to format track 41
+          of a 40-track drive. 
+	* "cylinder" / "head" (dsk_pformat) or "track" (dsk_lformat) give
+	 the location of the track to format.
+	* "format" should be an array of (geom->dg_sectors) DSK_FORMAT 
+	 structures. These structures must contain sector headers for the 
+	 track being formatted. For example, to format the first track of
+	 a 720k disc, you would pass in an array of 9 such structures:
+	 { 0, 0, 1, 512 }, { 0, 0, 2, 512, } ..., { 0, 0, 9, 512 }
+	* "filler" should be the filler byte to use. Currently the Win32 and
+	 Win32c drivers ignore this parameter.
+  If the driver cannot format tracks, DSK_ERR_NOTIMPL will be returned.
+
+  Note that when formatting a .DSK file that has more than one head, you 
+must format cylinder 0 for each head before formatting other cylinders.
+
+dsk_apform, dsk_alform
+======================
+dsk_err_t dsk_apform(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+				dsk_pcyl_t cylinder, dsk_phead_t head,
+				unsigned char filler)
+dsk_err_t dsk_alform(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+				dsk_ltrack_t track, unsigned char filler)
+
+  These function calls behave as dsk_pformat() and dsk_lformat() above, 
+except that the sector headers are automatically generated. This saves 
+time and trouble setting up sector headers on discs with standard layouts
+such as DOS, PCW or Linux floppies.
+  If the driver cannot format tracks, DSK_ERR_NOTIMPL will be returned.
+
+dsk_psecid, dsk_lsecid
+======================
+
+dsk_err_t dsk_psecid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+				dsk_pcyl_t cylinder, dsk_phead_t head,
+				DSK_FORMAT *result)
+dsk_err_t dsk_lsecid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+				dsk_ltrack_t track, DSK_FORMAT *result)
+
+  Read a sector ID from the given track. This can be used to probe for discs
+with oddly-numbered sectors (eg, numbered 65-74). 
+  Enter with:
+	* "self" is a pointer to an open DSK_DRIVER structure 
+	* "geom" points to the geometry for the drive
+	* "cylinder" / "head" (dsk_psecid) or "track" (dsk_lsecid) give
+	 the location of the track to read the sector from.
+	* "result" points to an uninitialised DSK_FORMAT structure.
+  On return:
+	* If successful, the buffer at "result" will be initialised with the
+	 sector header found, and DSK_ERR_OK will be returned.
+	* If the driver cannot provide this functionality (for example, the
+	 Win32 driver), DSK_ERR_NOTIMPL will be returned.
+
+  Note that the Win32c driver implements a limited version of this call,
+which will work on normal DOS / CP/M86 / PCW discs and CPC discs. However
+it will not be usable for other purposes.
+
+dsk_xread, dsk_xwrite
+=====================
+dsk_err_t dsk_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
+                            dsk_pcyl_t cylinder, dsk_phead_t head,
+                            dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
+                            dsk_psect_t sector, size_t sector_len);
+dsk_err_t dsk_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                            const void *buf,
+                            dsk_pcyl_t cylinder, dsk_phead_t head,
+                            dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
+                            dsk_psect_t sector, size_t sector_len);
+
+
+  dsk_xread() and dsk_xwrite() are extended versions of dsk_pread() and 
+dsk_pwrite(). They allow the caller to read/write sectors whose sector ID 
+differs from the physical location of the sector. The "cylinder" and "head"
+arguments specify where to look; the "cyl_expected" and "head_expected" 
+are the values to search for in the sector header.
+  These functions are only supported by the CPCEMU driver and the Linux 
+floppy driver. Other drivers will return DSK_ERR_NOTIMPL.
+  You should not normally need to call these functions. They have been 
+provided to support programs that emulate a uPD765A controller.
+
+dsk_ltread, dsk_ptread, dsk_xtread
+==================================
+
+dsk_err_t dsk_ltread(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              void *buf, dsk_ltrack_t track)
+dsk_err_t dsk_ptread(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              void *buf, dsk_pcyl_t cylinder,
+                              dsk_phead_t head)
+dsk_err_t dsk_xtread(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              void *buf, dsk_pcyl_t cylinder,
+                              dsk_phead_t head, dsk_pcyl_t cyl_expected,
+                              dsk_phead_t head_expected)
+
+  These functions read a track from the disc, using the FDC's "READ TRACK" 
+command. There are three of them - logical, physical and extended physical.
+
+  If the driver does not support this functionality, LIBDSK will attempt
+to simulate it using multiple sector reads.
+
+Enter with:
+	* "self" is a pointer to an open DSK_DRIVER structure 
+	* "geom" points to the geometry for the drive
+	* "buf"  is the buffer into which data will be loaded
+	* "cylinder" and "head" (dsk_ptread, dsk_xtread) or "track" 
+         (dsk_ltread) give the location of the sector.
+	* (dsk_xtread) "cyl_expected" and "head_expected" are used as the 
+         values to search for in the sector headers.
+Returns:
+	* If successful, DSK_ERR_OK. Otherwise, a negative DSK_ERR_* value.
+  	* (dsk_xtread only) If the driver does not support extended sector
+         reads/writes, then DSK_ERR_NOTIMPL will be returned.
+
+dsk_lseek, dsk_pseek
+====================
+dsk_err_t dsk_lseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                                dsk_ltrack_t track); 
+dsk_err_t dsk_pseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                                dsk_pcyl_t cylinder, dsk_phead_t head);
+
+  Seek to a given cylinder. Only the CPCEMU driver and the Linux floppy 
+driver support this; other drivers return DSK_ERR_NOTIMPL.
+  You should not normally need to call these functions. They have been 
+provided to support programs that emulate a uPD765A controller.
+
+dsk_drive_status
+================
+dsk_err_t dsk_drive_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+				dsk_phead_t head, unsigned char *result);
+
+  Get the drive's status (ready, read-only etc.). The byte "result" will
+have one or more of the following bits set:
+
+   DSK_ST3_FAULT:    Drive fault
+   DSK_ST3_RO:       Read-only
+   DSK_ST3_READY:    Ready
+   DSK_ST3_TRACK0:   Head is over track 0
+   DSK_ST3_DSDRIVE:  Drive is double-sided
+   DSK_ST3_HEAD1:    Current head is head 1, not head 0. Usually this
+                     just depends on the value of the "head" parameter to  
+                     this function.
+  Which bits will be "live" depends on which driver is in use, but the 
+most trustworthy will be DSK_ST3_READY and DSK_ST3_RO. This function will 
+never return DSK_ERR_NOTIMPL; if the facility is not provided by the 
+driver, a default version will be used.
+  
+dsk_getgeom
+===========
+
+dsk_err_t dsk_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
+
+  This attempts to determine the geometry of a disc (number of cylinders, 
+tracks, sectors etc.) by loading the boot sector. It understands DOS, CP/M-86
+and PCW boot sectors. 
+  If the geometry could be guessed, then "geom" will be initialised and 
+DSK_ERR_OK will be returned. If no guess could be made, then DSK_ERR_BADFMT
+will be returned. Other values will result if the disc could not be read.
+
+  Some drivers (in particular the Win32 and MYZ80 drivers) only support 
+certain fixed disc geometries. In this case, the geometry returned will 
+reflect what the driver can use, rather than what the boot sector says.
+
+dg_*geom
+========
+
+dsk_err_t dg_dosgeom(DSK_GEOMETRY *self, const unsigned char *bootsect)
+dsk_err_t dg_pcwgeom(DSK_GEOMETRY *self, const unsigned char *bootsect)
+dsk_err_t dg_cpm86geom(DSK_GEOMETRY *self, const unsigned char *bootsect)
+
+  These functions are used by dsk_getgeom(), but can also be called 
+independently. Enter them with:
+	* "self" is the structure to initialise;
+	* "bootsect" is the boot sector to initialise the structure from.
+
+  Returns DSK_ERR_BADFMT if the sector does not contain a suitable disc 
+specification, or DSK_ERR_OK otherwise.
+
+dg_stdformat
+============
+
+dsk_err_t dg_stdformat(DSK_GEOMETRY *self, dsk_format_t formatid, 
+		dsk_cchar_t *fname, dsk_cchar_t *fdesc)
+
+  Initialises a DSK_GEOMETRY structure with one of the standard formats 
+LIBDSK knows about. Formats are:
+
+FMT_180K:	180k, 9 512 byte sectors, 40 tracks, 1 side
+FMT_200K:	200k, 10 512 byte sectors, 40 tracks, 1 side
+FMT_CPCSYS:	Amstrad CPC system format - as FMT_180K, but physical sectors
+		are numbered 65-73
+FMT_CPCDATA:	Amstrad CPC data format - as FMT_180K, but physical sectors 
+		are numbered 193-201
+FMT_720K:	720k, 9 512 byte sectors, 80 tracks, 2 sides
+FMT_800K:	800k, 10 512 byte sectors, 80 tracks, 2 sides
+FMT_1440K:	1.4M, 18 512 byte sectors, 80 tracks, 2 sides
+FMT_160K:	160k, 8 512 byte sectors, 40 tracks, 1 side
+FMT_320K:	As FMT_160K, but 2 sides 
+FMT_360K:	As FMT_180K, but 2 sides
+FMT_720F:	As FMT_720K, but the physical/logical sector mapping is 
+		"out-and-back" rather than "alternate sides". See the section
+		on the DSK_GEOMETRY structure below.
+FMT_1200F:	As FMT_720F, but with 15 sectors
+FMT_1440F: 	As FMT_720F, but with 18 sectors
+FMT_ACORN160:	Acorn 40 track single sided 160k (used by ADFS 'S' format)
+FMT_ACORN320:	Acorn 80 track single sided 320k (used by ADFS 'M' format)
+FMT_ACORN640:	Acorn 80 track double sided 640k (used by ADFS 'L' format)
+FMT_ACORN800:	Acorn 80 track double sided 800k (used by ADFS 'D' and 'E')
+FMT_ACORN1600:	Acorn 80 track high density 1600k (used by ADFS 'I' format)
+
+  If the "fname" is not NULL, it will be pointed at a short name for the 
+format (suitable for use as a program option; see tools/dskform.c). If the 
+"fdesc" is not NULL, it will be pointed at a description string for the 
+format. With these two, it's possible to enumerate geometries supported by 
+the library without keeping a separate list in your program - see 
+tools/formnames.c for example code that does this.
+
+dsk_*_forcehead
+===============
+
+dsk_err_t dsk_set_forcehead(DSK_DRIVER *self, int force)
+dsk_err_t dsk_get_forcehead(DSK_DRIVER *self, int *force)
+
+  (This option is only effective for the Linux floppy driver)
+
+  Forces the driver to ignore the head number passed to it and always use 
+either side 0 or side 1 of the disc. This is used to read discs recorded on
+PCW / CPC / Spectrum+3 add-on 3.5" drives. Instead of the system software 
+being programmed to use both sides of the disc, a switch on the drive was used
+to set which side was being used. Thus discs would end up with both sides 
+saying they were head 0.
+
+  Anyway, when using dsk_set_forcehead, pass:
+-1: Normal - the head passed as a parameter to other calls is used.
+ 0: Always use side 0.
+ 1: Always use side 1.
+
+dsk_type_enum
+=============
+dsk_err_t dsk_type_enum(int index, char **drvname)
+
+  If "index" is in the range 0 -> number of LIBDSK drivers, (*drvname) is set 
+to the short name for that driver (eg: "myz80" or "raw"). If not, (*drvname)
+is set to NULL.
+
+dsk_drvname, dsk_drvdesc
+========================
+const char *dsk_drvname(DSK_DRIVER *self)
+const char *dsk_drvdesc(DSK_DRIVER *self)
+
+  Returns the driver name (eg: "myz80") or description (eg "MYZ80 hard drive 
+driver") for an open disc image.
+
+dg_ps2ls, dg_ls2ps, dg_pt2lt, dg_lt2pt
+======================================
+
+  Convert between logical sectors and physical cylinder/head/sector addresses.
+Normally these functions are called internally and you don't need to use
+them.
+
+dsk_err_t dg_ps2ls(const DSK_GEOMETRY *self,  
+		dsk_pcyl_t cyl, dsk_phead_t head, dsk_psect_t sec,
+		dsk_lsect_t *logical)
+
+  Converts physical C/H/S to logical sector.
+
+dsk_err_t dg_ls2ps(const DSK_GEOMETRY *self, 
+			dsk_lsect_t logical, 
+			dsk_pcyl_t *cyl, dsk_phead_t *head, dsk_psect_t *sec)
+
+  Converts logical sector to physical C/H/S.
+
+dsk_err_t dg_pt2lt(const DSK_GEOMETRY *self,  
+			dsk_pcyl_t cyl, dsk_phead_t head,
+			dsk_ltrack_t *logical)
+
+  Converts physical C/H to logical track.
+
+dsk_err_t dg_lt2pt(const DSK_GEOMETRY *self, 
+			dsk_ltrack_t logical, 
+			dsk_pcyl_t *cyl, dsk_phead_t *head)
+
+  Converts logical track to physical C/H.
+
+dsk_strerror
+============
+
+char *dsk_strerror(dsk_err_t err)
+
+  Converts an error code returned by one of the other LIBDSK functions into
+a printable string.
+
+dsk_get_psh
+===========
+
+unsigned char dsk_get_psh(size_t sector_size)
+
+  Converts a sector size into the sector shift used by the uPD765A controller
+(eg: 128 -> 0, 256 -> 1, 512 -> 2 etc.) You should not need to use this. The
+reverse operation is: sectorsize = (128 << psh).
+
+Structure: DSK_GEOMETRY
+=======================
+
+The DSK_GEOMETRY structure contains the following members:
+
+dg_sidedness: This should either be:
+	 SIDES_ALT:	the order of tracks is C0H0, C0H1, C1H0, C1H1, 
+			C2H0, C2H1...
+	 SIDES_OUTBACK:	the order of tracks is C0H0, C1H0, C2H0, ...,
+			C(last-1)H0, C(last)H0, C(last)H1, C(last-1)H1, ...,
+			C1H1, C0H1.
+	 SIDES_OUTBACK:	the order of tracks is C0H0, C1H0, C2H0, ...,
+			C(last-1)H0, C(last)H0, C0H1, C1H1, C2H1, ...
+
+	This setting only affects logical / physical sector conversion. It
+	does not affect reading or writing physical sectors. 
+
+dg_cylinders: The number of cylinders in the disc / disc image. 
+              Usually 40 or 80.
+dg_heads:     The number of heads per cylinder. Nearly always 1 or 2.
+dg_sectors:   The number of sectors per cylinder, eg. 8 or 9.
+dg_secbase:   The number of the first physical sector in a cylinder. Normally
+              this is 1, but some formats may use other numbers such as 0, 65
+	      or 193.
+dg_secsize:   The number of bytes in a sector. Usually 512. Some drivers can
+              only handle discs with 512-byte sectors.
+dg_datarate:  Data rate. One of:
+		RATE_HD (1.2Mb and 1.4Mb discs), 
+		RATE_DD (5.25" discs up to 800k?),
+		RATE_SD (3.5" discs up to 800k),
+		RATE_ED (2.8Mb discs).
+dg_rwgap:     uPD765A read/write gap. 
+dg_fmtgap:    uPD765A format gap. 
+dg_fm:	      If nonzero, use FM recording mode. The only FM recorded format
+              I'm aware of is the DFS format used by the BBC Micro.
+dg_nomulti:   If nonzero, disable the floppy controller's multitrack mode.
+
+Structure: DSK_FORMAT
+=====================
+
+  This structure is used to represent a sector header.
+
+fmt_cylinder:	Cylinder number.
+fmt_head:	Head number.
+fmt_sector:	Sector number.
+fmt_secsize:	Sector size in bytes.
+
+LIBDSK errors
+=============
+
+DSK_ERR_OK:		No error
+DSK_ERR_BADPTR:		A null or otherwise invalid pointer was passed to a 
+			LIBDSK routine
+DSK_ERR_DIVZERO: 	Division by zero: For example, a DSK_GEOMETRY is set
+			to have zero sectors.
+DSK_ERR_BADPARM:	Bad parameter (eg: if a DSK_GEOMETRY is set up with
+			dg_cylinders = 40, trying to convert a sector in 
+			cylinder 65 to a logical sector will give this error).
+DSK_ERR_NODRVR:		Requested driver not found in dsk_open() / dsk_creat().
+DSK_ERR_NOTME:		Disc image could not be opened by requested driver
+DSK_ERR_SYSERR:		System call failed. errno holds the reason.
+DSK_ERR_NOMEM:		malloc() failed to allocate memory.
+DSK_ERR_NOTIMPL:	Function is not implemented.
+DSK_ERR_MISMATCH:	In dsk_lcheck() / dsk_pcheck(), sectors didn't match
+DSK_ERR_NOTRDY:		Drive is not ready
+DSK_ERR_RDONLY:		Disc is read-only
+DSK_ERR_SEEKFAIL:	Seek fail
+DSK_ERR_DATAERR:	Data error
+DSK_ERR_NODATA:		Sector ID found, but not sector data
+DSK_ERR_NOADDR:		Sector not found at all
+DSK_ERR_BADFMT:		Not a valid format
+DSK_ERR_CHANGED:	Disc has been changed unexpectedly
+DSK_ERR_ECHECK:		Equipment check
+DSK_ERR_OVERRUN:	Overrun
+DSK_ERR_ACCESS:		Access denied
+DSK_ERR_CTRLR:		Controller failed
+DSK_ERR_UNKNOWN:	Unknown error
+
+_______________________________________________________________________________
+
+How to write a driver
+=====================
+
+  The interface between LIBDSK and its drivers is defined by the DRV_CLASS 
+structure. To add a new driver, you create a new DRV_CLASS structure and 
+add it to various files.
+
+1. Driver header
+----------------
+  Firstly, create a header for this driver, basing it on (for example) 
+lib/drvposix.h. The first thing in the header (after the LGPL banner) is: 
+
+typedef struct
+{
+        DSK_DRIVER px_super;
+        FILE *px_fp;
+	int   px_readonly;
+
+} POSIX_DSK_DRIVER;
+
+  This is where you define any variables that your driver needs to store for
+each disc image. In the case of the "raw" driver, this consists of a FILE 
+pointer to access the underlying disc file, and a "readonly" flag. The first
+member of this structure must be of type DSK_DRIVER.
+
+  The rest of this header consists of function prototypes, which I will 
+come back to later.
+
+2. Driver implementation
+------------------------
+  Secondly, create a .c file for your driver. Again, it's probably easiest
+to base this on lib/drvposix.c. At the start of this file, create a DRV_CLASS
+structure, such as:
+
+DRV_CLASS dc_posix = 
+{
+	sizeof(POSIX_DSK_DRIVER),
+	"raw",
+	"Raw file driver",
+	posix_open,
+	posix_creat,
+	posix_close
+};	
+
+  The first three entries in this structure are:
+	* The size of your driver's instance data;
+	* The driver's name (as passed to dsk_open() / dsk_creat() )
+	* The driver's description string.
+  The remainder of the structure is composed of function pointers. The
+types of these are given in drv.h. At the very least, you will need to provide
+the first three pointers (*_open, *_creat and *_close); to make the driver 
+vaguely useful, you will also need to implement some of the others.
+
+  Once you have created this structure, edit:
+* drivers.h. Add a declaration for your DRV_CLASS structure, such as 
+ "extern DRV_CLASS dc_myformat;" 
+* drivers.inc. Insert a reference to your structure (eg: "&dc_myformat,") in
+ the list. Note that order is important; the comments in drivers.inc describe
+ how to decide where things go.
+
+  Edit "lib/Makefile.am". At the bottom of this file is a list of drivers
+and their header files; just add your .c and .h to this list.
+
+  If your driver depends on certain system headers (as the Linux and Win32
+ones do) then you will need to add checks for these to "configure.in" and
+"lib/drvi.h"; then run "autoconf" to rebuild the configure script.
+
+  The function pointers in the DRV_CLASS structure are described in drv.h. 
+The first parameter to all of them ("self") is declared as a pointer to 
+DSK_DRIVER. In fact, it is a pointer to the first member of your instance
+data structure. Just cast the pointer to the correct type:
+
+        /* Sanity check: Is this meant for our driver? */
+        if (self->dr_class != &dc_posix) return DSK_ERR_BADPTR;
+        pxself = (POSIX_DSK_DRIVER *)self;
+
+  and you're in business.
+
+dc_open
+=======
+
+dsk_err_t (*dc_open )(DSK_DRIVER *self, const char *filename)
+
+  Attempt to open a disc image. Entered with:
+	* "self" points to the instance data for this disc image (see above); 
+	  it will have been initialised to zeroes using memset(). 
+	* "filename" is the name of the image to open.
+  Return:
+	DSK_ERR_OK:	The driver has successfully opened the image.
+	DSK_ERR_NOTME:	The driver cannot handle this image. Other drivers
+			should be allowed to try to use it.
+	other:		The driver cannot handle this image. No other drivers
+			should be tried (eg: the image was recognised by
+			this driver, but is corrupt).
+
+dc_creat
+========
+
+dsk_err_t (*dc_creat)(DSK_DRIVER *self, const char *filename)
+
+  Attempt to create a new disc image. For the "floppy" drivers, behaves 
+exactly as dc_open. Parameters and results are the same as for dc_open, 
+except that DSK_ERR_NOTME is treated like any other error.
+
+dc_close
+========
+
+dsk_err_t (*dc_close)(DSK_DRIVER *self)
+
+  Close the disc image. This will be the last call your driver will receive
+for a given disc image file, and it should free any resources it is using. 
+Whether it returns DSK_ERR_OK or an error, this disc image will not be used
+again.
+
+dc_read
+=======
+
+dsk_err_t (*dc_read)(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
+			      void *buf, dsk_pcyl_t cylinder, 
+			      dsk_phead_t head, dsk_psect_t sector)
+
+  Read a sector. Note that sector addresses passed to drivers are _always_ in 
+C/H/S format. This function has the same parameters and return values as 
+dsk_pread().
+
+
+dc_write
+========
+ 
+dsk_err_t (*dc_write)(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
+			      const void *buf, dsk_pcyl_t cylinder, 
+			      dsk_phead_t head, dsk_psect_t sector)
+
+  Write a sector. This function has the same parameters and return values
+as dsk_pwrite(). If your driver is read-only, leave this function pointer
+NULL.
+
+dc_format
+=========
+
+dsk_err_t (*dc_format)(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                                dsk_pcyl_t cylinder, dsk_phead_t head,
+                                const DSK_FORMAT *format, unsigned char filler)
+
+  Format a track. This function has the same parameters and return values
+as dsk_pformat(). If your driver cannot format tracks, leave this function
+pointer NULL.
+
+dc_getgeom
+==========
+
+dsk_err_t (*dc_getgeom)(DSK_DRIVER *self, DSK_GEOMETRY *geom)
+
+  Get the disc geometry. Leave this function pointer as NULL unless your 
+disc image does not allow a caller to use an arbitrary disc geometry. 
+
+  The two drivers which currently do this are the Win32 one, because
+Windows NT decides on the geometry itself and doesn't let programs change it;
+and the MYZ80 one, which has a single fixed geometry.
+
+Return DSK_ERR_OK if successful; DSK_ERR_NOTME to fall back to the standard 
+LIBDSK geometry probe; other values to indicate failure.
+
+dc_secid
+========
+dsk_err_t (*dc_secid)(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                                dsk_pcyl_t cylinder, dsk_phead_t head,
+                                DSK_FORMAT *result)
+
+
+  Read the ID of a random sector on a certain track/head, and 
+put it in "result". This function is primarily used to test for discs in 
+CPC format (which have oddly-numbered physical sectors); if the disc 
+image can't support this (eg: the "raw" or Win32 drivers) then leave the
+function pointer NULL.
+
+dc_xseek
+========
+dsk_err_t (*dc_xseek)(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                                dsk_pcyl_t cylinder, dsk_phead_t head);
+
+  Seek to a given cylinder / head. For disc images, just return DSK_ERR_OK
+if the cylinder/head are in range, or DSK_ERR_SEEKFAIL otherwise. For a
+floppy driver, only implement this function if you can perform a seek 
+by itself.
+
+dc_xread, dc_xwrite
+===================
+dsk_err_t (*dc_xread)(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
+                            dsk_pcyl_t cylinder, dsk_phead_t head,
+                            dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
+                            dsk_psect_t sector, size_t bytes_to_write);
+dsk_err_t (*dc_xwrite)(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                            const void *buf,
+                            dsk_pcyl_t cylinder, dsk_phead_t head,
+                            dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
+                            dsk_psect_t sector, size_t bytes_to_read);
+
+  Read / write sector whose ID may not match its position on disc. Only 
+implement this if your disc image emulates sector IDs or your floppy driver
+exposes this level of functionality. Currently it is only implemented in
+the Linux and CPCEMU drivers.
+
+dc_status
+=========
+
+dsk_err_t (*dc_status)(DSK_DRIVER *self, const DSK_GEOMETRY &geom,
+                       dsk_phead_t head, unsigned char *result);
+  
+  Return the drive status (see dsk_drive_status() for the bits to return). 
+"*result" will contain the value calculated by the default implementation;
+for most image file drivers, all you have to do is set the read-only bit if 
+appropriate.
+
+dc_tread
+========
+
+dsk_err_t (*dc_tread)(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
+			      void *buf, dsk_pcyl_t cylinder, 
+			      dsk_phead_t head);
+
+  Read a track. You need only implement this if your floppy driver exposes
+the relevant functionality; if you don't, the library will use multiple
+calls to dc_read() instead. This function has the same parameters and return 
+values as dsk_ptread().
+
+dc_xtread
+=========
+
+dsk_err_t (*dc_xread)(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
+                            dsk_pcyl_t cylinder, dsk_phead_t head,
+                            dsk_pcyl_t cyl_expected, dsk_phead_t head_expected);
+
+  Read a track, with extended sector matching (sector headers on disc 
+differ from physical location). This function has the same parameters and
+return values as dsk_xtread(). As with dc_tread(), you need only implement
+this function if your floppy driver has a special READ TRACK command.
+
