@@ -1,0 +1,118 @@
+2002-12-16 John Elliott
+
+	* v1.0.0 release. 
+
+	* Minor portability fixes.
+
+	* DOS16 and Win16 drivers retry three times; this avoids "Disc changed"
+	 errors on drives that are slow to spin up.
+
+2002-12-01 John Elliott
+
+	* v0.9.9 release.
+
+	* Projects provided to build LibDsk under 16-bit Windows and DOS;
+	 bug fixes in the .DSK driver to work correctly on a 16-bit compiler
+	 (CFI won't work on 16-bit DOS, except for very small images).
+	* Drivers added for the Win16, DOS16 and DOS32 architectures. There 
+	 may be a case for combining the source files for Win16 and DOS16 as 
+	 they are quite similar.
+
+	* Previous MYZ80 bugfix was faulty. Corrected.
+
+2002-11-18 John Elliott
+
+	* v0.9.5 release.
+
+	* MicroDesign serial numbers can be read or altered by md3serial
+
+	* Bug fix in the posix driver; when sectors are written beyond the
+	 end of the file, the gap is filled with 0xE5 rather than leaving the
+	 OS to decide what goes there.
+	* Similar bug fix in the myz80 driver.
+
+2002-04-27 John Elliott
+
+	* v0.9.1 release.
+
+	* Squeeze compression rewritten from scratch to avoid a possible 
+         licence conflict.
+
+2002-04-10 John Elliott
+
+	* v0.9.0 release.
+
+	* IMPORTANT CHANGES: This release breaks backward compatibility in a 
+	 number of ways. Most importantly, you must replace "DSK_DRIVER *" 
+	 with "DSK_PDRIVER " throughout your programs.
+
+	* Support for reading/writing deleted data (DSK and Linux floppy 
+	 only; other formats do not support marking data as deleted). 
+
+	* DSK files in the extended CPCEMU format now have their own file 
+	 type - "edsk". This means that extended DSK files can be created
+	 using LibDsk.
+	* Bug fixes in the extended DSK format handler (Thierry Jouin).
+
+	* Transparent compression layer added, supporting Squeeze, GZip 
+	 and BZip2 (read only).
+	* Special-case DQK driver removed; the standard CPCEMU driver + 
+	 the compression layer can now handle this case.
+
+	* BBC Micro DFS formats added to the list of built-in formats, and
+	 to the geometry probe. 
+	* Bugfix in the Linux floppy driver so that discs with FM encoding
+	 can be read (requires a suitable floppy controller and drive).
+
+2002-04-06 John Elliott
+
+	* v0.8.2 release.
+
+	* New driver added: .DQK (.DSK compressed using Squeeze compression).
+
+	* XCF2 200k format added to the list of built-in formats.
+
+	* Darren Salt's manual pages added to the distribution.
+
+2002-02-25 John Elliott
+
+	* v0.8.0 release.
+
+	* Support added for Java Native Interface bindings (requires JDK 
+	 v1.1 or later). Use ./configure --with-jni to build them.
+	* Java versions of dskid, dskform and dsktrans added.
+
+2002-02-07 John Elliott
+
+	* v0.7.0 release.
+
+	* Support added for .CFI format (a strange format used by Cliff 
+	 Lawson to distribute Amstrad PC boot floppies). 
+	
+	* Bug fixes in the example utilities (Darren Salt).
+
+	* dsktrans includes a -format option to use a built-in geometry 
+	 rather than trying to probe it from the disc.
+
+	* PCW 800k format added to list of builtin formats.
+
+2002-01-15 John Elliott
+
+	* v0.6.0 release.
+
+	* Acorn ADFS formats added to the list of formats, and to the 
+	 geometry probe. These don't work on Windows because of the limitations
+	 of the underlying floppy driver.
+
+	* dsk_xread() and dsk_xwrite() altered so that only part of a sector
+	 can be read or written.
+
+	* Make libdsk compile in Microsoft Visual C++ (Kevin Thacker)
+
+	* dskform supports all built-in disc geometries.
+	* dg_stdformat() can be used to enumerate the built-in geometries.
+
+	* dsktrans includes a "-logical" option to rearrange the tracks of
+	 a disc, so that they come out in logical order in a "raw" file. This
+	 option is only effective for ADFS and 144FEAT formats.
+
