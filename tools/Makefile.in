@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -67,7 +67,9 @@ AS = @AS@
 CC = @CC@
 CPP = @CPP@
 DLLTOOL = @DLLTOOL@
+ECHO = @ECHO@
 EXEEXT = @EXEEXT@
+HAVE_LIB = @HAVE_LIB@
 JAR = @JAR@
 JAVA = @JAVA@
 JAVACFLAGS = @JAVACFLAGS@
@@ -75,14 +77,17 @@ JAVADOC = @JAVADOC@
 JAVAFLAGS = @JAVAFLAGS@
 JAVAH = @JAVAH@
 JAVAPREFIX = @JAVAPREFIX@
+LIB = @LIB@
 LIBDSKJAR = @LIBDSKJAR@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
+LTLIB = @LTLIB@
 MAKEINFO = @MAKEINFO@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
+STRIP = @STRIP@
 TOOLCLASSES = @TOOLCLASSES@
 VERSION = @VERSION@
 _ACJNI_JAVAC = @_ACJNI_JAVAC@
@@ -94,15 +99,20 @@ LDADD = ../lib/libdsk.la
 CLASSPATH = @CLASSPATH@
 JAVAC = @JAVAC@ 
 
-bin_PROGRAMS = dsktrans dskform dskid md3serial
+bin_PROGRAMS = dsktrans dskform dskid dskdump dskscan md3serial
 dsktrans_SOURCES = dsktrans.c utilopts.c utilopts.h formname.c formname.h
 dskform_SOURCES = dskform.c utilopts.c utilopts.h formname.c formname.h
 dskid_SOURCES = dskid.c utilopts.c utilopts.h
 md3serial_SOURCES = md3serial.c utilopts.c utilopts.h
+dskscan_SOURCES = dskscan.c utilopts.c utilopts.h formname.c formname.h
+dskdump_SOURCES = dskdump.c utilopts.c utilopts.h formname.c formname.h
+forkslave_SOURCES = forkslave.c
+serslave_SOURCES = serslave.c crc16.c crc16.h
+dsktest_SOURCES = dsktest.c utilopts.c utilopts.h
 
-noinst_PROGRAMS = @TOOLCLASSES@
+noinst_PROGRAMS = @TOOLCLASSES@ forkslave dsktest serslave
 EXTRA_PROGRAMS = 
-EXTRA_DIST = DskTrans.java DskFormat.java DskID.java FormatNames.java UtilOpts.java
+EXTRA_DIST = DskTrans.java DskFormat.java DskID.java FormatNames.java UtilOpts.java ScreenReporter.java
 
 check_PROGRAMS = check1 check2 check3
 check1_SOURCES = check1.c
@@ -113,9 +123,10 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 bin_PROGRAMS =  dsktrans$(EXEEXT) dskform$(EXEEXT) dskid$(EXEEXT) \
-md3serial$(EXEEXT)
+dskdump$(EXEEXT) dskscan$(EXEEXT) md3serial$(EXEEXT)
 check_PROGRAMS =  check1$(EXEEXT) check2$(EXEEXT) check3$(EXEEXT)
-noinst_PROGRAMS =  @TOOLCLASSES@
+noinst_PROGRAMS =  @TOOLCLASSES@ forkslave$(EXEEXT) dsktest$(EXEEXT) \
+serslave$(EXEEXT)
 PROGRAMS =  $(bin_PROGRAMS) $(noinst_PROGRAMS)
 
 
@@ -137,6 +148,16 @@ dskid_OBJECTS =  dskid.$(OBJEXT) utilopts.$(OBJEXT)
 dskid_LDADD = $(LDADD)
 dskid_DEPENDENCIES =  ../lib/libdsk.la
 dskid_LDFLAGS = 
+dskdump_OBJECTS =  dskdump.$(OBJEXT) utilopts.$(OBJEXT) \
+formname.$(OBJEXT)
+dskdump_LDADD = $(LDADD)
+dskdump_DEPENDENCIES =  ../lib/libdsk.la
+dskdump_LDFLAGS = 
+dskscan_OBJECTS =  dskscan.$(OBJEXT) utilopts.$(OBJEXT) \
+formname.$(OBJEXT)
+dskscan_LDADD = $(LDADD)
+dskscan_DEPENDENCIES =  ../lib/libdsk.la
+dskscan_LDFLAGS = 
 md3serial_OBJECTS =  md3serial.$(OBJEXT) utilopts.$(OBJEXT)
 md3serial_LDADD = $(LDADD)
 md3serial_DEPENDENCIES =  ../lib/libdsk.la
@@ -153,6 +174,18 @@ check3_OBJECTS =  check3.$(OBJEXT)
 check3_LDADD = $(LDADD)
 check3_DEPENDENCIES =  ../lib/libdsk.la
 check3_LDFLAGS = 
+forkslave_OBJECTS =  forkslave.$(OBJEXT)
+forkslave_LDADD = $(LDADD)
+forkslave_DEPENDENCIES =  ../lib/libdsk.la
+forkslave_LDFLAGS = 
+dsktest_OBJECTS =  dsktest.$(OBJEXT) utilopts.$(OBJEXT)
+dsktest_LDADD = $(LDADD)
+dsktest_DEPENDENCIES =  ../lib/libdsk.la
+dsktest_LDFLAGS = 
+serslave_OBJECTS =  serslave.$(OBJEXT) crc16.$(OBJEXT)
+serslave_LDADD = $(LDADD)
+serslave_DEPENDENCIES =  ../lib/libdsk.la
+serslave_LDFLAGS = 
 CFLAGS = @CFLAGS@
 COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -165,8 +198,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(dsktrans_SOURCES) $(dskform_SOURCES) $(dskid_SOURCES) $(md3serial_SOURCES) $(check1_SOURCES) $(check2_SOURCES) $(check3_SOURCES)
-OBJECTS = $(dsktrans_OBJECTS) $(dskform_OBJECTS) $(dskid_OBJECTS) $(md3serial_OBJECTS) $(check1_OBJECTS) $(check2_OBJECTS) $(check3_OBJECTS)
+SOURCES = $(dsktrans_SOURCES) $(dskform_SOURCES) $(dskid_SOURCES) $(dskdump_SOURCES) $(dskscan_SOURCES) $(md3serial_SOURCES) $(check1_SOURCES) $(check2_SOURCES) $(check3_SOURCES) $(forkslave_SOURCES) $(dsktest_SOURCES) $(serslave_SOURCES)
+OBJECTS = $(dsktrans_OBJECTS) $(dskform_OBJECTS) $(dskid_OBJECTS) $(dskdump_OBJECTS) $(dskscan_OBJECTS) $(md3serial_OBJECTS) $(check1_OBJECTS) $(check2_OBJECTS) $(check3_OBJECTS) $(forkslave_OBJECTS) $(dsktest_OBJECTS) $(serslave_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -278,6 +311,14 @@ dskid$(EXEEXT): $(dskid_OBJECTS) $(dskid_DEPENDENCIES)
 	@rm -f dskid$(EXEEXT)
 	$(LINK) $(dskid_LDFLAGS) $(dskid_OBJECTS) $(dskid_LDADD) $(LIBS)
 
+dskdump$(EXEEXT): $(dskdump_OBJECTS) $(dskdump_DEPENDENCIES)
+	@rm -f dskdump$(EXEEXT)
+	$(LINK) $(dskdump_LDFLAGS) $(dskdump_OBJECTS) $(dskdump_LDADD) $(LIBS)
+
+dskscan$(EXEEXT): $(dskscan_OBJECTS) $(dskscan_DEPENDENCIES)
+	@rm -f dskscan$(EXEEXT)
+	$(LINK) $(dskscan_LDFLAGS) $(dskscan_OBJECTS) $(dskscan_LDADD) $(LIBS)
+
 md3serial$(EXEEXT): $(md3serial_OBJECTS) $(md3serial_DEPENDENCIES)
 	@rm -f md3serial$(EXEEXT)
 	$(LINK) $(md3serial_LDFLAGS) $(md3serial_OBJECTS) $(md3serial_LDADD) $(LIBS)
@@ -293,6 +334,18 @@ check2$(EXEEXT): $(check2_OBJECTS) $(check2_DEPENDENCIES)
 check3$(EXEEXT): $(check3_OBJECTS) $(check3_DEPENDENCIES)
 	@rm -f check3$(EXEEXT)
 	$(LINK) $(check3_LDFLAGS) $(check3_OBJECTS) $(check3_LDADD) $(LIBS)
+
+forkslave$(EXEEXT): $(forkslave_OBJECTS) $(forkslave_DEPENDENCIES)
+	@rm -f forkslave$(EXEEXT)
+	$(LINK) $(forkslave_LDFLAGS) $(forkslave_OBJECTS) $(forkslave_LDADD) $(LIBS)
+
+dsktest$(EXEEXT): $(dsktest_OBJECTS) $(dsktest_DEPENDENCIES)
+	@rm -f dsktest$(EXEEXT)
+	$(LINK) $(dsktest_LDFLAGS) $(dsktest_OBJECTS) $(dsktest_LDADD) $(LIBS)
+
+serslave$(EXEEXT): $(serslave_OBJECTS) $(serslave_DEPENDENCIES)
+	@rm -f serslave$(EXEEXT)
+	$(LINK) $(serslave_LDFLAGS) $(serslave_OBJECTS) $(serslave_LDADD) $(LIBS)
 
 tags: TAGS
 
@@ -331,21 +384,26 @@ distdir: $(DISTFILES)
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
+crc16.o: crc16.c crc16.h
+dskdump.o: dskdump.c ../include/libdsk.h utilopts.h formname.h
 dskform.o: dskform.c ../config.h ../include/libdsk.h utilopts.h \
 	formname.h
 dskid.o: dskid.c ../include/libdsk.h utilopts.h
-dskje.o: dskje.c ../include/libdsk.h utilopts.h
+dskscan.o: dskscan.c ../include/libdsk.h utilopts.h formname.h
+dskslave.o: dskslave.c ../include/libdsk.h
+dsktest.o: dsktest.c ../include/libdsk.h utilopts.h
 dsktrans.o: dsktrans.c ../include/libdsk.h utilopts.h formname.h
-dsktransj.o: dsktransj.c ../include/libdsk.h utilopts.h formnames.h
-formnames.o: formnames.c ../config.h ../include/libdsk.h utilopts.h
+forkslave.o: forkslave.c ../include/libdsk.h
+formname.o: formname.c ../config.h ../include/libdsk.h utilopts.h
 md3serial.o: md3serial.c ../include/libdsk.h utilopts.h
+serslave.o: serslave.c ../config.h ../include/libdsk.h crc16.h
 utilopts.o: utilopts.c ../config.h utilopts.h ../include/libdsk.h
 
 info-am:

@@ -27,19 +27,25 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_pwrite(DSK_DRIVER *self, const DSK_GEOMETRY 
                               const void *buf, dsk_pcyl_t cylinder,
                               dsk_phead_t head, dsk_psect_t sector)
 {
-	DRV_CLASS *dc;
-	dsk_err_t e;
-	if (!self || !geom || !buf || !self->dr_class) return DSK_ERR_BADPTR;
+    DRV_CLASS *dc;
+    dsk_err_t e = DSK_ERR_UNKNOWN;
+    unsigned n;
 
-	dc = self->dr_class;
+    if (!self || !geom || !buf || !self->dr_class) return DSK_ERR_BADPTR;
 
-	if (self && self->dr_compress && self->dr_compress->cd_readonly)
-		return DSK_ERR_RDONLY;
+    dc = self->dr_class;
 
-	if (!dc->dc_write) return DSK_ERR_NOTIMPL;
-	e = (dc->dc_write)(self,geom,buf,cylinder,head,sector);	
-	if (e == DSK_ERR_OK) self->dr_dirty = 1;
-	return e;
+    if (self && self->dr_compress && self->dr_compress->cd_readonly)
+        return DSK_ERR_RDONLY;
+
+    if (!dc->dc_write) return DSK_ERR_NOTIMPL;
+    for (n = 0; n < self->dr_retry_count; n++)
+    {
+        e = (dc->dc_write)(self,geom,buf,cylinder,head,sector); 
+        if (e == DSK_ERR_OK) self->dr_dirty = 1;
+        if (!DSK_TRANSIENT_ERROR(e)) return e;
+    }
+    return e;
 }
 
 
@@ -57,19 +63,21 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_lwrite(DSK_DRIVER *self, const DSK_GEOMETRY 
         e = dg_ls2ps(geom, sector, &c, &h, &s);
         if (e != DSK_ERR_OK) return e;
         e = dsk_pwrite(self, geom, buf, c, h, s);
-	if (e == DSK_ERR_OK) self->dr_dirty = 1;
-	return e;
+    if (e == DSK_ERR_OK) self->dr_dirty = 1;
+    return e;
 }
 
 
 LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
-			const void *buf, 
+            const void *buf, 
                         dsk_pcyl_t cylinder,   dsk_phead_t head,
                         dsk_pcyl_t cyl_expect, dsk_phead_t head_expect,
                         dsk_psect_t sector, size_t sector_len, int deleted)
 {
         DRV_CLASS *dc;
-	dsk_err_t err;
+    dsk_err_t err = DSK_ERR_UNKNOWN;
+    unsigned n;
+
         if (!self || !geom || !buf || !self->dr_class) return DSK_ERR_BADPTR;
 
         dc = self->dr_class;
@@ -78,10 +86,13 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY 
                 return DSK_ERR_RDONLY;
 
         if (!dc->dc_xwrite) return DSK_ERR_NOTIMPL;
-        err = (dc->dc_xwrite)(self,geom,buf,cylinder,head, cyl_expect, 
-			head_expect, sector, sector_len, deleted);
-
-	if (err == DSK_ERR_OK) self->dr_dirty = 1;
-	return err;
+    for (n = 0; n < self->dr_retry_count; n++)
+    {
+            err = (dc->dc_xwrite)(self,geom,buf,cylinder,head, cyl_expect, 
+                head_expect, sector, sector_len, deleted);
+        if (err == DSK_ERR_OK) self->dr_dirty = 1;
+        if (!DSK_TRANSIENT_ERROR(err)) return err;
+    }
+    return err;
 }
                                                                                         

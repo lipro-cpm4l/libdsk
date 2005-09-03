@@ -2,6 +2,7 @@
 .\"
 .\" dsktrans.1: dsktrans man page
 .\" Copyright (c) 2002 Darren Salt
+.\" Copyright (c) 2005 John Elliott
 .\"
 .\" This library is free software; you can redistribute it and/or modify it
 .\" under the terms of the GNU Library General Public License as published by
@@ -20,46 +21,60 @@
 .\" Author contact information:
 .\" John Elliott: email: jce@seasip.demon.co.uk
 .\"
-.TH dsktrans 1 "20 April, 2002" "Version 0.9.0" "Emulators"
+.TH dsktrans 1 "14 June, 2005" "Version 1.1.5" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH NAME
-dsktrans - floppy or image file formatter for emulated machines
+dsktrans - Copy from one floppy or image file to another
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH SYNOPSIS
 .PD 0
 .B dsktrans
-.I INPUT-IMAGE
-.I OUTPUT-IMAGE
 .RI [ "-itype TYPE" ]
 .RI [ "-otype TYPE" ]
 .RI [ "-iside SIDE" ]
 .RI [ "-oside SIDE" ]
 .RI [ "-icomp COMP" ]
 .RI [ "-ocomp COMP" ]
+.RI [ "-idstep" ]
+.RI [ "-odstep" ]
+.RI [ "-retry COUNT" ]
+.RI [ "-format FMT" ]
+.RI [ "-first CYLINDER" ]
+.RI [ "-last CYLINDER" ]
 .RI [ -md3 ]
 .RI [ -logical ]
+.RI [ -apricot ]
+.RI [ -noformat ]
+.I INPUT-IMAGE
+.I OUTPUT-IMAGE
 .P
 .PD 1
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH DESCRIPTION
-Dsktrans copies floppy disks or images, optionally converting image types.
+Dsktrans copies floppy discs or images, optionally converting image types.
+This is a high-level copy which assumes that the disc has a straightforward
+geometry; all the tracks are assumed to have the same layout of sectors,
+and interleave is not preserved. See
+.I dskdump(1)
+for a slower but more accurate copy which may preserve more of these 
+details.
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH OPTIONS
 .TP
 .B -itype TYPE
-Determines which driver is to be used to read from the source disk.
+Determines which driver is to be used to read from the source disc.
 .RS
 .TP 8
 .B auto
-Select according to the disk image file. This is the default.
+Select according to the disc image file. This is the default.
 .TP
 .B dsk
 Use the DSK (CPCEmu format) image driver.
@@ -78,13 +93,17 @@ Use the hard disk (MYZ80 format) image driver.
 Use the CFI (DOS fdcopy format) image driver.
 (This format cannot be autodetected.)
 .TP
+.B apridisk
+Use the ApriDisk image driver (from the utility of the same name).
+(This format cannot be autodetected.)
+.TP
 .B raw
 Use the raw driver.
 .RE
 
 .TP
 .B -otype TYPE
-Determines which driver is to be used to write to the destination disk. The
+Determines which driver is to be used to write to the destination disc. The
 drivers are as for -itype.
 
 .TP
@@ -113,10 +132,43 @@ Select the compression to be used on output. Compression methods are as for
 
 .TP
 .B -iside SIDE
-Determines which side (0 or 1) of the source disk is to be read from.
+Determines which side (0 or 1) of the source disc is to be read from.
 
+.TP
 .B -oside SIDE
-Determines which side (0 or 1) of the destination disk is to be written to.
+Determines which side (0 or 1) of the destination disc is to be written to.
+
+.TP
+.B -idstep
+Double-step the source drive (used to read 360k discs in 1.2Mb drives). Only
+supported by the Linux floppy driver.
+
+.TP
+.B -odstep
+Double-step the destination drive (used to write 360k discs in 1.2Mb drives).
+Only supported by the Linux floppy driver.
+
+.TP
+.B -retry COUNT
+Set the number of times to attempt a read/write/format in case of error.
+
+.TP
+.B -format FMT
+Do not autodetect the disc format; use the named format.
+
+.TP
+.B -first CYL 
+Start copying at the specified cylinder. Cylinders prior to this will not be 
+formatted or written.
+
+.TP
+.B -last CYL 
+Copy up to and including the specified cylinder.
+
+.TP
+.B -odstep
+Double-step the destination drive (used to write 360k discs in 1.2Mb drives).
+Only supported by the Linux floppy driver.
 
 .TP
 .B -md3
@@ -124,23 +176,34 @@ Defeat MicroDesign 3 copy protection. Note that this does not make
 .I dsktrans
 a circumvention device, since the authors of MicroDesign have placed it in
 the public domain and given permission for the copy-protection to be reverse
-engineered.
+engineered; I posted their original press release to USENET as 
+<1008359853.26849.0.nnrp-13.c2de7091@news.demon.co.uk>.
+
+.TP 
+.B -apricot
+Convert the first sector from an Apricot superblock to a PC-DOS superblock.
+This allows Apricot-format discs to be imaged as files (with the output 
+image type as raw) and then loopback-mounted under Linux.
 
 .TP
 .B -logical
 Rearrange the tracks in the logical order. This option is useful when the
-output image type is raw and you're reading a disk with a non-IBM track
+output image type is raw and you're reading a disc with a non-IBM track
 layout, such as 144FEAT 1440K or ADFS 'L'.
 
+.TP
+.B -noformat
+Don't format the target disc/image - assume it's in the correct format
+already.
 .\"
 .\"------------------------------------------------------------------
 .\"
-.SH BUGS
-The parameter order is too rigid.
+.\".SH BUGS
 .\"
 .\"------------------------------------------------------------------
 .\"
-.\".SH SEE ALSO
+.SH SEE ALSO
+dskdump(1)
 .\"
 .\"------------------------------------------------------------------
 .\"

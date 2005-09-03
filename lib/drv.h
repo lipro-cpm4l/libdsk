@@ -23,11 +23,16 @@
 /* Moved here from libdsk.h; there's no need for it to be public */
 typedef struct dsk_driver
 {
-        struct drv_class *dr_class;
+        struct drv_class     *dr_class;
         struct compress_data *dr_compress;      /* Compressed? */
-        int dr_forcehead;       /* Force drive to use head 0 or head 1? */
+	struct remote_data   *dr_remote;	/* Remote, if any */
+	char *dr_comment;	/* Comment, if any */
+/*        int dr_forcehead;     Force drive to use head 0 or head 1
+ *        			Moved to Linux floppy driver; it's the only one
+ *        			that supports it. */
 	int dr_dirty;		/* Has this device been written to? 
 				 * Set to 1 by writes and formats */
+	unsigned dr_retry_count; /* Number of times to retry if error */	
 } DSK_DRIVER;
 
 
@@ -121,5 +126,22 @@ typedef struct drv_class
 			      void *buf, dsk_pcyl_t cylinder, 
 			      dsk_phead_t head, dsk_pcyl_t cyl_expected,
 			      dsk_phead_t head_expected);
+
+	/* List driver-specific options */
+	dsk_err_t (*dc_option_enum)(DSK_DRIVER *self, int idx, char **optname);
+
+	/* Set a driver-specific option */
+	dsk_err_t (*dc_option_set)(DSK_DRIVER *self, const char *optname, int value);
+	/* Get a driver-specific option */
+	dsk_err_t (*dc_option_get)(DSK_DRIVER *self, const char *optname, int *value);
+	/* Read headers for an entire track at once */
+	dsk_err_t (*dc_trackids)(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                                dsk_pcyl_t cylinder, dsk_phead_t head,
+                                dsk_psect_t *count, DSK_FORMAT **result);
+
+	/* Read raw track, including sector headers */
+	dsk_err_t (*dc_rtread)(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
+			void *buf, dsk_pcyl_t cylinder,  dsk_phead_t head, 
+			int reserved, size_t *bufsize);
 } DRV_CLASS;
 

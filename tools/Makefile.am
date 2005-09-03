@@ -6,15 +6,20 @@ LDADD=../lib/libdsk.la
 CLASSPATH=@CLASSPATH@
 JAVAC=@JAVAC@ 
 
-bin_PROGRAMS=dsktrans dskform dskid md3serial
+bin_PROGRAMS=dsktrans dskform dskid dskdump dskscan md3serial
 dsktrans_SOURCES=dsktrans.c utilopts.c utilopts.h formname.c formname.h
 dskform_SOURCES=dskform.c utilopts.c utilopts.h formname.c formname.h
 dskid_SOURCES=dskid.c utilopts.c utilopts.h
 md3serial_SOURCES=md3serial.c utilopts.c utilopts.h
+dskscan_SOURCES=dskscan.c utilopts.c utilopts.h formname.c formname.h
+dskdump_SOURCES=dskdump.c utilopts.c utilopts.h formname.c formname.h
+forkslave_SOURCES=forkslave.c
+serslave_SOURCES=serslave.c crc16.c crc16.h
+dsktest_SOURCES=dsktest.c utilopts.c utilopts.h
 
-noinst_PROGRAMS=@TOOLCLASSES@
+noinst_PROGRAMS=@TOOLCLASSES@ forkslave dsktest serslave
 EXTRA_PROGRAMS=
-EXTRA_DIST=DskTrans.java DskFormat.java DskID.java FormatNames.java UtilOpts.java
+EXTRA_DIST=DskTrans.java DskFormat.java DskID.java FormatNames.java UtilOpts.java ScreenReporter.java
 
 check_PROGRAMS = check1 check2 check3
 check1_SOURCES = check1.c

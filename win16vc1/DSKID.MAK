@@ -4,7 +4,7 @@ PROJ = DSKID
 DEBUG = 1
 PROGTYPE = 3
 CALLER = 
-ARGS = 
+ARGS = ..\adfsl.dsk
 DLLS = 
 D_RCDEFINES = -d_DEBUG
 R_RCDEFINES = -dNDEBUG
@@ -26,27 +26,27 @@ CFLAGS_D_WTTY = /nologo /G2 /Mq /W3 /Zi /ALw /Od /D "_DEBUG" /D "WIN16" /I "." /
 CFLAGS_R_WTTY = /nologo /Gs /G2 /Mq /W3 /ALw /Ox /D "NDEBUG" /D "WIN16" /I "." /I "../include" /I "../tools" /FR 
 LFLAGS_D_WTTY = /NOLOGO /NOD /PACKC:57344 /ALIGN:16 /ONERROR:NOEXE /CO 
 LFLAGS_R_WTTY = /NOLOGO /NOD /PACKC:57344 /ALIGN:16 /ONERROR:NOEXE 
-LIBS_D_WTTY = oldnames libw llibcewq libdsk 
-LIBS_R_WTTY = oldnames libw llibcewq libdsk 
+LIBS_D_WTTY = oldnames libw llibcewq libdsk16 
+LIBS_R_WTTY = oldnames libw llibcewq libdsk16 
 RCFLAGS = /nologo
 RESFLAGS = /nologo
 RUNFLAGS = 
 OBJS_EXT = 
-LIBS_EXT = LIBDSK.LIB 
+LIBS_EXT = LIBDSK16.LIB 
 !if "$(DEBUG)" == "1"
 CFLAGS = $(CFLAGS_D_WTTY)
 LFLAGS = $(LFLAGS_D_WTTY)
 LIBS = $(LIBS_D_WTTY)
 MAPFILE = nul
 RCDEFINES = $(D_RCDEFINES)
-DEFFILE=H:\DOSC\USR\MSVC\BIN\CL.DEF
+DEFFILE=D:\USR\MSVC\BIN\CL.DEF
 !else
 CFLAGS = $(CFLAGS_R_WTTY)
 LFLAGS = $(LFLAGS_R_WTTY)
 LIBS = $(LIBS_R_WTTY)
 MAPFILE = nul
 RCDEFINES = $(R_RCDEFINES)
-DEFFILE=H:\DOSC\USR\MSVC\BIN\CL.DEF
+DEFFILE=D:\USR\MSVC\BIN\CL.DEF
 !endif
 !if [if exist MSVC.BND del MSVC.BND]
 !endif
@@ -54,7 +54,7 @@ SBRS = DSKID.SBR \
 		UTILOPTS.SBR
 
 
-LIBDSK_DEP = 
+LIBDSK16_DEP = 
 
 DSKID_DEP = j:\c\libdsk\tools\utilopts.h
 
@@ -78,9 +78,9 @@ UTILOPTS.OBJ +
 $(OBJS_EXT)
 $(PROJ).EXE
 $(MAPFILE)
-H:\DOSC\USR\MSVC\LIB\+
-H:\DOSC\USR\MSVC\MFC\LIB\+
-LIBDSK.LIB+
+D:\USR\MSVC\LIB\+
+D:\USR\MSVC\MFC\LIB\+
+LIBDSK16.LIB+
 $(LIBS)
 $(DEFFILE);
 <<

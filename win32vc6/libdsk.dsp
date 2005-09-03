@@ -66,8 +66,8 @@ LINK32=link.exe
 # PROP Output_Dir "Debug"
 # PROP Intermediate_Dir "Debug"
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LIBDSK_EXPORTS" /YX /FD /GZ  /c
-# ADD CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /I "." /I "../include" /I "../lib" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LIBDSK_EXPORTS" /YX /FD /GZ  /c
+# ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LIBDSK_EXPORTS" /YX /FD /GZ /c
+# ADD CPP /nologo /MT /W3 /Gm /GX /ZI /Od /I "." /I "../include" /I "../lib" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "LIBDSK_EXPORTS" /FR /YX /FD /GZ /c
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
@@ -106,6 +106,18 @@ SOURCE=..\lib\compsq.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\crc16.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\crctable.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvadisk.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvcfi.c
 # End Source File
 # Begin Source File
@@ -130,7 +142,23 @@ SOURCE=..\lib\drvmyz80.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvntwdm.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvnwasp.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvposix.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvqm.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvrcpm.c
 # End Source File
 # Begin Source File
 
@@ -143,6 +171,10 @@ SOURCE=..\lib\drvwin32.c
 # Begin Source File
 
 SOURCE=..\lib\dskcheck.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\dskcmt.c
 # End Source File
 # Begin Source File
 
@@ -178,6 +210,18 @@ SOURCE=..\lib\dskread.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\dskreprt.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\dskretry.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\dskrtrd.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\dsksecid.c
 # End Source File
 # Begin Source File
@@ -198,7 +242,35 @@ SOURCE=..\lib\dsktread.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\dsktrkid.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\dskwrite.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\remote.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\rpccli.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\rpcmap.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\rpcpack.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\rpcserv.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\rpcwin32.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -230,11 +302,23 @@ SOURCE=..\lib\compsq.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\crc16.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\crctable.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drivers.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drv.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvadisk.h
 # End Source File
 # Begin Source File
 
@@ -270,11 +354,27 @@ SOURCE=..\lib\drvposix.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvqm.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvrcpm.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvwin16.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvwin32.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\remote.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\rpcwin32.h
 # End Source File
 # Begin Source File
 

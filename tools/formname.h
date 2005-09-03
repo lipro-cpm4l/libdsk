@@ -21,6 +21,6 @@
  ***************************************************************************/
 
 void valid_formats(void);
-dsk_format_t check_format(char *arg, int argc, char **argv);
+dsk_format_t check_format(char *arg, int *argc, char **argv);
 
 

@@ -35,70 +35,19 @@ static int check_error(JNIEnv *env, dsk_err_t error)
 	return 1;	
 }
 
-static DSK_PDRIVER *mapping;
-int maplen;
-
-static int check_mapping(JNIEnv *env)
-{
-	int n;
-	if (!mapping)
-	{
-		mapping = malloc(16 * sizeof(DSK_PDRIVER));
-		if (!mapping) 
-		{
-			maplen = 0;
-			check_error(env, DSK_ERR_NOMEM);
-			return -1;
-		}
-		maplen = 16;
-		for (n = 0; n < maplen; n++) mapping[n] = NULL;
-	}
-	return 0;
-}
-
 /* Note that entry 0 must always be NULL */
 static jint add_map(JNIEnv *env, DSK_PDRIVER ptr)
 {
-	int n;
-	DSK_PDRIVER *newmap;
+	dsk_err_t err;
+	unsigned int n;
 
-	if (check_mapping(env)) return 0;
-	for (n = 1; n < maplen; n++) if (mapping[n] == NULL)
+	err = dsk_map_dtoi(ptr, &n);
+	if (err)
 	{
-		mapping[n] = ptr;
-		return n;	
-	}
-	/* All slots used... */
-	newmap = malloc(maplen * 2 * sizeof(DSK_PDRIVER));
-	if (!newmap)
-	{
-		check_error(env, DSK_ERR_NOMEM);
+		check_error(env, err);
 		return 0;
 	}
-	for (n = 1; n < maplen; n++) newmap[n] = mapping[n];
-	free(mapping);
-	mapping[n = maplen] = ptr;
-	maplen *= 2;
-	return n;
-}
-
-/* Remove an integer <--> DSK_DRIVER mapping. If it was the last one, free
- * all the memory used by the mapping */
-static void del_map(JNIEnv *env, jint index)
-{
-	int n;
-
-	if (mapping)
-	{
-		mapping[index] = NULL;
-		for (n = 0; n < maplen; n++) 
-		{
-			if (mapping[n]) return;
-		}
-		free(mapping);
-		mapping = NULL;
-		maplen = 0;
-	}	
+	return n;		
 }
 
 
@@ -132,7 +81,7 @@ static void driver_delete(JNIEnv *env, jobject self)
 	if (!fid) { check_error(env, DSK_ERR_BADPTR); return; }
 	drvid = (*env)->GetIntField(env, self, fid);	
 
-	del_map(env, drvid);	
+	dsk_map_delete(drvid);	
 	(*env)->SetIntField(env, self, fid, 0);
 }
 
@@ -142,6 +91,8 @@ static DSK_PDRIVER driver_from_java(JNIEnv *env, jobject obj)
 	jfieldID fid;
 	jclass clazz;
 	jint drvid;
+	dsk_err_t err;
+	DSK_PDRIVER ptr;
 
 	clazz = (*env)->FindClass(env, "uk/co/demon/seasip/libdsk/Drive");
 	if (!clazz) { check_error(env, DSK_ERR_BADPTR); return NULL; }
@@ -150,12 +101,13 @@ static DSK_PDRIVER driver_from_java(JNIEnv *env, jobject obj)
 	if (!fid) { check_error(env, DSK_ERR_BADPTR); return NULL; }
 	drvid = (*env)->GetIntField(env, obj, fid);	
 
-	if ((!mapping) || (drvid >= maplen))
+	err = dsk_map_itod(drvid, &ptr);	
+	if (err)	
 	{
-		check_error(env, DSK_ERR_BADPTR);
+		check_error(env, err);
 		return NULL;
 	} 
-	return mapping[drvid];
+	return ptr;
 }
 
 
@@ -310,6 +262,50 @@ JNIEXPORT jobject JNICALL Java_uk_co_demon_seasip_libdsk_LibDsk_create
   (JNIEnv *env, jclass clazz, jstring filename, jstring type, jstring comp)
 {
 	return open_or_create(env, clazz, filename, type, comp, 1);
+}
+
+
+/* LibDsk-to-Java callbacks */
+static JNIEnv  *cbEnv;
+
+static void jni_report(const char *s)
+{
+	jclass clazz;
+	jmethodID mid;
+	jstring str = (*cbEnv)->NewStringUTF(cbEnv, s);
+
+	clazz= (*cbEnv)->FindClass(cbEnv, "uk/co/demon/seasip/libdsk/LibDsk");
+	if (!clazz) return;
+	mid = (*cbEnv)->GetStaticMethodID(cbEnv, clazz, "report", "(Ljava/lang/String;)V");
+	if (!mid) return;
+	(*cbEnv)->CallStaticVoidMethod(cbEnv, clazz, mid, str);
+}
+
+
+static void jni_report_end()
+{
+	jclass clazz;
+	jmethodID mid;
+
+	clazz= (*cbEnv)->FindClass(cbEnv, "uk/co/demon/seasip/libdsk/LibDsk");
+	if (!clazz) return;
+	mid = (*cbEnv)->GetStaticMethodID(cbEnv, clazz, "reportEnd", "()V");
+	if (!mid) return;
+	(*cbEnv)->CallStaticVoidMethod(cbEnv, clazz, mid);
+}
+
+/*
+ * Class:     uk_co_demon_seasip_libdsk_LibDsk
+ * Method:    setReporter
+ * Signature: (Z)V
+ */
+JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_LibDsk_setReporter
+  (JNIEnv *env, jclass clazz, jboolean active)
+{
+	cbEnv = env;
+
+	if (active) dsk_reportfunc_set(jni_report, jni_report_end);
+	else	    dsk_reportfunc_set(NULL, NULL);
 }
 
 
@@ -943,6 +939,85 @@ JNIEXPORT jstring JNICALL Java_uk_co_demon_seasip_libdsk_Drive_getCompressDesc
 	return (*env)->NewStringUTF(env, s);	
 }
 
+/*
+ * Class:     uk_co_demon_seasip_libdsk_Drive
+ * Method:    getComment
+ * Signature: ()Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_uk_co_demon_seasip_libdsk_Drive_getComment
+  (JNIEnv *env, jobject self)
+{
+	DSK_PDRIVER   drv;
+	char *s;	
+	dsk_err_t err;
+
+	drv   = driver_from_java(env, self);
+	err   = dsk_get_comment(drv, &s);
+	if (err || !s) 
+	{
+		check_error(env, err);
+		return NULL;
+	}
+	return (*env)->NewStringUTF(env, s);	
+}
+
+/*
+ * Class:     uk_co_demon_seasip_libdsk_Drive
+ * Method:    setComment
+ * Signature: (Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_setComment
+  (JNIEnv *env, jobject self, jstring str)
+{
+	const char *cmt = NULL;
+	dsk_err_t err;
+	DSK_PDRIVER   drv;
+
+	drv   = driver_from_java(env, self);
+	if (str != NULL) 
+		cmt = (*env)->GetStringUTFChars(env, str, NULL);
+	err = dsk_set_comment(drv, cmt);
+	check_error(env, err);
+}
+
+/*
+ * Class:     uk_co_demon_seasip_libdsk_Drive
+ * Method:    getRetry
+ * Signature: ()I
+ */
+JNIEXPORT jint JNICALL Java_uk_co_demon_seasip_libdsk_Drive_getRetry
+  (JNIEnv *env, jobject self)
+{
+	DSK_PDRIVER   drv;
+	unsigned retry;
+	dsk_err_t err;
+
+	drv   = driver_from_java(env, self);
+	err   = dsk_get_retry(drv, &retry);
+	if (err) 
+	{
+		check_error(env, err);
+		return 0;
+	}
+	return retry;
+}
+
+/*
+ * Class:     uk_co_demon_seasip_libdsk_Drive
+ * Method:    setRetry
+ * Signature: (I)V
+ */
+JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Drive_setRetry
+  (JNIEnv *env, jobject self, jint retry)
+{
+	dsk_err_t err;
+	DSK_PDRIVER   drv;
+
+	drv   = driver_from_java(env, self);
+	err = dsk_set_retry(drv, retry);
+	check_error(env, err);
+}
+
 
 /*************************** The Geometry class *****************************/
 
@@ -1052,6 +1127,26 @@ JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Geometry_dosGeometry
 
 /*
  * Class:     uk_co_demon_seasip_libdsk_Geometry
+ * Method:    apricotGeometry
+ * Signature: ([B)V
+ */
+JNIEXPORT void JNICALL Java_uk_co_demon_seasip_libdsk_Geometry_apricotGeometry
+  (JNIEnv *env, jobject jg, jbyteArray arr)
+{
+	DSK_GEOMETRY dg;
+	dsk_err_t err;
+	jbyte *buf;
+	
+	err   = geom_from_java  (env, jg, &dg);
+
+	buf = (*env)->GetByteArrayElements(env, arr, NULL);
+	if (!err) err = dg_aprigeom(&dg, buf);
+	(*env)->ReleaseByteArrayElements(env, arr, buf, 0);
+	if (!err) err = geom_to_java(env, jg, &dg);
+	check_error(env, err);
+}
+/*
+ * Class:     uk_co_demon_seasip_libdsk_Geometry
  * Method:    pcwGeometry
  * Signature: ([B)V
  */
@@ -1129,6 +1224,8 @@ JNIEXPORT jstring JNICALL Java_uk_co_demon_seasip_libdsk_LibDsk_version
 {
 	return (*env)->NewStringUTF(env, LIBDSK_VERSION);
 }
+
+
 
 
 #endif /* def HAVE_JNI_H */

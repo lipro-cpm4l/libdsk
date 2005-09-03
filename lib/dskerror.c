@@ -54,6 +54,13 @@ LDPUBLIC32 char * LDPUBLIC16 dsk_strerror(dsk_err_t err)
 		case DSK_ERR_ACCESS:	return "Access denied.";
                 case DSK_ERR_CTRLR:	return "Controller failed.";
                 case DSK_ERR_COMPRESS:	return "Compressed file is corrupt.";
+		case DSK_ERR_RPC:	return "Invalid RPC packet.";
+		case DSK_ERR_BADOPT:	return "Requested driver-specific feature not available.";
+		case DSK_ERR_BADVAL:	return "Bad value for driver-specific feature.";
+		case DSK_ERR_ABORT:	return "Operation was cancelled by user.";
+		case DSK_ERR_TIMEOUT:	return "Timed out waiting for response.";
+		case DSK_ERR_UNKRPC:	return "RPC server did not recognise function.";
+		case DSK_ERR_BADMEDIA:	return "Disc is not suitable for this operation";
 		case DSK_ERR_UNKNOWN:	return "Controller returned unknown error.";
  	}
 	return "Unknown error.";
@@ -65,10 +72,13 @@ LDPUBLIC32 char * LDPUBLIC16 dsk_strerror(dsk_err_t err)
 #include <assert.h>
 void *dsk_malloc(size_t size)
 {
-	void *ptr = malloc(size);
+	void *ptr;
 
 	assert(size);	
-	printf("malloc(%d) returns %x\n", size, (int)ptr);
+	printf("malloc(%d) ", size);
+	fflush(stdout);
+	ptr = malloc(size);
+	printf("returns %x\n", (int)ptr);
 	return ptr;
 }
 

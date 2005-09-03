@@ -30,6 +30,8 @@ typedef struct
 	int    w32_readonly;
 	int    w32_unit;
 	HANDLE w32_hdisk;
+        HANDLE w32_hmail;
+        char   w32_slotname[PATH_MAX];
 } WIN32_DSK_DRIVER;
 
 
@@ -71,6 +73,22 @@ dsk_err_t win32_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 dsk_err_t win32c_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                       dsk_phead_t head, unsigned char *result);
 
+dsk_err_t win32m_open(DSK_DRIVER *self, const char *filename);
+dsk_err_t win32m_close(DSK_DRIVER *self);
+dsk_err_t win32m_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              void *buf, dsk_pcyl_t cylinder,
+                              dsk_phead_t head, dsk_psect_t sector);
+dsk_err_t win32m_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              const void *buf, dsk_pcyl_t cylinder,
+                              dsk_phead_t head, dsk_psect_t sector);
+dsk_err_t win32m_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
+                                dsk_pcyl_t cylinder, dsk_phead_t head,
+                                const DSK_FORMAT *format, unsigned char filler);
+dsk_err_t win32m_secid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                                dsk_pcyl_t cylinder, dsk_phead_t head,
+                                DSK_FORMAT *result);
+dsk_err_t win32m_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                      dsk_phead_t head, unsigned char *result);
 
 #endif
  

@@ -30,6 +30,8 @@ typedef struct
 	dsk_psect_t   cpc_sector;	/* Last sector used for DD READ ID */
 	unsigned char cpc_dskhead[256];	/* DSK header */
 	unsigned char cpc_trkhead[256];	/* Track header */
+	unsigned char cpc_status[4];	/* Dummy FDC status regs ST0-ST3: Read */
+	int	      cpc_statusw[4];	/* Dummy FDC status regs ST0-ST3: Write */
 } CPCEMU_DSK_DRIVER;
 
 /* v0.9.0: Use subclassing to create separate drivers for normal and 

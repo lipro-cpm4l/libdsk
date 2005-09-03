@@ -10,5 +10,9 @@
 #endif
 
 #define HAVE_STRICMP 1
+#define HAVE_LIMITS_H 1
 #define HAVE_WINDOWS_H 1
-#undef HAVE_WINIOCTL_H 
+#undef HAVE_WINIOCTL_H
+#define HAVE_SYS_STAT_H
+#define S_ISDIR(x) ((x) & S_IFDIR)
+

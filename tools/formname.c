@@ -23,6 +23,7 @@
 /* Query the library for supported formats, and select one */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "config.h"
 #include "libdsk.h"
@@ -42,27 +43,29 @@ void valid_formats(void)
 	}
 }
 
-dsk_format_t check_format(char *arg, int argc, char **argv)
+dsk_format_t check_format(char *arg, int *argc, char **argv)
 {
 	int fmt;
-	int n = find_arg(arg, argc, argv);
+	int n = find_arg(arg, *argc, argv);
 	dsk_cchar_t fname;
+	char *argname;
 
 	if (n < 0) return -1;
-	++n;
-	if (n >= argc) 
+	excise_arg(n, argc, argv);
+	if (n >= *argc) 
 	{
 		fprintf(stderr, "Syntax error: use '%s <format>'\n", arg);
 		exit(1);
 	}
-	
+	argname = argv[n];
+	excise_arg(n, argc, argv);
 	fmt = FMT_180K;
 	while (dg_stdformat(NULL, fmt, &fname, NULL) == DSK_ERR_OK)
 	{
-		if (!strcmpi(argv[n], fname)) return fmt;
+		if (!strcmpi(argname, fname)) return fmt;
 		++fmt;
 	}
-	fprintf(stderr, "Format name %s not recognised.\n", argv[n]);
+	fprintf(stderr, "Format name %s not recognised.\n", argname);
 	exit(1);
 	return FMT_180K;
 }

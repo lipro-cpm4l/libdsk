@@ -85,4 +85,37 @@ public class LibDsk
  * @param comp The compression type to use. null for uncompressed.
  * @exception DskException If the drive could not be created. */
 	public static native Drive create(String filename, String type, String comp) throws DskException;
+
+
+	private static Reporter rep = null;
+
+/** Get the object to which progress messages will be sent. */
+	public static Reporter getReporter()
+	{
+		return rep;
+	}
+
+	private static native void setReporter(boolean javamode);
+
+/** Set the object that will be called with progress messages 
+ *  @param r The object to which progress messages will be sent. */
+	public static void setReporter(Reporter r)
+	{
+		rep = r;
+		setReporter(r != null);
+	}
+
+/** Send a string to the current reporter, if any 
+ *  @param s The string to print */
+	public static void report(String s)
+	{
+		if (rep != null) rep.report(s);
+	}
+
+
+/** Remove any string displayed by the current reporter */
+	public static void reportEnd()
+	{
+		if (rep != null) rep.reportEnd();
+	}
 }

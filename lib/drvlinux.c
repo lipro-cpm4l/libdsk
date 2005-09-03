@@ -68,6 +68,10 @@ DRV_CLASS dc_linux =
 	&linux_xread,	/* read sector extended */
 	&linux_xwrite,	/* write sector extended */
 	&linux_tread,	/* read track */
+	NULL,		/* linux_xtread */
+	&linux_option_enum,	/* List options */
+	&linux_option_set,	/* Set option */
+	&linux_option_get	/* Get option */
 };
 
 /* Initialise a raw FDC command */
@@ -123,8 +127,9 @@ static int get_rate(const DSK_GEOMETRY *dg)
  * you'd then encode the unit number in the bottom 2 bits. */
 static dsk_phead_t encode_head(DSK_DRIVER *self, dsk_phead_t head)
 {
+	LINUX_DSK_DRIVER *lxself = (LINUX_DSK_DRIVER *)self;
 	/* Is the driver being forced to one or other side of the disc? */
-	if (self->dr_forcehead >= 0) head = self->dr_forcehead;
+	if (lxself->lx_forcehead >= 0) head = lxself->lx_forcehead;
 
 	return head ? 4 : 0;
 }
@@ -136,14 +141,14 @@ static dsk_err_t check_geom(LINUX_DSK_DRIVER *self, const DSK_GEOMETRY *dg)
 {
 	struct floppy_struct str;
 
-	if (dg->dg_cylinders == self->lx_geom.dg_cylinders &&
-	    dg->dg_sectors   == self->lx_geom.dg_sectors   &&
-	    dg->dg_heads     == self->lx_geom.dg_heads) return DSK_ERR_OK;
+	if (dg->dg_cylinders    == self->lx_geom.dg_cylinders &&
+	    dg->dg_sectors      == self->lx_geom.dg_sectors   &&
+	    dg->dg_heads        == self->lx_geom.dg_heads) return DSK_ERR_OK;
 
 	str.sect    = dg->dg_sectors;
 	str.head    = dg->dg_heads;
 	str.track   = dg->dg_cylinders;
-	str.stretch = 0; // XXX double-stepping
+	str.stretch = 0;	/* LibDsk does its own double-stepping */
 	str.gap     = dg->dg_rwgap;
 	str.rate    = get_rate(dg);
 	str.spec1   = 0xDF;	/* XXX Is it always this? */
@@ -165,6 +170,8 @@ dsk_err_t linux_open(DSK_DRIVER *self, const char *filename)
 	if (self->dr_class != &dc_linux) return DSK_ERR_BADPTR;
 	lxself = (LINUX_DSK_DRIVER *)self;
 	lxself->lx_fd = -1;
+	lxself->lx_forcehead = -1;
+	lxself->lx_doublestep = 0;
 /* 
  * We are only interested in the file if it's a block device, major 2 
  */
@@ -253,6 +260,7 @@ dsk_err_t linux_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 	raw_cmd.flags = FD_RAW_READ | FD_RAW_INTR;
 	if (cylinder != lxself->lx_cylinder) raw_cmd.flags |= FD_RAW_NEED_SEEK;
 	raw_cmd.track = cylinder;
+	if (lxself->lx_doublestep) raw_cmd.track *= 2;
 	raw_cmd.rate  = get_rate(geom);
 	raw_cmd.length= sector_size;
 	raw_cmd.data  = buf;
@@ -264,13 +272,14 @@ dsk_err_t linux_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 	raw_cmd.cmd[raw_cmd.cmd_count++] = cyl_expected;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = head_expected;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = sector;
-	raw_cmd.cmd[raw_cmd.cmd_count++] = dsk_get_psh(geom->dg_secsize);
+	raw_cmd.cmd[raw_cmd.cmd_count++] = dsk_get_psh(sector_size);
 	raw_cmd.cmd[raw_cmd.cmd_count++] = sector;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = geom->dg_rwgap;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = (sector_size < 255) ? sector_size : 0xFF; 
 
 	if (ioctl(lxself->lx_fd, FDRAWCMD, &raw_cmd) < 0) return DSK_ERR_SYSERR;
 
+	memcpy(lxself->lx_status, raw_cmd.reply, 4);
 	if (raw_cmd.reply[0] & 0x40) return xlt_error(raw_cmd.reply);
 
 	if (deleted) deleted[0] = (raw_cmd.reply[2] & 0x40) ? 1 : 0;
@@ -314,6 +323,7 @@ dsk_err_t linux_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, const void *b
 	raw_cmd.flags = FD_RAW_WRITE | FD_RAW_INTR;
 	if (cylinder != lxself->lx_cylinder) raw_cmd.flags |= FD_RAW_NEED_SEEK;
 	raw_cmd.track = cylinder;
+	if (lxself->lx_doublestep) raw_cmd.track *= 2;
 	raw_cmd.rate  = get_rate(geom);
 	raw_cmd.length= sector_size;
 	raw_cmd.data  = (void *)buf;
@@ -324,13 +334,14 @@ dsk_err_t linux_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, const void *b
 	raw_cmd.cmd[raw_cmd.cmd_count++] = cyl_expected;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = head_expected;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = sector;
-	raw_cmd.cmd[raw_cmd.cmd_count++] = dsk_get_psh(geom->dg_secsize);
+	raw_cmd.cmd[raw_cmd.cmd_count++] = dsk_get_psh(sector_size);
 	raw_cmd.cmd[raw_cmd.cmd_count++] = sector;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = geom->dg_rwgap;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = (sector_size < 255) ? sector_size : 0xFF; 
 
 	if (ioctl(lxself->lx_fd, FDRAWCMD, &raw_cmd) < 0) return DSK_ERR_SYSERR;
 
+	memcpy(lxself->lx_status, raw_cmd.reply, 4);
 	if (raw_cmd.reply[0] & 0x40) return xlt_error(raw_cmd.reply);
 	lxself->lx_cylinder = cylinder;
 	return DSK_ERR_OK;
@@ -374,6 +385,7 @@ dsk_err_t linux_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 	raw_cmd.flags = FD_RAW_WRITE | FD_RAW_INTR;
 	if (cylinder != lxself->lx_cylinder) raw_cmd.flags |= FD_RAW_NEED_SEEK;
 	raw_cmd.track = cylinder;
+	if (lxself->lx_doublestep) raw_cmd.track *= 2;
 	raw_cmd.rate  = get_rate(geom);
 	raw_cmd.length= 4 * geom->dg_sectors;
 	raw_cmd.data  = buf;
@@ -387,6 +399,7 @@ dsk_err_t linux_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 
 	if (ioctl(lxself->lx_fd, FDRAWCMD, &raw_cmd) < 0) return DSK_ERR_SYSERR;
 
+	memcpy(lxself->lx_status, raw_cmd.reply, 4);
 	if (raw_cmd.reply[0] & 0x40) return xlt_error(raw_cmd.reply);
 	lxself->lx_cylinder = cylinder;
 	return DSK_ERR_OK;
@@ -424,12 +437,14 @@ dsk_err_t linux_secid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	raw_cmd.flags = FD_RAW_INTR;
 	if (cylinder != lxself->lx_cylinder)  raw_cmd.flags |= FD_RAW_NEED_SEEK;
 	raw_cmd.track = cylinder;
+	if (lxself->lx_doublestep) raw_cmd.track *= 2;
 	raw_cmd.rate  = get_rate(geom);
 	raw_cmd.cmd[raw_cmd.cmd_count++] = FD_READID & mask;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = encode_head(self, head);
 
 	if (ioctl(lxself->lx_fd, FDRAWCMD, &raw_cmd) < 0) return DSK_ERR_SYSERR;
 
+	memcpy(lxself->lx_status, raw_cmd.reply, 4);
 	if (raw_cmd.reply[0] & 0x40) return xlt_error(raw_cmd.reply);
 	result->fmt_cylinder = raw_cmd.reply[3];	
 	result->fmt_head     = raw_cmd.reply[4];	
@@ -456,6 +471,7 @@ dsk_err_t linux_xseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	raw_cmd.flags = FD_RAW_INTR;
 	raw_cmd.flags |= FD_RAW_NEED_SEEK;
 	raw_cmd.track = cylinder;
+	if (lxself->lx_doublestep) raw_cmd.track *= 2;
 	raw_cmd.rate  = get_rate(geom);
 	raw_cmd.cmd[raw_cmd.cmd_count++] = FD_SEEK;
 	raw_cmd.cmd[raw_cmd.cmd_count++] = encode_head(self, head);
@@ -463,6 +479,7 @@ dsk_err_t linux_xseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 
 	if (ioctl(lxself->lx_fd, FDRAWCMD, &raw_cmd) < 0) return DSK_ERR_SYSERR;
 
+	memcpy(lxself->lx_status, raw_cmd.reply, 4);
 	if (raw_cmd.reply[0] & 0x40) return xlt_error(raw_cmd.reply);
 	lxself->lx_cylinder = cylinder;
 	return DSK_ERR_OK;
@@ -523,6 +540,7 @@ dsk_err_t linux_xtread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 	raw_cmd.flags = FD_RAW_READ | FD_RAW_INTR;
 	if (cylinder != lxself->lx_cylinder) raw_cmd.flags |= FD_RAW_NEED_SEEK;
 	raw_cmd.track = cylinder;
+	if (lxself->lx_doublestep) raw_cmd.track *= 2;
 	raw_cmd.rate  = get_rate(geom);
 	raw_cmd.length= geom->dg_secsize * geom->dg_sectors;
 	raw_cmd.data  = buf;
@@ -540,11 +558,102 @@ dsk_err_t linux_xtread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 
 	if (ioctl(lxself->lx_fd, FDRAWCMD, &raw_cmd) < 0) return DSK_ERR_SYSERR;
 
+	memcpy(lxself->lx_status, raw_cmd.reply, 4);
 	if (raw_cmd.reply[0] & 0x40) return xlt_error(raw_cmd.reply);
 	lxself->lx_cylinder = cylinder;
 	return DSK_ERR_OK;
 }
 
+/* List driver-specific options */
+dsk_err_t linux_option_enum(DSK_DRIVER *self, int idx, char **optname)
+{
+	if (!self) return DSK_ERR_BADPTR;
+	if (self->dr_class != &dc_linux) return DSK_ERR_BADPTR;
+
+	switch(idx)
+	{
+		case 0: if (optname) *optname = "HEAD"; return DSK_ERR_OK;
+		case 1: if (optname) *optname = "DOUBLESTEP"; return DSK_ERR_OK;
+		case 2: if (optname) *optname = "ST0"; return DSK_ERR_OK;
+		case 3: if (optname) *optname = "ST1"; return DSK_ERR_OK;
+		case 4: if (optname) *optname = "ST2"; return DSK_ERR_OK;
+		case 5: if (optname) *optname = "ST3"; return DSK_ERR_OK;
+	}
+	return DSK_ERR_BADOPT;	
+
+}
+
+/* Set a driver-specific option */
+dsk_err_t linux_option_set(DSK_DRIVER *self, const char *optname, int value)
+{
+	LINUX_DSK_DRIVER *lxself;
+	if (!self || !optname) return DSK_ERR_BADPTR;
+	if (self->dr_class != &dc_linux) return DSK_ERR_BADPTR;
+	lxself = (LINUX_DSK_DRIVER *)self;
+
+	if (!strcmp(optname, "HEAD")) switch(value)
+	{
+		case 0: case 1: case -1: 
+			lxself->lx_forcehead = value;	
+			return DSK_ERR_OK;
+		default: return DSK_ERR_BADVAL;
+	}
+	if (!strcmp(optname, "DOUBLESTEP")) switch(value)
+	{
+		case 0: case 1: 
+			lxself->lx_doublestep = value;	
+			return DSK_ERR_OK;
+		default: return DSK_ERR_BADVAL;
+	}
+/* ST0 - ST3 are read-only options. No values can be set for them. */
+	if ((!strcmp(optname, "ST0")) ||
+	    (!strcmp(optname, "ST1")) ||
+	    (!strcmp(optname, "ST2")) ||
+	    (!strcmp(optname, "ST3"))) return DSK_ERR_BADVAL;
+	return DSK_ERR_BADOPT;
+}
+	
+/* Get a driver-specific option */
+dsk_err_t linux_option_get(DSK_DRIVER *self, const char *optname, int *value)
+{
+	LINUX_DSK_DRIVER *lxself;
+	if (!self || !optname) return DSK_ERR_BADPTR;
+	if (self->dr_class != &dc_linux) return DSK_ERR_BADPTR;
+	lxself = (LINUX_DSK_DRIVER *)self;
+
+	if (!strcmp(optname, "HEAD")) 
+	{
+		if (value) *value = lxself->lx_forcehead;
+		return DSK_ERR_OK;
+	}
+	if (!strcmp(optname, "DOUBLESTEP")) 
+	{
+		if (value) *value = lxself->lx_doublestep;
+		return DSK_ERR_OK;
+	}
+	if (!strcmp(optname, "ST0"))
+	{
+		if (value) *value = lxself->lx_status[0];
+		return DSK_ERR_OK;
+	}
+	if (!strcmp(optname, "ST1"))
+	{
+		if (value) *value = lxself->lx_status[1];
+		return DSK_ERR_OK;
+	}
+	if (!strcmp(optname, "ST2"))
+	{
+		if (value) *value = lxself->lx_status[2];
+		return DSK_ERR_OK;
+	}
+	if (!strcmp(optname, "ST3"))
+	{
+		if (value) *value = lxself->lx_status[3];
+		return DSK_ERR_OK;
+	}
+	return DSK_ERR_BADOPT;
+}
+	
 
 
 #endif

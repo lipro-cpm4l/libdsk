@@ -24,6 +24,7 @@
  * floppy disc. */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include "libdsk.h"
 #include "utilopts.h"
@@ -39,29 +40,34 @@ int do_md3(char *outfile, char *outtyp, char *outcomp, int forcehead, char *news
 int help(int argc, char **argv)
 {
 	fprintf(stderr, "Syntax: \n"
-                "      %s dskimage { -serial <serialno> } { -type <type> } { -side <side> }\n",
+                "      %s { -serial <serialno> } { -type <type> } { -side <side> } dskimage\n",
 			AV0);
 	fprintf(stderr,"\nDefault type is autodetect.\n\n");
 		
 	fprintf(stderr, "eg: %s myfile.DSK\n"
-                        "    %s myfile.DSK -serial 1234567\n", AV0, AV0);
+                        "    %s -serial 1234567 myfile.DSK \n", AV0, AV0);
 	return 1;
 }
 
 
-char *check_serial(char *arg, int argc, char **argv)
+char *check_serial(char *arg, int *argc, char **argv)
 {
-        int n = find_arg(arg, argc, argv);
+        int n = find_arg(arg, *argc, argv);
+	char *ser;
 
         if (n < 0) return NULL;
-        ++n;
-        if (n >= argc)
+        excise_arg(n, argc, argv);
+        if (n >= *argc)
         {
                 fprintf(stderr, "Syntax error: use '%s <serialnumber>'\n", arg);
                 exit(1);
         }
-        return argv[n];
+	ser = argv[n];
+        excise_arg(n, argc, argv);
+	return ser;
 }
+
+
 
 
 
@@ -75,10 +81,17 @@ int main(int argc, char **argv)
 
 	if (argc < 2) return help(argc, argv);
 
-	outtyp    = check_type  ("-type",   argc, argv);
-	outcomp   = check_type  ("-comp",   argc, argv);
-	newser    = check_serial("-serial", argc, argv);
-	forcehead = check_forcehead("-side", argc, argv);	
+        ignore_arg("-itype", 2, &argc, argv);
+        ignore_arg("-iside", 2, &argc, argv);
+        ignore_arg("-icomp", 2, &argc, argv);
+        ignore_arg("-otype", 2, &argc, argv);
+        ignore_arg("-oside", 2, &argc, argv);
+        ignore_arg("-ocomp", 2, &argc, argv);
+
+	outtyp    = check_type  ("-type",   &argc, argv);
+	outcomp   = check_type  ("-comp",   &argc, argv);
+	newser    = check_serial("-serial", &argc, argv);
+	forcehead = check_forcehead("-side", &argc, argv);	
         if (find_arg("--help",    argc, argv) > 0) return help(argc, argv);
         if (find_arg("--version", argc, argv) > 0) return version();
 
@@ -128,7 +141,7 @@ int do_md3(char *outfile, char *outtyp, char *outcomp, int forcehead, char *news
 	unsigned char buf[256];
 	
 	e = dsk_open(&outdr, outfile, outtyp, outcomp);
-	if (!e) e = dsk_set_forcehead(outdr, forcehead);
+	if (!e && forcehead >= 0) e = dsk_set_forcehead(outdr, forcehead);
 	if (!e) e = dsk_getgeom(outdr, &dg);
 	dg.dg_secsize = 256;	/* MD3 discs have 256-byte sectors in the
 				 * copy-protection track */

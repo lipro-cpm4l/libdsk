@@ -27,12 +27,22 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_pread(DSK_DRIVER *self, const DSK_GEOMETRY *
                               dsk_phead_t head, dsk_psect_t sector)
 {
 	DRV_CLASS *dc;
+	dsk_err_t e = DSK_ERR_UNKNOWN;
+	unsigned n;
+
 	if (!self || !geom || !buf || !self->dr_class) return DSK_ERR_BADPTR;
 
 	dc = self->dr_class;
 
+	/* LDTRACE(("dsk_pread (%d,%d,%d)\n", cylinder, head, sector)); */
         if (!dc->dc_read) return DSK_ERR_NOTIMPL;
-	return (dc->dc_read)(self,geom,buf,cylinder,head,sector);	
+	for (n = 0; n < self->dr_retry_count; n++)
+	{
+		e = (dc->dc_read)(self,geom,buf,cylinder,head,sector);	
+/* 		LDTRACE(("  err=%d\n", e)); */
+		if (!DSK_TRANSIENT_ERROR(e)) return e; 
+	}
+	return e;
 }
 
 
@@ -56,12 +66,25 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_xread(DSK_DRIVER *self, const DSK_GEOMETRY *
 			dsk_psect_t sector, size_t sector_len, int *deleted)
 {
 	DRV_CLASS *dc;
+	dsk_err_t e = DSK_ERR_UNKNOWN;
+	unsigned n;
 	if (!self || !geom || !buf || !self->dr_class) return DSK_ERR_BADPTR;
 
 	dc = self->dr_class;
 
-        if (!dc->dc_xread) return DSK_ERR_NOTIMPL;
-	return (dc->dc_xread)(self,geom,buf,cylinder,head,
-				cyl_expect, head_expect, sector, sector_len, deleted);	
+/*	LDTRACE(("dsk_xread (%d,%d,%d) (%d,%d)\n", cylinder, head, sector,
+				cyl_expect, head_expect)); */
+        if (!dc->dc_xread) 
+	{
+		return DSK_ERR_NOTIMPL;
+	}
+	for (n = 0; n < self->dr_retry_count; n++)
+	{
+		e = (dc->dc_xread)(self,geom,buf,cylinder,head,
+			cyl_expect, head_expect, sector, sector_len, deleted);	
+		/* LDTRACE(("  err=%d\n", e)); */
+		if (!DSK_TRANSIENT_ERROR(e)) return e;
+	}
+	return e;
 }
 

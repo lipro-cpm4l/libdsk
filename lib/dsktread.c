@@ -34,7 +34,11 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_ptread(DSK_DRIVER *self, const DSK_GEOMETRY 
 
 	dc = self->dr_class;
 
-	if (dc->dc_tread) return (dc->dc_tread)(self,geom,buf,cylinder,head);	
+	if (dc->dc_tread) 
+	{
+		err = (dc->dc_tread)(self,geom,buf,cylinder,head);	
+		if (err != DSK_ERR_NOTIMPL) return err;
+	}
 
 	b = (unsigned char *)buf;
 
@@ -74,8 +78,12 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_xtread(DSK_DRIVER *self, const DSK_GEOMETRY 
 
 	dc = self->dr_class;
 
-	if (dc->dc_xtread) return (dc->dc_xtread)(self,geom,buf,cylinder,head,
-					cyl_expected, head_expected);	
+	if (dc->dc_xtread) 
+	{
+		err = (dc->dc_xtread)(self,geom,buf,cylinder,head,
+				cyl_expected, head_expected);	
+		if (err != DSK_ERR_NOTIMPL) return err;
+	}
 
 	b = (unsigned char *)buf;
 

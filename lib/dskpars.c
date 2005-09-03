@@ -25,21 +25,48 @@
 LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_set_forcehead(DSK_DRIVER *self, int force)
 {
 	if (!self) return DSK_ERR_BADPTR;
-	switch(force)
-	{
-		case 1:
-		case 0:
-		case -1: self->dr_forcehead = force;
-			return DSK_ERR_OK;
-	}
-	return DSK_ERR_BADPARM;
+	return dsk_set_option(self, "HEAD", force);
 }
-
 
 LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_get_forcehead(DSK_DRIVER *self, int *force)
 {
 	if (!self) return DSK_ERR_BADPTR;
-	if (force) *force = self->dr_forcehead;
-	return DSK_ERR_OK;
+	return dsk_get_option(self, "HEAD", force);
 }
- 
+
+
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_set_option(DSK_PDRIVER self, const char *name, int value)
+{
+        DRV_CLASS *dc;
+        if (!self || !name || !self->dr_class) return DSK_ERR_BADPTR;
+
+        dc = self->dr_class;
+	if (!dc->dc_option_set) return DSK_ERR_BADOPT;
+	return (*dc->dc_option_set)(self, name, value);	
+}
+
+
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_get_option(DSK_PDRIVER self, const char *name, int *value)
+{
+        DRV_CLASS *dc;
+        if (!self || !name || !self->dr_class || !value) return DSK_ERR_BADPTR;
+
+        dc = self->dr_class;
+	if (!dc->dc_option_get) return DSK_ERR_BADOPT;
+	return (*dc->dc_option_get)(self, name, value);	
+}
+
+
+/* If "index" is in range, returns the n'th option name in (*optname).
+ *  * Else sets (*optname) to null. */
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_option_enum(DSK_PDRIVER self, int idx, char **name)
+{
+        DRV_CLASS *dc;
+        if (!self || !name || !self->dr_class) return DSK_ERR_BADPTR;
+
+        dc = self->dr_class;
+	*name = NULL;
+	if (!dc->dc_option_enum) return DSK_ERR_OK;
+	return (*dc->dc_option_enum)(self, idx, name);	
+}
+

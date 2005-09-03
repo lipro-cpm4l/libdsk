@@ -30,7 +30,10 @@ typedef struct
 	DSK_GEOMETRY lx_geom;
         int	     lx_fd;
 	int          lx_readonly;
+	int	     lx_forcehead;
+	int          lx_doublestep;
 	dsk_pcyl_t   lx_cylinder;
+	unsigned char lx_status[4];
 } LINUX_DSK_DRIVER;
 
 dsk_err_t linux_open(DSK_DRIVER *self, const char *filename);
@@ -65,5 +68,15 @@ dsk_err_t linux_tread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 dsk_err_t linux_xtread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
                               dsk_pcyl_t cylinder, dsk_phead_t head,
                               dsk_pcyl_t cyl_expected, dsk_phead_t head_expected);
+
+/* List driver-specific options */
+dsk_err_t linux_option_enum(DSK_DRIVER *self, int idx, char **optname);
+
+/* Set a driver-specific option */
+dsk_err_t linux_option_set(DSK_DRIVER *self, const char *optname, int value);
+/* Get a driver-specific option */
+dsk_err_t linux_option_get(DSK_DRIVER *self, const char *optname, int *value);
+
+
 #endif
 

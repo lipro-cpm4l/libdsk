@@ -125,6 +125,12 @@ public class Geometry
 	 *                         DOS boot sector.*/
         public native void dosGeometry(byte[] bootsect) throws DskException;
 
+	/** Initialise this class from an Apricot boot sector. 
+	 * @param bootsect The boot sector to read the disc geometry from
+	 * @exception DskException Thrown if the boot sector is not a valid
+	 *                         DOS boot sector.*/
+        public native void apricotGeometry(byte[] bootsect) throws DskException;
+
 	/** Initialise this class from a PCW boot sector. 
 	 * @param bootsect The boot sector to read the disc geometry from
 	 * @exception DskException Thrown if the boot sector is not a valid

@@ -9,6 +9,9 @@
 
 #define HAVE_GETTEMPFILENAME
 
+#define HAVE_LIMITS_H 1
 #define HAVE_STRICMP 1
 #define HAVE_WINDOWS_H 1
 #define HAVE_WINIOCTL_H 1
+#define HAVE_SYS_STAT_H 1
+

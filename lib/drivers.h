@@ -27,10 +27,18 @@ extern DRV_CLASS dc_cpcemu;	/* CPCEMU DSK driver */
 extern DRV_CLASS dc_cpcext;	/* CPCEMU DSK driver: create in ext. format */
 extern DRV_CLASS dc_dqk;	/* Compressed CPCEMU driver */
 extern DRV_CLASS dc_posix;	/* POSIX driver */
+extern DRV_CLASS dc_nwasp;	/* NanoWasp driver */
 extern DRV_CLASS dc_myz80;	/* MYZ80 driver */
 extern DRV_CLASS dc_cfi;	/* CFI driver */
+extern DRV_CLASS dc_adisk;	/* APRIDISK driver */
+extern DRV_CLASS dc_qm;		/* CopyQM driver */
+extern DRV_CLASS dc_rcpmfs;	/* Reverse-CP/MFS driver */
+extern DRV_CLASS dc_remote;	/* All remote drivers */
 #ifdef LINUXFLOPPY
 extern DRV_CLASS dc_linux;	/* Linux driver */
+#endif
+#ifdef NTWDMFLOPPY
+extern DRV_CLASS dc_ntwdm;	/* NT WDM driver */
 #endif
 #ifdef WIN32FLOPPY
 extern DRV_CLASS dc_win32;	/* Win32 driver */

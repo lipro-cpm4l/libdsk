@@ -3,6 +3,18 @@ Microsoft Developer Studio Workspace File, Format Version 6.00
 
 ###############################################################################
 
+Project: "dskdump"=.\dskdump.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "dskform"=.\dskform.dsp - Package Owner=<4>
 
 Package=<5>
@@ -27,6 +39,18 @@ Package=<4>
 
 ###############################################################################
 
+Project: "dskscan"=.\dskscan.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
 Project: "dsktrans"=.\dsktrans.dsp - Package Owner=<4>
 
 Package=<5>
@@ -40,6 +64,18 @@ Package=<4>
 ###############################################################################
 
 Project: "libdsk"=.\libdsk.dsp - Package Owner=<4>
+
+Package=<5>
+{{{
+}}}
+
+Package=<4>
+{{{
+}}}
+
+###############################################################################
+
+Project: "serslave"=.\serslave.dsp - Package Owner=<4>
 
 Package=<5>
 {{{

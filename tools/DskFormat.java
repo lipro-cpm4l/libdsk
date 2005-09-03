@@ -54,6 +54,8 @@ class DskFormat
 		int forceHead;
 		int format;
 
+                LibDsk.setReporter(new ScreenReporter());
+
 		if (UtilOpts.findArg("--help", args) >= 0) help();	
 		if (UtilOpts.findArg("--version", args) >= 0) UtilOpts.version();	
 		if (args.length < 1) help(); 

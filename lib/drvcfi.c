@@ -323,6 +323,7 @@ dsk_err_t cfi_open(DSK_DRIVER *self, const char *filename)
 	}
 	memset(cfiself->cfi_tracks, 0, 200 * sizeof(CFI_TRACK));
 	nt = 0;
+	dsk_report("Loading CFI file into memory");
 	while (!feof(fp))
 	{
 		err = cfi_load_track(cfiself, nt++, fp);
@@ -335,6 +336,7 @@ dsk_err_t cfi_open(DSK_DRIVER *self, const char *filename)
 			return err;
 		}
 	} 
+	dsk_report_end();
 	return DSK_ERR_OK;
 }
 
@@ -383,12 +385,14 @@ dsk_err_t cfi_close(DSK_DRIVER *self)
 		if (!fp) err = DSK_ERR_SYSERR;
 		else
 		{
+			dsk_report("Compressing CFI file");
 			for (trk = 0; trk < cfiself->cfi_ntracks; trk++)
 			{
 				err = cfi_save_track(cfiself, trk, fp);
 				if (err) break;
 			}
 			fclose(fp);
+			dsk_report_end();
 		}
 	}
 /* Free track buffers if we have them */

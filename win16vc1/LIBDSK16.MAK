@@ -1,7 +1,7 @@
 # Microsoft Visual C++ generated build script - Do not modify
 
-PROJ = LIBDSK
-DEBUG = 1
+PROJ = LIBDSK16
+DEBUG = 0
 PROGTYPE = 1
 CALLER = 
 ARGS = 
@@ -74,7 +74,24 @@ SBRS = COMPBZ2.SBR \
 		DSKSTAT.SBR \
 		DSKTREAD.SBR \
 		DSKWRITE.SBR \
-		DRVWIN16.SBR
+		DRVWIN16.SBR \
+		DRVNWASP.SBR \
+		RPCCLI.SBR \
+		RPCMAP.SBR \
+		RPCPACK.SBR \
+		RPCSERV.SBR \
+		DRVRCPM.SBR \
+		DRVQM.SBR \
+		DSKREPRT.SBR \
+		CRCTABLE.SBR \
+		DRVADISK.SBR \
+		DSKCMT.SBR \
+		DSKRETRY.SBR \
+		DSKDIRTY.SBR \
+		DSKRTRD.SBR \
+		DSKTRKID.SBR \
+		DRVNTWDM.SBR \
+		REMOTE.SBR
 
 
 COMPBZ2_DEP = j:\c\libdsk\lib\compi.h \
@@ -146,6 +163,7 @@ DRVWIN32_DEP = j:\c\libdsk\lib\drvi.h \
 	linux/fd.h \
 	linux/fdreg.h \
 	j:\c\libdsk\lib\drvwin32.h \
+	j:\c\libdsk\lib\rpcfuncs.h \
 	j:\c\libdsk\lib\w95defs.h
 
 
@@ -252,6 +270,122 @@ DRVWIN16_DEP = j:\c\libdsk\lib\drvi.h \
 	j:\c\libdsk\lib\w16defs.h
 
 
+DRVNWASP_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h \
+	j:\c\libdsk\lib\drvnwasp.h
+
+
+RPCCLI_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h \
+	j:\c\libdsk\lib\rpcfuncs.h \
+	j:\c\libdsk\lib\remote.h
+
+
+RPCMAP_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h
+
+
+RPCPACK_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h \
+	j:\c\libdsk\lib\rpcfuncs.h
+
+
+RPCSERV_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h \
+	j:\c\libdsk\lib\rpcfuncs.h
+
+
+DRVRCPM_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h \
+	j:\c\libdsk\lib\drvrcpm.h
+
+
+DRVQM_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h \
+	j:\c\libdsk\lib\drvqm.h \
+	j:\c\libdsk\lib\crctable.h
+
+
+DSKREPRT_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h
+
+
+CRCTABLE_DEP = 
+
+DRVADISK_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h \
+	j:\c\libdsk\lib\drvadisk.h
+
+
+DSKCMT_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h
+
+
+DSKRETRY_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h
+
+
+DSKDIRTY_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h
+
+
+DSKRTRD_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h
+
+
+DSKTRKID_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h
+
+
+DRVNTWDM_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h \
+	j:\c\libdsk\lib\drvntwdm.h
+
+
+REMOTE_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h \
+	j:\c\libdsk\lib\rpcfuncs.h \
+	j:\c\libdsk\lib\remote.h \
+	j:\c\libdsk\lib\remall.h \
+	j:\c\libdsk\lib\rpctios.h \
+	j:\c\libdsk\lib\rpcwin32.h \
+	j:\c\libdsk\lib\rpcfossl.h \
+	j:\c\libdsk\lib\rpcfork.h \
+	j:\c\libdsk\lib\remote.inc
+
+
 all:	$(PROJ).DLL $(PROJ).BSC
 
 COMPBZ2.OBJ:	..\LIB\COMPBZ2.C $(COMPBZ2_DEP)
@@ -332,11 +466,65 @@ DSKWRITE.OBJ:	..\LIB\DSKWRITE.C $(DSKWRITE_DEP)
 DRVWIN16.OBJ:	..\LIB\DRVWIN16.C $(DRVWIN16_DEP)
 	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DRVWIN16.C
 
+DRVNWASP.OBJ:	..\LIB\DRVNWASP.C $(DRVNWASP_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DRVNWASP.C
+
+RPCCLI.OBJ:	..\LIB\RPCCLI.C $(RPCCLI_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\RPCCLI.C
+
+RPCMAP.OBJ:	..\LIB\RPCMAP.C $(RPCMAP_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\RPCMAP.C
+
+RPCPACK.OBJ:	..\LIB\RPCPACK.C $(RPCPACK_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\RPCPACK.C
+
+RPCSERV.OBJ:	..\LIB\RPCSERV.C $(RPCSERV_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\RPCSERV.C
+
+DRVRCPM.OBJ:	..\LIB\DRVRCPM.C $(DRVRCPM_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DRVRCPM.C
+
+DRVQM.OBJ:	..\LIB\DRVQM.C $(DRVQM_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DRVQM.C
+
+DSKREPRT.OBJ:	..\LIB\DSKREPRT.C $(DSKREPRT_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DSKREPRT.C
+
+CRCTABLE.OBJ:	..\LIB\CRCTABLE.C $(CRCTABLE_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\CRCTABLE.C
+
+DRVADISK.OBJ:	..\LIB\DRVADISK.C $(DRVADISK_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DRVADISK.C
+
+DSKCMT.OBJ:	..\LIB\DSKCMT.C $(DSKCMT_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DSKCMT.C
+
+DSKRETRY.OBJ:	..\LIB\DSKRETRY.C $(DSKRETRY_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DSKRETRY.C
+
+DSKDIRTY.OBJ:	..\LIB\DSKDIRTY.C $(DSKDIRTY_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DSKDIRTY.C
+
+DSKRTRD.OBJ:	..\LIB\DSKRTRD.C $(DSKRTRD_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DSKRTRD.C
+
+DSKTRKID.OBJ:	..\LIB\DSKTRKID.C $(DSKTRKID_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DSKTRKID.C
+
+DRVNTWDM.OBJ:	..\LIB\DRVNTWDM.C $(DRVNTWDM_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DRVNTWDM.C
+
+REMOTE.OBJ:	..\LIB\REMOTE.C $(REMOTE_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\REMOTE.C
+
 
 $(PROJ).DLL::	COMPBZ2.OBJ COMPGZ.OBJ COMPRESS.OBJ COMPSQ.OBJ DRVCFI.OBJ DRVCPCEM.OBJ \
 	DRVLINUX.OBJ DRVMYZ80.OBJ DRVPOSIX.OBJ DRVWIN32.OBJ DSKCHECK.OBJ DSKERROR.OBJ DSKFMT.OBJ \
 	DSKGEOM.OBJ DSKJNI.OBJ DSKLPHYS.OBJ DSKOPEN.OBJ DSKPARS.OBJ DSKREAD.OBJ DSKSECID.OBJ \
-	DSKSEEK.OBJ DSKSGEOM.OBJ DSKSTAT.OBJ DSKTREAD.OBJ DSKWRITE.OBJ DRVWIN16.OBJ $(OBJS_EXT) $(DEFFILE)
+	DSKSEEK.OBJ DSKSGEOM.OBJ DSKSTAT.OBJ DSKTREAD.OBJ DSKWRITE.OBJ DRVWIN16.OBJ DRVNWASP.OBJ \
+	RPCCLI.OBJ RPCMAP.OBJ RPCPACK.OBJ RPCSERV.OBJ DRVRCPM.OBJ DRVQM.OBJ DSKREPRT.OBJ \
+	CRCTABLE.OBJ DRVADISK.OBJ DSKCMT.OBJ DSKRETRY.OBJ DSKDIRTY.OBJ DSKRTRD.OBJ DSKTRKID.OBJ \
+	DRVNTWDM.OBJ REMOTE.OBJ $(OBJS_EXT) $(DEFFILE)
 	echo >NUL @<<$(PROJ).CRF
 COMPBZ2.OBJ +
 COMPGZ.OBJ +
@@ -364,11 +552,28 @@ DSKSTAT.OBJ +
 DSKTREAD.OBJ +
 DSKWRITE.OBJ +
 DRVWIN16.OBJ +
+DRVNWASP.OBJ +
+RPCCLI.OBJ +
+RPCMAP.OBJ +
+RPCPACK.OBJ +
+RPCSERV.OBJ +
+DRVRCPM.OBJ +
+DRVQM.OBJ +
+DSKREPRT.OBJ +
+CRCTABLE.OBJ +
+DRVADISK.OBJ +
+DSKCMT.OBJ +
+DSKRETRY.OBJ +
+DSKDIRTY.OBJ +
+DSKRTRD.OBJ +
+DSKTRKID.OBJ +
+DRVNTWDM.OBJ +
+REMOTE.OBJ +
 $(OBJS_EXT)
 $(PROJ).DLL
 $(MAPFILE)
-H:\DOSC\USR\MSVC\LIB\+
-H:\DOSC\USR\MSVC\MFC\LIB\+
+D:\USR\MSVC\LIB\+
+D:\USR\MSVC\MFC\LIB\+
 $(LIBS)
 $(DEFFILE);
 <<

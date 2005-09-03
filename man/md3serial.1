@@ -20,32 +20,32 @@
 .\" Author contact information:
 .\" John Elliott: email: jce@seasip.demon.co.uk
 .\"
-.TH dskid 1 "18 November, 2002" "Version 0.9.5" "Emulators"
+.TH md3serial 1 "14 June, 2005" "Version 1.1.5" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH NAME
-md3serial - view or change serial number on MicroDesign disks.
+md3serial - view or change serial number on MicroDesign discs.
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH SYNOPSIS
 .PD 0
 .B md3serial
-.I DISKIMAGE
 .RI [ "-serial SERIAL" ]
 .RI [ "-format FORMAT" ]
 .RI [ "-type TYPE" ]
 .RI [ "-side SIDE" ]
 .RI [ "-comp COMP" ]
+.I DISKIMAGE
 .P
 .PD 1
 .\"
 .\"------------------------------------------------------------------
 .\"
 .SH DESCRIPTION
-Md3serial allows the serial number on program disks distributed by Creative
-Technology (or image files made from such disks) to be viewed or changed.
+Md3serial allows the serial number on program discs distributed by Creative
+Technology (or image files made from such discs) to be viewed or changed.
 
 .\"
 .\"------------------------------------------------------------------
@@ -53,7 +53,7 @@ Technology (or image files made from such disks) to be viewed or changed.
 .SH OPTIONS
 .TP
 .B -serial SERIAL
-Write a new serial number to the disk (up to 7 characters). If this is not
+Write a new serial number to the disc (up to 7 characters). If this is not
 present the existing serial number remains unchanged.
 .TP
 .B -type TYPE
@@ -61,7 +61,7 @@ Determines which driver is to be used.
 .RS
 .TP 8
 .B auto
-Select according to the disk image file. This is the default.
+Select according to the disc image file. This is the default.
 .TP
 .B dsk
 Use the DSK (CPCEmu format) image driver.
@@ -105,7 +105,7 @@ Burrows-Wheeler compressed (bzip2 / bunzip2).
 
 .TP
 .B -side SIDE
-Determines which side (0 or 1) of the disk (image) is to be identified.
+Determines which side (0 or 1) of the disc (image) is to be identified.
 
 .\"
 .\"------------------------------------------------------------------
@@ -117,8 +117,7 @@ engineered.
 .\"
 .\"------------------------------------------------------------------
 .\"
-.SH BUGS
-The parameter order is too rigid.
+.\".SH BUGS
 .\"
 .\"------------------------------------------------------------------
 .\"

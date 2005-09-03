@@ -3,6 +3,9 @@
  *    LIBDSK: General floppy and diskimage access library                  *
  *    Copyright (C) 2001  John Elliott <jce@seasip.demon.co.uk>            *
  *                                                                         *
+ *    Modifications to add dsk_dirty()                                     *
+ *    (c) 2005 Philip Kendall <pak21-spectrum@srcf.ucam.org>               *
+ *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
  *    License as published by the Free Software Foundation; either         *
@@ -34,13 +37,18 @@
 # define LDPUBLIC32
 #else   /* def WIN16 */
 # ifdef WIN32
-# define LDPUBLIC16 __stdcall
-#  ifdef LIBDSK_EXPORTS
-#   define LDPUBLIC32 __declspec(dllexport)
-#  else  /* def LIBDSK_EXPORTS */
-#   define LDPUBLIC32 __declspec(dllimport)
-#  endif /* def LIBDSK_EXPORTS */ 
-# else   /* def WIN32 */
+#  ifdef NOTWINDLL
+#   define LDPUBLIC16
+#   define LDPUBLIC32
+#  else /* def NOTDLL */
+#   define LDPUBLIC16 __stdcall
+#   ifdef LIBDSK_EXPORTS
+#    define LDPUBLIC32 __declspec(dllexport)
+#   else  /* def LIBDSK_EXPORTS */
+#    define LDPUBLIC32 __declspec(dllimport)
+#   endif /* def LIBDSK_EXPORTS */ 
+#  endif  /* def NOTDLL */
+# else    /* def WIN32 */
 #  define LDPUBLIC32 
 #  define LDPUBLIC16
 # endif /* def WIN32 */
@@ -50,7 +58,7 @@
 extern "C" {
 #endif
 
-#define LIBDSK_VERSION "1.0.0"
+#define LIBDSK_VERSION "1.1.6"
 
 /************************* TYPES ********************************/
 
@@ -85,7 +93,18 @@ typedef const char *  dsk_cchar_t;	/* Const char * */
 #define DSK_ERR_ACCESS   (-22)	/* Access denied */
 #define DSK_ERR_CTRLR 	 (-23)	/* Failed controller */
 #define DSK_ERR_COMPRESS (-24)	/* Compressed file is corrupt */
+#define DSK_ERR_RPC	 (-25)  /* Error encoding / decoding RPC */
+#define DSK_ERR_BADOPT	 (-26)  /* Requested optional feature not present */
+#define DSK_ERR_BADVAL	 (-27)  /* Bad value for requested option */
+#define DSK_ERR_ABORT    (-28)  /* User abort requested */
+#define DSK_ERR_TIMEOUT  (-29)  /* Communications timed out */
+#define DSK_ERR_UNKRPC   (-30)  /* RPC server does not recognise function */
+#define DSK_ERR_BADMEDIA (-31)	/* Unsuitable media for drive */
 #define DSK_ERR_UNKNOWN  (-99)	/* Unknown error */
+
+/* Is this error a transient error, that may be cleared by a retry? */
+/* 1.1.3: Get this the right way round; they're negative numbers! */
+#define DSK_TRANSIENT_ERROR(e) ((e) > DSK_ERR_COMPRESS && (e) <= DSK_ERR_NOTRDY)
 
 /* Disc sidedness (logical/physical mapping). Use SIDES_ALT for single-sided floppies. */
 typedef enum 
@@ -127,7 +146,8 @@ typedef enum
 	FMT_200K,	/* 10 sectors, 40 tracks, 1 side */
 	FMT_BBC100,	/* 10 sectors, 40 tracks, 1 side, FM */
 	FMT_BBC200,	/* 10 sectors, 80 tracks, 1 side, FM */
-
+	FMT_MBEE400,	/* 10 sectors, 80 tracks, 1 side */
+	FMT_MGT800,     /* 10 sectors, 80 tracks, 2 sides out and out */
 	FMT_UNKNOWN = -1
 } dsk_format_t;
 
@@ -159,6 +179,11 @@ typedef struct
 	dsk_psect_t	fmt_sector;	
 	size_t		fmt_secsize;
 } DSK_FORMAT;
+
+/* Callbacks from LibDsk to program */
+
+typedef void (*DSK_REPORTFUNC)(const char *message);
+typedef void (*DSK_REPORTEND)(void);
 
 /***************************** GLOBAL FUNCTIONS ******************************/
 
@@ -193,6 +218,21 @@ LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_stdformat(DSK_GEOMETRY *self, dsk_format_t f
 /* Convert sector size to a physical sector shift as used by the controller.
  * To go the other way, size = 128 << psh  */
 LDPUBLIC32 unsigned char LDPUBLIC16 dsk_get_psh(size_t sector_size);
+
+/* Register callbacks for LibDsk functions to display information on the
+ * screen. */
+LDPUBLIC32 void LDPUBLIC16 dsk_reportfunc_set(DSK_REPORTFUNC report, 
+					      DSK_REPORTEND  repend);
+/* Retrieve the values of the callbacks */
+LDPUBLIC32 void LDPUBLIC16 dsk_reportfunc_get(DSK_REPORTFUNC *report, 
+					      DSK_REPORTEND  *repend);
+
+/* Calls to these functions (or no-op, as appropriate) */
+/* Report a work-in-progress message - LibDsk does this when starting a long 
+ * operation such as decompression */
+LDPUBLIC32 void LDPUBLIC16 dsk_report(const char *s);
+/* Remove a work-in-progress message, if appropriate */
+LDPUBLIC32 void LDPUBLIC16 dsk_report_end();
 
 /*****************************************************************************/
 
@@ -230,6 +270,10 @@ LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_creat(DSK_PDRIVER *self, const char *filena
 /* Close a DSK file. Frees the pointer and sets it to null. */
 
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_close(DSK_PDRIVER *self);
+
+/* Returns whether the disk has been modified since it was opened */
+
+LDPUBLIC32 int              LDPUBLIC16 dsk_dirty(DSK_PDRIVER self);
 
 /* Get drive status (Ready, Read-Only etc.). The actual status is 
  * based on the FDC's ST3 register. The following bits should be available: */
@@ -332,6 +376,7 @@ LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_getgeom(DSK_PDRIVER self, DSK_GEOMETRY *geo
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_dosgeom(DSK_GEOMETRY *self, const unsigned char *bootsect);
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_pcwgeom(DSK_GEOMETRY *self, const unsigned char *bootsect);
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_cpm86geom(DSK_GEOMETRY *self, const unsigned char *bootsect);
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_aprigeom(DSK_GEOMETRY *self, const unsigned char *bootsect);
 
 /* Read a random sector header from current track */
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_psecid(DSK_PDRIVER self, const DSK_GEOMETRY *geom,
@@ -339,6 +384,23 @@ LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_psecid(DSK_PDRIVER self, const DSK_GEOMETRY
 				DSK_FORMAT *result);
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_lsecid(DSK_PDRIVER self, const DSK_GEOMETRY *geom,
 				dsk_ltrack_t track, DSK_FORMAT *result);
+
+/* Read all sector headers from current track in the order they appear. 
+ * Not implemented yet; this is for future expansion. */
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_ptrackids(DSK_PDRIVER self, 
+				const DSK_GEOMETRY *geom,
+				dsk_pcyl_t cylinder, dsk_phead_t head,
+				dsk_psect_t *count, DSK_FORMAT **results);
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_ltrackids(DSK_PDRIVER self, 
+				const DSK_GEOMETRY *geom,
+				dsk_ltrack_t track, 
+				dsk_psect_t *count, DSK_FORMAT **result);
+
+/* Read a track as it appears on the disk, including sector headers.
+ * Not implemented yet; this is for future expansion. */
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_rtread(DSK_PDRIVER self, 
+		const DSK_GEOMETRY *geom, void *buf, 
+	        dsk_pcyl_t cylinder,     dsk_phead_t head, int reserved);
 
 /* Seek to a cylinder */
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_lseek(DSK_PDRIVER self, const DSK_GEOMETRY *geom, 
@@ -355,9 +417,28 @@ LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_type_enum(int idx, char **drvname);
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_comp_enum(int idx, char **compname);
 
 /* Force a drive to use head 0 or head 1 only for single-sided discs
- * Pass 0 or 1, or -1 to unset it. */
+ * Pass 0 or 1, or -1 to unset it. 
+ * Deprecated: Use dsk_{set,get}_option(self, "HEAD", n) instead */
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_set_forcehead(DSK_PDRIVER self, int force);
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_get_forcehead(DSK_PDRIVER self, int *force);
+
+/* Set a named option to an integer value. Returns DSK_ERR_BADOPT if the 
+ * driver doesn't support the option; DSK_ERR_BADVAL if the value is out
+ * of range */
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_set_option(DSK_PDRIVER self, const char *name, int value);
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_get_option(DSK_PDRIVER self, const char *name, int *value);
+/* If "index" is in range, returns the n'th option name in (*optname).
+ * Else sets (*optname) to null. */
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_option_enum(DSK_PDRIVER self, int idx, char **optname);
+
+/* Get or set the comment for a disc image file. Not supported by all 
+ * file formats. */
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_set_comment(DSK_PDRIVER self, const char *comment);
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_get_comment(DSK_PDRIVER self, char **comment);
+
+/* Set / get the retry count. */
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_set_retry(DSK_PDRIVER self, unsigned int count);
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_get_retry(DSK_PDRIVER self, unsigned int *count);
 
 /* Get the driver name and description */
 LDPUBLIC32 const char * LDPUBLIC16 dsk_drvname(DSK_PDRIVER self);
@@ -366,6 +447,25 @@ LDPUBLIC32 const char * LDPUBLIC16 dsk_drvdesc(DSK_PDRIVER self);
 /* Get the compression system name and description */
 LDPUBLIC32 const char * LDPUBLIC16 dsk_compname(DSK_PDRIVER self);
 LDPUBLIC32 const char * LDPUBLIC16 dsk_compdesc(DSK_PDRIVER self);
+
+/* Decode and act on RPC packets sent by another LIBDSK.
+ * This function is used to implement the 16-bit server app. */
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_rpc_server(unsigned char *input,
+	int inp_len, unsigned char *output, int *out_len,
+	int *ref_count);
+
+/* Map a DSK_PDRIVER to an integer handle. Used for RPC and JNI. 
+ * The null pointer is always mapped to zero. 
+ * dsk_map_dtoi will add the pointer to the map if it isn't found. */
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_map_dtoi(DSK_PDRIVER ptr, unsigned int *n);
+/* Given an integer handle, retrieve the corresponding DSK_PDRIVER. 
+ * If the handle is not found, returns *ptr = NULL. */
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_map_itod(unsigned int n, DSK_PDRIVER *ptr);
+/* Remove an integer <--> DSK_DRIVER mapping. If it was the last one, free
+ *  * all the memory used by the mapping */
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_map_delete(unsigned int index);
+
+
 
 /* Define this to print on the console a trace of all mallocs */
 #undef TRACE_MALLOCS 
