@@ -24,6 +24,9 @@
 /* Define if you have the mkstemp function.  */
 #undef HAVE_MKSTEMP
 
+/* Define if you have the sleep function.  */
+#undef HAVE_SLEEP
+
 /* Define if you have the strcasecmp function.  */
 #undef HAVE_STRCASECMP
 

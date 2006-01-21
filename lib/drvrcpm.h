@@ -64,6 +64,8 @@ typedef struct
 
 /* Directory label byte, controlling such things as time stamps */
 	unsigned char rc_dirlabel;
+/* Last sector ID returned */
+	int rc_secid;
 } RCPMFS_DSK_DRIVER;
 
 dsk_err_t rcpmfs_open(DSK_DRIVER *self, const char *filename);
@@ -83,4 +85,5 @@ dsk_err_t rcpmfs_xseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                                 dsk_pcyl_t cylinder, dsk_phead_t head);
 dsk_err_t rcpmfs_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                                 dsk_phead_t head, unsigned char *result);
-
+dsk_err_t rcpmfs_secid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+		         dsk_pcyl_t cyl, dsk_phead_t head, DSK_FORMAT *result);

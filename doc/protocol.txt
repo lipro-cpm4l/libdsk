@@ -41,7 +41,7 @@ will be DSK_ERR_UNKRPC and no more bytes will follow. Any other error code
 for the function in question; though some of the values may be meaningless
 if the operation failed.
 
-  The functions are listed below. All except the last (DSK_R_PROPERTIES) 
+  The functions are listed below. All except one (DSK_R_PROPERTIES) 
 correspond 1:1 to LibDsk functions.
 
 Number	Name		Parameters		Results after error code
@@ -148,7 +148,7 @@ Number	Name		Parameters		Results after error code
 140	RPC_DSK_GETCOMMENT
 			IN32 handle		STRING comment
 
-140	RPC_DSK_SETCOMMENT
+141	RPC_DSK_SETCOMMENT
 			IN32 handle		none
 			STRING comment
 

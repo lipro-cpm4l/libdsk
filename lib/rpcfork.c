@@ -86,15 +86,20 @@ dsk_err_t fork_open(DSK_PDRIVER pDriver, const char *name, char *nameout)
 
 	if (pidchild == 0)
 	{
-/* Switch stdin and stdout over to the pipes */
+/* We're the child process. Switch stdin and stdout 
+ * over to the pipes, and then run the server. */
 		dup2(pipes[0], 0);
 		dup2(pipes[3], 1);
 		execlp(self->filename, self->filename, NULL);
+/* We're still running, so the server didn't launch. Report
+ * error to the parent and then terminate. */
 		fork_err[0] = (DSK_ERR_NOTME >> 8) & 0xFF;
 		fork_err[1] = (DSK_ERR_NOTME     ) & 0xFF;
 		write(pipes[3], fork_err, 2);
 		exit(1);
 	}
+/* We're the parent process. Read error number from 
+ * initial startup (or lack of startup) of child. */
 	self->infd  = pipes[2];
 	self->outfd = pipes[1];
 	read(pipes[2], fork_err, 2);

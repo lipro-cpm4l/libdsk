@@ -1,4 +1,4 @@
-LibDsk v1.1.6 
+LibDsk v1.1.9 
 
 John Elliott
 
@@ -154,8 +154,8 @@ DSK / EDSK recording mode extension
 This document only covers LibDsk -- the library -- 
 itself. For information on the example utilities 
 supplied with LibDsk (dskform, dsktrans, dskid, 
-dskdump, dskscan and md3serial) see their respective 
-manual pages.
+dskdump, dskscan, dskutil and md3serial) see their 
+respective manual pages.
 
  About LibDsk
 
@@ -197,6 +197,19 @@ following formats:
  What's new? 
 
 For full details, see the file ChangeLog.
+
+ Bugfix in the rcpmfs driver: Files saved to user 1 no 
+  longer go to user 0.
+
+ Enhanced the ApriDisk driver to handle disc images 
+  that start with a 'creator' block.
+
+ Enhanced the rcpmfs driver to deal with truncation of 
+  existing files.
+
+ Added initial support for 'multiple/weak' sectors in 
+  the 'dsk' driver. LibDsk can read such sectors, but 
+  not write them (they get written as normal sectors).
 
  Bug fix: Don't leak file handles in the 'dsk' driver.
 
@@ -1432,11 +1445,11 @@ number of uses:
   host system, without altering the BDOS or installing 
   additional drivers. 
 
-rcpmfs doesn't get on too well in systems that only 
-support "8.3" format filenames; it also needs a system 
-call that can set the size of a file (such as 
-truncate() under Unix). It is not currently implemented 
-in the DOS or Win16 versions of the library. 
+rcpmfs does not work with systems that only support "8.3" 
+format filenames; it also needs a system call that can 
+set the size of a file (such as truncate() under Unix). 
+It therefore remains unimplemented in the DOS and Win16 
+versions of the library. 
 
  In Use
 
@@ -1501,8 +1514,8 @@ TotalBlocks=175,SysTracks=1, Version=3, Format=pcw180.
 
  Bugs
 
-rcpmfs is very new untried code. The following are 
-known bugs or missing features:
+rcpmfs is new and untried code. The following are known 
+bugs or missing features:
 
  So far, rcpmfs has only been tested under the dsktrans 
   pattern of usage (which writes the directory and then 
@@ -1514,9 +1527,6 @@ known bugs or missing features:
   are not mapped. The SYS and ARC attributes are only 
   mapped in the Win32 version.
 
- Truncating a file (either by using CP/M calls, or with 
-  a sector editor) may not work.
-
  Formatting (or reformatting) an rcpmfs directory 
   writes out a new .libdsk.ini containing the geometry 
   used to do the format. However, since DSK_GEOMETRY 
@@ -1524,7 +1534,7 @@ known bugs or missing features:
   size, block count, etc.) these will be the ones 
   previously used in that directory, and quite possibly 
   completely wrong. It's a much better idea to 'format' 
-  the directory outside LibDsk.
+  the directory using means other than LibDsk.
 
  <sec:copyqm>The CopyQM file format
 
@@ -2054,7 +2064,9 @@ or in DOS (again, a FOSSIL driver is required):
 
 serslave 0,19200
 
-I am planning to write a similar server for CP/M systems.
+I have written a similar server for CP/M systems, 
+called AUXD. This is a separate download from the 
+LibDsk web page.
 
  The 'fork' driver
 
@@ -2062,7 +2074,7 @@ The 'fork' driver is used (on any system which supports
 the fork() system call) to send LibDsk requests to a 
 local program using pipes. This driver was written for 
 testing purposes, but may come in handy as a poor man's 
-plugin system. 
+plugin system. The filename specification is: 
 
 fork:program,remotename{,remotetype{,remotecompress}}
 
@@ -2197,7 +2209,7 @@ structure. Just cast the pointer to the correct type:
 
 if (self->dr_class != &dc_posix) return DSK_ERR_BADPTR; 
 
-pxself = (POSIX_DSK_PDRIVER )self;
+pxself = (POSIX_DSK_DRIVER *)self;
 
 and you're in business.
 
@@ -2685,10 +2697,11 @@ Connect to a remote server.
   with "driver:" and containing any connection parameters 
   needed. 
 
- nameout is an output parameter. If you are returning 
-  DSK_ERR_OK, it must be set to a dsk_malloc()ed buffer 
-  containing the filename minus any options this driver 
-  has used. For example, the "serial" driver, given a 
+ nameout is an output buffer with enough space to hold 
+  a string of the same length as the input filename. If 
+  you are returning DSK_ERR_OK, it must be set to the 
+  input filename minus any options this driver has 
+  used. For example, the "serial" driver, given a 
   filename like "serial:/dev/ttyS1,2400-crtscts,example.ufi,raw"
    would extract its own options and return "example.ufi,raw"
    here. 
@@ -2798,8 +2811,8 @@ microbee  512 80  10 2048 128  1 2 2.2
 This extension was proposed by me on the 
 comp.sys.sinclair and comp.sys.amstrad.8bit newsgroups 
 on 10 January 2004. It was subsequently released in 
-ANNE 2.1.4. It should be read in conjunction with the 
-EDSK format definition at <[http://andercheran.aiind.upv.es/~amstrad/docs/extdsk.html||http://andercheran.aiind.upv.es/~amstrad/docs/extdsk.html]>.
+ANNE 2.1.4 and added to the formal EDSK format 
+definition at <[http://andercheran.aiind.upv.es/~amstrad/docs/extdsk.html||http://andercheran.aiind.upv.es/~amstrad/docs/extdsk.html]>.
 
 DSK/EDSK originate on the Amstrad CPC, which ordinarily 
 writes all its diskettes in MFM recording mode and at 

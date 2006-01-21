@@ -1,5 +1,8 @@
 TO BE DONE in LibDSK 1.1.x:
 
+* Weak-sector support is new and may be buggy.
+* Write more functions for dsktool.
+
 * dskid doesn't work on a DFS .DSK file. Why? Because get_id doesn't fail?
 * Support for DMK file format.
 * Java support for the Reporter classes is buggy [seems to work now 11-5-2003]
@@ -24,6 +27,7 @@ TO BE DONE in LibDSK 1.1.x:
 	>> Full of debug code
 	>> Default format is pcw720, not pcw180
 	>> Needs to be compilable on other OSes
+	>> Doesn't truncate files.
 
 * The load-all-into-memory strategy in Apridisk won't work on DOS16. Does
  this matter, bearing in mind that the real Apridisk exists on DOS16?

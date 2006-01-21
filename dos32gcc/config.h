@@ -8,6 +8,7 @@
 #define HAVE_STRICMP 1
 #undef HAVE_WINDOWS_H 
 #undef HAVE_WINIOCTL_H 
+#define HAVE_TIME_H
 #define HAVE_SYS_STAT_H
 #define HAVE_UNISTD_H
 #define HAVE_LIMITS_H

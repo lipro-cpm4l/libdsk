@@ -99,18 +99,19 @@ LDADD = ../lib/libdsk.la
 CLASSPATH = @CLASSPATH@
 JAVAC = @JAVAC@ 
 
-bin_PROGRAMS = dsktrans dskform dskid dskdump dskscan md3serial
+bin_PROGRAMS = dsktrans dskform dskid dskdump dskscan dskutil md3serial
 dsktrans_SOURCES = dsktrans.c utilopts.c utilopts.h formname.c formname.h
 dskform_SOURCES = dskform.c utilopts.c utilopts.h formname.c formname.h
 dskid_SOURCES = dskid.c utilopts.c utilopts.h
 md3serial_SOURCES = md3serial.c utilopts.c utilopts.h
 dskscan_SOURCES = dskscan.c utilopts.c utilopts.h formname.c formname.h
 dskdump_SOURCES = dskdump.c utilopts.c utilopts.h formname.c formname.h
+dskutil_SOURCES = dskutil.c utilopts.c utilopts.h formname.c formname.h
 forkslave_SOURCES = forkslave.c
 serslave_SOURCES = serslave.c crc16.c crc16.h
 dsktest_SOURCES = dsktest.c utilopts.c utilopts.h
 
-noinst_PROGRAMS = @TOOLCLASSES@ forkslave dsktest serslave
+noinst_PROGRAMS = @TOOLCLASSES@ forkslave dsktest serslave 
 EXTRA_PROGRAMS = 
 EXTRA_DIST = DskTrans.java DskFormat.java DskID.java FormatNames.java UtilOpts.java ScreenReporter.java
 
@@ -123,7 +124,7 @@ mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
 bin_PROGRAMS =  dsktrans$(EXEEXT) dskform$(EXEEXT) dskid$(EXEEXT) \
-dskdump$(EXEEXT) dskscan$(EXEEXT) md3serial$(EXEEXT)
+dskdump$(EXEEXT) dskscan$(EXEEXT) dskutil$(EXEEXT) md3serial$(EXEEXT)
 check_PROGRAMS =  check1$(EXEEXT) check2$(EXEEXT) check3$(EXEEXT)
 noinst_PROGRAMS =  @TOOLCLASSES@ forkslave$(EXEEXT) dsktest$(EXEEXT) \
 serslave$(EXEEXT)
@@ -158,6 +159,11 @@ formname.$(OBJEXT)
 dskscan_LDADD = $(LDADD)
 dskscan_DEPENDENCIES =  ../lib/libdsk.la
 dskscan_LDFLAGS = 
+dskutil_OBJECTS =  dskutil.$(OBJEXT) utilopts.$(OBJEXT) \
+formname.$(OBJEXT)
+dskutil_LDADD = $(LDADD)
+dskutil_DEPENDENCIES =  ../lib/libdsk.la
+dskutil_LDFLAGS = 
 md3serial_OBJECTS =  md3serial.$(OBJEXT) utilopts.$(OBJEXT)
 md3serial_LDADD = $(LDADD)
 md3serial_DEPENDENCIES =  ../lib/libdsk.la
@@ -198,8 +204,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = gtar
 GZIP_ENV = --best
-SOURCES = $(dsktrans_SOURCES) $(dskform_SOURCES) $(dskid_SOURCES) $(dskdump_SOURCES) $(dskscan_SOURCES) $(md3serial_SOURCES) $(check1_SOURCES) $(check2_SOURCES) $(check3_SOURCES) $(forkslave_SOURCES) $(dsktest_SOURCES) $(serslave_SOURCES)
-OBJECTS = $(dsktrans_OBJECTS) $(dskform_OBJECTS) $(dskid_OBJECTS) $(dskdump_OBJECTS) $(dskscan_OBJECTS) $(md3serial_OBJECTS) $(check1_OBJECTS) $(check2_OBJECTS) $(check3_OBJECTS) $(forkslave_OBJECTS) $(dsktest_OBJECTS) $(serslave_OBJECTS)
+SOURCES = $(dsktrans_SOURCES) $(dskform_SOURCES) $(dskid_SOURCES) $(dskdump_SOURCES) $(dskscan_SOURCES) $(dskutil_SOURCES) $(md3serial_SOURCES) $(check1_SOURCES) $(check2_SOURCES) $(check3_SOURCES) $(forkslave_SOURCES) $(dsktest_SOURCES) $(serslave_SOURCES)
+OBJECTS = $(dsktrans_OBJECTS) $(dskform_OBJECTS) $(dskid_OBJECTS) $(dskdump_OBJECTS) $(dskscan_OBJECTS) $(dskutil_OBJECTS) $(md3serial_OBJECTS) $(check1_OBJECTS) $(check2_OBJECTS) $(check3_OBJECTS) $(forkslave_OBJECTS) $(dsktest_OBJECTS) $(serslave_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
@@ -319,6 +325,10 @@ dskscan$(EXEEXT): $(dskscan_OBJECTS) $(dskscan_DEPENDENCIES)
 	@rm -f dskscan$(EXEEXT)
 	$(LINK) $(dskscan_LDFLAGS) $(dskscan_OBJECTS) $(dskscan_LDADD) $(LIBS)
 
+dskutil$(EXEEXT): $(dskutil_OBJECTS) $(dskutil_DEPENDENCIES)
+	@rm -f dskutil$(EXEEXT)
+	$(LINK) $(dskutil_LDFLAGS) $(dskutil_OBJECTS) $(dskutil_LDADD) $(LIBS)
+
 md3serial$(EXEEXT): $(md3serial_OBJECTS) $(md3serial_DEPENDENCIES)
 	@rm -f md3serial$(EXEEXT)
 	$(LINK) $(md3serial_LDFLAGS) $(md3serial_OBJECTS) $(md3serial_LDADD) $(LIBS)
@@ -400,6 +410,8 @@ dskscan.o: dskscan.c ../include/libdsk.h utilopts.h formname.h
 dskslave.o: dskslave.c ../include/libdsk.h
 dsktest.o: dsktest.c ../include/libdsk.h utilopts.h
 dsktrans.o: dsktrans.c ../include/libdsk.h utilopts.h formname.h
+dskutil.o: dskutil.c ../config.h ../include/libdsk.h utilopts.h \
+	formname.h
 forkslave.o: forkslave.c ../include/libdsk.h
 formname.o: formname.c ../config.h ../include/libdsk.h utilopts.h
 md3serial.o: md3serial.c ../include/libdsk.h utilopts.h

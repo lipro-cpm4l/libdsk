@@ -14,17 +14,30 @@ OBS10=dskid.obj       utilopts.obj    libdsk.lib
 OBS11=dskform.obj     utilopts.obj    formname.obj   libdsk.lib
 OBS12=dsktrans.obj   utilopts.obj    formname.obj   libdsk.lib
 OBS13=serslave.obj   libdsk.lib
+OBS14=dskscan.obj     utilopts.obj    formname.obj   libdsk.lib
+OBS15=dskdump.obj     utilopts.obj    formname.obj   libdsk.lib
+OBS16=dskutil.obj     utilopts.obj    formname.obj   libdsk.lib
 
-all:	libdsk.lib dskid.exe dsktrans.exe dskform.exe serslave.exe
+all:	libdsk.lib dskid.exe dsktrans.exe dskform.exe serslave.exe \
+	dskdump.exe dskscan.exe dskutil.exe
 
 dskid.exe:	$(OBS10)
-	$(CC) $(CFLAGS) $(OBS10)
+	$(CC) -o$@ $(CFLAGS) $(OBS10)
 
 dsktrans.exe:	$(OBS12)
-	$(CC) $(CFLAGS) $(OBS12)
+	$(CC) -o$@ $(CFLAGS) $(OBS12)
+
+dskscan.exe:	$(OBS14)
+	$(CC) -o$@ $(CFLAGS) $(OBS14)
+
+dskdump.exe:	$(OBS15)
+	$(CC) -o$@ $(CFLAGS) $(OBS14)
+
+dskutil.exe:	$(OBS16)
+	$(CC) -o$@ $(CFLAGS) $(OBS16)
 
 dskform.exe:	$(OBS11)
-	$(CC) $(CFLAGS) $(OBS11)
+	$(CC) -o$@ $(CFLAGS) $(OBS11)
 
 serslave.exe:	$(OBS13)
 	$(CC) $(CFLAGS) $(OBS13)
@@ -52,5 +65,8 @@ clean:
 	del dskid.exe
 	del dskform.exe
 	del dsktrans.exe
+	del dskdump.exe
+	del dskscan.exe
+	del dskutil.exe
 	del libdsk.lib
 	del *.obj

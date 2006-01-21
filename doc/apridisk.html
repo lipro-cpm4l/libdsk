@@ -5,9 +5,15 @@
 <body>
 <h1>ApriDisk file format</h1>
 
-<p>This version of the file format document has been updated with 
-corrections from Jonathan Marsters (the author of Apridisk).</p>
-
+<h2>Version History</h2>
+<ul>
+	<li><em>7 December 2005</em>: Version 1.1. Added the creator block,
+	which has shown up in some Apridisk files.  </li>
+	<li><em>18 January 2005</em>: Version 1.0. Updated with corrections 
+	from Jonathan Marsters (the author of Apridisk).</li>
+	<li><em>13 February 2003</em>: Version 0.1. Original reverse-engineered
+	format definition.</li>
+</ul>
 <h2>Header</h2>
 
 <p>The header is 128 bytes long. It contains the C string
@@ -17,19 +23,20 @@ corrections from Jonathan Marsters (the author of Apridisk).</p>
 padded out to 128 bytes with zeros. LibDsk 1.1.3+ requires the 
 presence of this header.</p>
 
-<h2>Sector records</h2>
+<h2>Data records</h2>
 
 <p>The records for each sector now follow. In existing examples they are 
 sorted by sector, head, cylinder, but this is not necessary. LibDsk does not 
 sort ApriDisk files it generates, though ApriDisk files created by 
 <code>dsktrans</code> will be in the expected order.</p>
 
-<p>A sector header is at least 16 bytes long. It is formed:
+<p>A data record header is at least 16 bytes long. It is formed:
 <pre>
 	DD	item_type	;4 bytes, little-endian.
 				;0xE31D0000 =&gt; deleted item
 				;0xE31D0001 =&gt; sector
 				;0xE31D0002 =&gt; comment
+				;0xE31D0003 =&gt; creator
 	DW	compression	;2 bytes, little-endian.
 				;0x9E90 =&gt; not compressed
 				;0x3E5A =&gt; compressed
@@ -71,6 +78,7 @@ the same way as a sector:
 				;0xE31D0000 =&gt; deleted item
 				;0xE31D0001 =&gt; sector
 				;0xE31D0002 =&gt; comment
+				;0xE31D0003 =&gt; creator
 	DW	compression	;2 bytes, little-endian.
 				;0x9E90 =&gt; not compressed
 				;0x3E5A =&gt; compressed
@@ -80,5 +88,11 @@ the same way as a sector:
 </pre>
 <p>The comment itself is stored as an ASCII string, complete with
 terminating 0 byte. Newlines in it are stored as '\r' characters.
+
+<h2>Creator</h2>
+<p>Some APRIDISK images contain a record of a type I have called 'creator', 
+which has the same format as a comment record except for the initial item 
+type. This record, if present, tends to appear at the start of the file 
+before any sectors.</p>
 </body>
 </html>

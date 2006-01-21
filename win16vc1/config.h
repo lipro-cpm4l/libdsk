@@ -10,6 +10,7 @@
 #define PATH_MAX _MAX_PATH
 #endif
 
+#define HAVE_TIME_H 1
 #define HAVE_LIMITS_H 1
 #define HAVE_STRCMPI 1
 #define HAVE_WINDOWS_H 1

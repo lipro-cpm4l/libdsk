@@ -26,7 +26,7 @@
 
 \layout Title
 
-LibDsk v1.1.6 
+LibDsk v1.1.9 
 \layout Author
 
 John Elliott
@@ -64,8 +64,8 @@ About this document
 
 This document only covers LibDsk -- the library -- itself.
  For information on the example utilities supplied with LibDsk (dskform,
- dsktrans, dskid, dskdump, dskscan and md3serial) see their respective manual
- pages.
+ dsktrans, dskid, dskdump, dskscan, dskutil and md3serial) see their respective
+ manual pages.
 \layout Subsection
 
 About LibDsk
@@ -134,6 +134,22 @@ What's new?
 \layout Standard
 
 For full details, see the file ChangeLog.
+\layout Itemize
+
+Bugfix in the rcpmfs driver: Files saved to user 1 no longer go to user
+ 0.
+\layout Itemize
+
+Enhanced the ApriDisk driver to handle disc images that start with a 'creator'
+ block.
+\layout Itemize
+
+Enhanced the rcpmfs driver to deal with truncation of existing files.
+\layout Itemize
+
+Added initial support for 'multiple/weak' sectors in the 'dsk' driver.
+ LibDsk can read such sectors, but not write them (they get written as normal
+ sectors).
 \layout Itemize
 
 Bug fix: Don't leak file handles in the 'dsk' driver.
@@ -3234,7 +3250,7 @@ It is possible for a CP/M emulator running a genuine copy of CP/M to use
  
 \layout Standard
 
-rcpmfs doesn't get on too well in systems that only support 
+rcpmfs does not work with systems that only support 
 \begin_inset Quotes eld
 \end_inset 
 
@@ -3248,7 +3264,8 @@ rcpmfs doesn't get on too well in systems that only support
 Unix
 \noun default 
 ).
- It is not currently implemented in the DOS or Win16 versions of the library.
+ It therefore remains unimplemented in the DOS and Win16 versions of the
+ library.
  
 \layout Subsection
 
@@ -3347,7 +3364,7 @@ If there is no .libdsk.ini file present, LibDsk will assume BlockSize=1024,
 Bugs
 \layout Standard
 
-rcpmfs is very new untried code.
+rcpmfs is new and untried code.
  The following are known bugs or missing features:
 \layout Itemize
 
@@ -3361,16 +3378,13 @@ The CP/M attributes F1-F4, passwords and permissions are not mapped.
  The SYS and ARC attributes are only mapped in the Win32 version.
 \layout Itemize
 
-Truncating a file (either by using CP/M calls, or with a sector editor)
- may not work.
-\layout Itemize
-
 Formatting (or reformatting) an rcpmfs directory writes out a new .libdsk.ini
  containing the geometry used to do the format.
  However, since DSK_GEOMETRY doesn't contain the CP/M filesystem parameters
  (block size, block count, etc.) these will be the ones previously used in
  that directory, and quite possibly completely wrong.
- It's a much better idea to 'format' the directory outside LibDsk.
+ It's a much better idea to 'format' the directory using means other than
+ LibDsk.
 \layout Section
 
 
@@ -5202,7 +5216,8 @@ or in DOS (again, a FOSSIL driver is required):
 serslave 0,19200
 \layout Standard
 
-I am planning to write a similar server for CP/M systems.
+I have written a similar server for CP/M systems, called AUXD.
+ This is a separate download from the LibDsk web page.
 \layout Subsection
 
 The 'fork' driver
@@ -5212,7 +5227,7 @@ The 'fork' driver is used (on any system which supports the fork() system
  call) to send LibDsk requests to a local program using pipes.
  This driver was written for testing purposes, but may come in handy as
  a poor man's plugin system.
- 
+ The filename specification is: 
 \layout LyX-Code
 
 fork:
@@ -5501,7 +5516,7 @@ self
 if (self->dr_class != &dc_posix) return DSK_ERR_BADPTR; 
 \layout LyX-Code
 
-pxself = (POSIX_DSK_PDRIVER )self;
+pxself = (POSIX_DSK_DRIVER *)self;
 \layout Standard
 
 and you're in business.
@@ -6320,9 +6335,10 @@ driver
  
 \layout Itemize
 
-nameout is an output parameter.
- If you are returning DSK_ERR_OK, it must be set to a dsk_malloc()ed buffer
- containing the filename minus any options this driver has used.
+nameout is an output buffer with enough space to hold a string of the same
+ length as the input filename.
+ If you are returning DSK_ERR_OK, it must be set to the input filename minus
+ any options this driver has used.
  For example, the 
 \begin_inset Quotes eld
 \end_inset 
@@ -6524,8 +6540,8 @@ DSK / EDSK recording mode extension
 
 This extension was proposed by me on the comp.sys.sinclair and comp.sys.amstrad.8bit
  newsgroups on 10 January 2004.
- It was subsequently released in ANNE 2.1.4.
- It should be read in conjunction with the EDSK format definition at <
+ It was subsequently released in ANNE 2.1.4 and added to the formal EDSK format
+ definition at <
 \begin_inset LatexCommand \url[http://andercheran.aiind.upv.es/~amstrad/docs/extdsk.html]{http://andercheran.aiind.upv.es/~amstrad/docs/extdsk.html}
 
 \end_inset 

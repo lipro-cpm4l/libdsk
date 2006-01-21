@@ -95,7 +95,8 @@ VERSION = @VERSION@
 _ACJNI_JAVAC = @_ACJNI_JAVAC@
 uudecode = @uudecode@
 
-man_MANS = dskform.1 dsktrans.1 dskid.1 md3serial.1 dskscan.1 dskdump.1 libdskrc.5
+man_MANS = dskform.1 dsktrans.1 dskid.1 md3serial.1 dskscan.1 dskdump.1 	 dskutil.1 libdskrc.5
+
 EXTRA_DIST = $(man_MANS)
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = ../config.h

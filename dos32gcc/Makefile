@@ -17,10 +17,11 @@ OBS2 = dskform.o     utilopts.o    formname.o   libdsk.a
 OBS3 = dsktrans.o    utilopts.o    formname.o   libdsk.a
 OBS4 = dskdump.o     utilopts.o    formname.o   libdsk.a
 OBS5 = dskscan.o     utilopts.o    formname.o   libdsk.a
-OBS6 = serslave.o    crc16.o       libdsk.a
+OBS6 = dskutil.o     utilopts.o    formname.o   libdsk.a
+OBS7 = serslave.o    crc16.o       libdsk.a
 
 all:	libdsk.a dskid.exe dsktrans.exe dskform.exe dskscan.exe dskdump.exe \
-	serslave.exe
+	dskutil.exe serslave.exe 
 
 dskid.exe:	$(OBS1)
 	$(CC) -o $@ $(CFLAGS) $(OBS1) 
@@ -37,8 +38,11 @@ dskdump.exe:	$(OBS4)
 dskscan.exe:	$(OBS5)
 	$(CC) -o $@ $(CFLAGS) $(OBS5) 
 
-serslave.exe:	$(OBS6)
+dskutil.exe:	$(OBS6)
 	$(CC) -o $@ $(CFLAGS) $(OBS6) 
+
+serslave.exe:	$(OBS7)
+	$(CC) -o $@ $(CFLAGS) $(OBS7) 
 
 libdsk.a:	$(OBS) 
 	ar rc $@ $(OBS)

@@ -34,6 +34,7 @@
 #define APRIDISK_DELETED      0xE31D0000UL
 #define APRIDISK_MAGIC        0xE31D0001UL
 #define APRIDISK_COMMENT      0xE31D0002UL
+#define APRIDISK_CREATOR           0xE31D0003UL
 #define APRIDISK_UNCOMPRESSED 0x9E90
 #define APRIDISK_COMPRESSED   0x3E5A
 
@@ -182,17 +183,26 @@ static dsk_err_t adisk_load_sector(ADISK_DSK_DRIVER *self, dsk_lsect_t nsec, FIL
 	err = adisk_rdlong(fp, &sh_magic); if (err) return DSK_ERR_OVERRUN;
 	if (sh_magic != APRIDISK_MAGIC 
 	&&  sh_magic != APRIDISK_COMMENT 
-	&&  sh_magic != APRIDISK_DELETED) 
+	&&  sh_magic != APRIDISK_DELETED
+	&&  sh_magic != APRIDISK_CREATOR)
+	{
 		return DSK_ERR_NOTME;
+	}
 	err = adisk_rdshort(fp, &sh_compressed); if (err) return DSK_ERR_OVERRUN;
 	if (sh_compressed != APRIDISK_COMPRESSED 
-	&&  sh_compressed != APRIDISK_UNCOMPRESSED) return DSK_ERR_NOTME;
+	&&  sh_compressed != APRIDISK_UNCOMPRESSED) 
+	{
+		return DSK_ERR_NOTME;
+	}
 	err = adisk_rdshort(fp, &sh_hdrsize);  if (err) return DSK_ERR_OVERRUN;
 	err = adisk_rdlong (fp, &sh_datasize); if (err) return DSK_ERR_OVERRUN;
 	err = adisk_rdlong (fp, &sh_identity); if (err) return DSK_ERR_OVERRUN;
 
 	/* Compressed length must be at least 3; a block can't be any smaller! */
-	if (sh_datasize < 3) return DSK_ERR_NOTME;
+	if (sh_datasize < 3 && sh_compressed == APRIDISK_COMPRESSED) 
+	{
+		return DSK_ERR_NOTME;
+	}
 	buf = dsk_malloc(1 + sh_datasize);
 	buf[sh_datasize] = 0;
 	if (buf == NULL) return DSK_ERR_NOMEM;
@@ -202,7 +212,7 @@ static dsk_err_t adisk_load_sector(ADISK_DSK_DRIVER *self, dsk_lsect_t nsec, FIL
 		if (fgetc(fp) == EOF) return DSK_ERR_OVERRUN;
 		--sh_hdrsize;
 	}
-	if (sh_magic != APRIDISK_MAGIC && sh_magic != APRIDISK_COMMENT)
+	if (sh_magic != APRIDISK_MAGIC && sh_magic != APRIDISK_COMMENT && sh_magic != APRIDISK_CREATOR)
 	{
 		while (sh_datasize > 0)
 		{
@@ -228,6 +238,15 @@ static dsk_err_t adisk_load_sector(ADISK_DSK_DRIVER *self, dsk_lsect_t nsec, FIL
 		for (n = 0; buf[n]; n++) 
 			if (buf[n] == '\r' && buf[n+1] != '\n') buf[n] = '\n';
 		dsk_set_comment(&self->adisk_super, (char *)buf);
+		return DSK_ERR_OK;
+	}
+	if (sh_magic == APRIDISK_CREATOR)
+	{
+		/* Don't support compressed creator blocks */
+		if (sh_compressed == APRIDISK_COMPRESSED) return DSK_ERR_OK;
+		self->adisk_creator = dsk_malloc(1 + strlen(buf));
+		if (self->adisk_creator)
+			strcpy(self->adisk_creator, buf);
 		return DSK_ERR_OK;
 	}
 	psec = &self->adisk_sectors[nsec];
@@ -383,6 +402,51 @@ static dsk_err_t adisk_save_comment(ADISK_DSK_DRIVER *self, FILE *fp)
 
 
 
+static dsk_err_t adisk_save_creator(ADISK_DSK_DRIVER *self, FILE *fp)
+{
+	char *cmt = NULL;
+	unsigned char *buf;
+	unsigned long slen;
+	int n;
+
+/*
+	if (self->adisk_creator) cmt = self->adisk_creator; 
+	else
+*/
+	cmt = "LIBDSK v" LIBDSK_VERSION;
+	
+	buf = dsk_malloc(slen = 17 + strlen(cmt));
+	if (!buf) return DSK_ERR_OK;
+	memset(buf, 0, slen);
+	strcpy((char *)buf + 16, cmt);
+	/* Convert lone newlines to lone CRs */
+	for (n = 17; buf[n]; n++)	 
+	{
+		if (buf[n] == '\n' && buf[n-1] != '\r') buf[n] = '\r';
+	}	
+	buf[ 0] =   APRIDISK_CREATOR        & 0xFF;
+	buf[ 1] =  (APRIDISK_CREATOR >> 8 ) & 0xFF;
+	buf[ 2] =  (APRIDISK_CREATOR >> 16) & 0xFF;
+	buf[ 3] =  (APRIDISK_CREATOR >> 24) & 0xFF;
+	buf[ 4] = APRIDISK_UNCOMPRESSED & 0xFF;
+	buf[ 5] = APRIDISK_UNCOMPRESSED >> 8;
+	buf[ 6] =  0x10;
+	buf[ 7] =  0;
+	buf[ 8] = (unsigned char)( (slen - 16) & 0xFF);
+	buf[ 9] = (unsigned char)(((slen - 16) >>  8) & 0xFF);
+	buf[10] = (unsigned char)(((slen - 16) >> 16) & 0xFF);
+	buf[11] = (unsigned char)(((slen - 16) >> 24) & 0xFF);
+
+	if (fwrite(buf, 1, slen, fp) < slen)
+	{
+		dsk_free(buf);
+		return DSK_ERR_SYSERR;
+	}
+	dsk_free(buf);
+	return DSK_ERR_OK;
+}
+
+
 
 dsk_err_t adisk_open(DSK_DRIVER *self, const char *filename)
 {
@@ -409,7 +473,10 @@ dsk_err_t adisk_open(DSK_DRIVER *self, const char *filename)
 				fp) < sizeof(adiskself->adisk_header) 
 	|| (memcmp(adiskself->adisk_header, adisk_wmagic, sizeof(adisk_wmagic)))
 	|| (adisk_rdlong(fp, &magic) != DSK_ERR_OK) 
-	|| (magic != APRIDISK_MAGIC))
+	|| (magic != APRIDISK_MAGIC && 
+	    magic != APRIDISK_CREATOR &&
+	    magic != APRIDISK_COMMENT &&
+	    magic != APRIDISK_DELETED))
 	{
 		fclose(fp);
 		return DSK_ERR_NOTME;
@@ -508,7 +575,8 @@ dsk_err_t adisk_close(DSK_DRIVER *self)
 			if (fwrite(adisk_wmagic, 1, 128, fp) < 128)
 			{
 				err = DSK_ERR_SYSERR;
-			}	
+			}
+			else if ((err = adisk_save_creator(adiskself, fp))) { }
 			else for (trk = 0; trk < adiskself->adisk_maxsectors; trk++)
 			{
 				err = adisk_save_sector(adiskself, 
@@ -536,6 +604,11 @@ dsk_err_t adisk_close(DSK_DRIVER *self)
 	{
 		dsk_free(adiskself->adisk_filename);
 		adiskself->adisk_filename = NULL;
+	}
+	if (adiskself->adisk_creator)
+	{
+		dsk_free(adiskself->adisk_creator);
+		adiskself->adisk_creator = NULL;
 	}
 	return err;
 }
@@ -757,3 +830,5 @@ dsk_err_t adisk_secid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	
 	return DSK_ERR_OK;
 }
+
+

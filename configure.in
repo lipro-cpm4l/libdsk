@@ -2,8 +2,8 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(lib/dskopen.c)
 AC_CONFIG_AUX_DIR(config)
 AC_CANONICAL_SYSTEM
-VERSION=1.1.6
-UPDATED='September 3, 2005'
+VERSION=1.1.9
+UPDATED='January 15, 2005'
 AM_INIT_AUTOMAKE(libdsk, $VERSION)
 AM_CONFIG_HEADER(config.h)
 
@@ -57,6 +57,7 @@ AC_CHECK_FUNCS(strcmpi stricmp strcasecmp, break)
 AC_CHECK_FUNCS(mkstemp)
 AC_CHECK_FUNCS(fork)
 AC_CHECK_FUNCS(GetTempFileName)
+AC_CHECK_FUNCS(sleep)
 
 dnl Checks for zlib
 if test x$with_zlib = xyes; then

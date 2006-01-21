@@ -1,3 +1,46 @@
+2006-01-21 John Elliott
+
+	* libdsk-1.1.9 released.
+
+2006-01-18 John Elliott
+
+	* Expanded dskutil with the ability to read and write data.
+
+2005-12-26 John Elliott
+
+	* Bugfix: The rcpmfs driver was conflating User 1 and User 0.
+
+2005-12-17 John Elliott
+
+	* libdsk-1.1.8 released.
+
+	* Added the myz80 geometry as one of the standard geometries,
+	 so that rcpmfs can present drives in the myz80 format.
+
+2005-12-07 John Elliott
+
+	* Updated the ApriDisk driver to support an extra block type, which
+	 I hypothesize to be the name of the utility that created the disk 
+	 image.
+
+2005-12-05 John Elliott
+
+	* Modified the rcpmfs driver to accept SysTracks=0 as a valid
+	 parameter, rather than ignoring it silently.
+
+2005-11-18 John Elliott
+
+	* libdsk-1.1.7 released.
+
+2005-11-13 John Elliott
+
+	* Added support for reading DSK files created with Simon Owen's 
+	 'weak/random data' extension.
+	* Created dskutil, a simple interactive program allowing arbitrary
+	 sectors to be read. Used to test the weak/random data extension 
+	 above.
+	* Added code to rcpmfs to deal with file truncation.
+
 2005-09-03 John Elliott
 
 	* libdsk-1.1.6 released.

@@ -84,7 +84,7 @@ static void report_end(void)
 int help(int argc, char **argv)
 {
 	fprintf(stderr, "Syntax: \n"
-                       "      %s {options} in-image { out-image }\n",
+                       "      %s {options} image\n",
 			AV0);
 	fprintf(stderr,"\nOptions are:\n"
 		       "-type <type>   type of input disc image\n"

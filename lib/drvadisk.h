@@ -40,9 +40,10 @@ typedef struct
 
 typedef struct
 {
-        DSK_DRIVER adisk_super;
+    DSK_DRIVER adisk_super;
 	char  adisk_header[128];
 	char *adisk_filename;
+	char *adisk_creator;
 	int   adisk_readonly;
 	ADISK_SECTOR *adisk_sectors;
 	dsk_lsect_t adisk_nsectors;
@@ -69,4 +70,5 @@ dsk_err_t adisk_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                                 dsk_phead_t head, unsigned char *result);
 dsk_err_t adisk_secid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                                 dsk_pcyl_t cyl, dsk_phead_t head, DSK_FORMAT *result);
+
 

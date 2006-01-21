@@ -60,6 +60,7 @@ static DSK_NAMEDGEOM stdg[] =
 {"bbc200",  { SIDES_ALT,     80, 1,10,    0, 256, RATE_SD, 0x2A, 0x50,   1,  0 }, "BBC 200k" }, /* 200k */
 {"mbee400", { SIDES_ALT,     40, 1,10,    0, 512, RATE_SD, 0x0C, 0x17,   0,  0 }, "Microbee 400k" }, /* 400k */
 {"mgt800",  { SIDES_OUTOUT,  80, 2,10,    1, 512, RATE_SD, 0x0C, 0x17,   0,  0 }, "MGT 800k" }, /* MGT 800k */
+{"myz80",   { SIDES_ALT,     64, 1,128,   0,1024, RATE_ED, 0x2A, 0x52,   0,  0 }, "MYZ80 8Mb" }, /* MYZ80 8Mb */
 };
 
 

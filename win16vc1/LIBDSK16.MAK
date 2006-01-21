@@ -1,7 +1,7 @@
 # Microsoft Visual C++ generated build script - Do not modify
 
 PROJ = LIBDSK16
-DEBUG = 0
+DEBUG = 1
 PROGTYPE = 1
 CALLER = 
 ARGS = 
