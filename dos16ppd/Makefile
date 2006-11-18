@@ -9,17 +9,21 @@ OBS6=drvcfi.obj      drvwin32.obj    dskopen.obj    dsktread.obj  dskretry.obj
 OBS7=drvcpcem.obj    dskcheck.obj    dskpars.obj    dskwrite.obj  dskcmt.obj 
 OBS8=drvadisk.obj    drvrcpm.obj     drvqm.obj      crctable.obj  dskretry.obj
 OBS9=dskreprt.obj    dskdirty.obj    dskrtrd.obj    dsktrkid.obj  remote.obj
-OBSA=rpcfossl.obj    crc16.obj
+OBSA=rpcfossl.obj    crc16.obj       drvint25.obj   int25l.obj
 OBS10=dskid.obj       utilopts.obj    libdsk.lib
 OBS11=dskform.obj     utilopts.obj    formname.obj   libdsk.lib
-OBS12=dsktrans.obj   utilopts.obj    formname.obj   libdsk.lib
+OBS12=dsktrans.obj   utilopts.obj    formname.obj   bootsec.obj libdsk.lib
 OBS13=serslave.obj   libdsk.lib
 OBS14=dskscan.obj     utilopts.obj    formname.obj   libdsk.lib
 OBS15=dskdump.obj     utilopts.obj    formname.obj   libdsk.lib
 OBS16=dskutil.obj     utilopts.obj    formname.obj   libdsk.lib
+OBS17=apriboot.obj    utilopts.obj    formname.obj   bootsec.obj libdsk.lib
 
 all:	libdsk.lib dskid.exe dsktrans.exe dskform.exe serslave.exe \
-	dskdump.exe dskscan.exe dskutil.exe
+	dskdump.exe dskscan.exe dskutil.exe apriboot.exe
+
+apriboot.exe:	$(OBS17)
+	$(CC) -o$@ $(CFLAGS) $(OBS17)
 
 dskid.exe:	$(OBS10)
 	$(CC) -o$@ $(CFLAGS) $(OBS10)
@@ -31,7 +35,7 @@ dskscan.exe:	$(OBS14)
 	$(CC) -o$@ $(CFLAGS) $(OBS14)
 
 dskdump.exe:	$(OBS15)
-	$(CC) -o$@ $(CFLAGS) $(OBS14)
+	$(CC) -o$@ $(CFLAGS) $(OBS15)
 
 dskutil.exe:	$(OBS16)
 	$(CC) -o$@ $(CFLAGS) $(OBS16)
@@ -54,6 +58,9 @@ libdsk.lib:	$(OBS1) $(OBS2) $(OBS3) $(OBS4) $(OBS5) $(OBS6) $(OBS7) \
 	libr r $@ $(OBS8)
 	libr r $@ $(OBS9)
 	libr r $@ $(OBSA)
+
+%.obj:	%.as
+	$(CC) -c $(CFLAGS) $<
 
 %.obj:	../lib/%.c
 	$(CC) -c $(CFLAGS) $<

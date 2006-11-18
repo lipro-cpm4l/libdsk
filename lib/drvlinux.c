@@ -155,7 +155,9 @@ static dsk_err_t check_geom(LINUX_DSK_DRIVER *self, const DSK_GEOMETRY *dg)
 	str.fmt_gap = dg->dg_fmtgap;
 
 	if (ioctl(self->lx_fd, FDSETPRM, &str)) return DSK_ERR_SYSERR;
-
+/* 1.1.10: Make the next command do a seek, in case the FDSETPRM
+ * has moved the head. */
+	self->lx_cylinder = ~0;
 	memcpy(&self->lx_geom, dg, sizeof(*dg));
 	return DSK_ERR_OK;
 }

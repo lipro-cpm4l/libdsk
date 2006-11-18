@@ -6,8 +6,11 @@ LDADD=../lib/libdsk.la
 CLASSPATH=@CLASSPATH@
 JAVAC=@JAVAC@ 
 
-bin_PROGRAMS=dsktrans dskform dskid dskdump dskscan dskutil md3serial
-dsktrans_SOURCES=dsktrans.c utilopts.c utilopts.h formname.c formname.h
+bin_PROGRAMS=dsktrans dskform dskid dskdump dskscan dskutil md3serial apriboot
+dsktrans_SOURCES=dsktrans.c utilopts.c utilopts.h formname.c formname.h \
+		 apriboot.h bootsec.c
+apriboot_SOURCES=apriboot.c bootsec.c apriboot.h formname.c formname.h \
+		 utilopts.c utilopts.h
 dskform_SOURCES=dskform.c utilopts.c utilopts.h formname.c formname.h
 dskid_SOURCES=dskid.c utilopts.c utilopts.h
 md3serial_SOURCES=md3serial.c utilopts.c utilopts.h

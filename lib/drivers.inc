@@ -37,9 +37,11 @@
 #endif
 #ifdef DOS16FLOPPY
     &dc_dos16,
+    &dc_dosint25,
 #endif
 #ifdef DOS32FLOPPY
     &dc_dos32,
+    &dc_dosint25,
 #endif
     &dc_remote,
 /* 2. Directory-based backends */

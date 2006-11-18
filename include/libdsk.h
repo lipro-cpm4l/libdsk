@@ -58,7 +58,7 @@
 extern "C" {
 #endif
 
-#define LIBDSK_VERSION "1.1.9"
+#define LIBDSK_VERSION "1.1.12"
 
 /************************* TYPES ********************************/
 

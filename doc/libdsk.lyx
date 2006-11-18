@@ -26,7 +26,7 @@
 
 \layout Title
 
-LibDsk v1.1.9 
+LibDsk v1.1.12 
 \layout Author
 
 John Elliott
@@ -63,9 +63,9 @@ About this document
 \layout Standard
 
 This document only covers LibDsk -- the library -- itself.
- For information on the example utilities supplied with LibDsk (dskform,
- dsktrans, dskid, dskdump, dskscan, dskutil and md3serial) see their respective
- manual pages.
+ For information on the example utilities supplied with LibDsk (apriboot,
+ dskform, dsktrans, dskid, dskdump, dskscan, dskutil and md3serial) see
+ their respective manual pages.
 \layout Subsection
 
 About LibDsk
@@ -115,7 +115,7 @@ The floppy drive under Windows.
  below.
 \layout Itemize
 
-The floppy drive under DOS.
+The floppy drive (and hard drive partitions) under DOS.
 \layout Standard
 
 LibDsk also supports compressed disc images in the following formats: 
@@ -134,6 +134,34 @@ What's new?
 \layout Standard
 
 For full details, see the file ChangeLog.
+\layout Itemize
+
+Changes by Ramlaid <www.ramlaid.com> to the DSK and NTWDM drivers to improve
+ compatibility, and another fix to stop file handles leaking.
+\layout Itemize
+
+Added a new driver: 
+\begin_inset Quotes eld
+\end_inset 
+
+int25
+\begin_inset Quotes erd
+\end_inset 
+
+.
+ This allows the DOS version to run on Apricot PCs (which do not have an
+ IBM-compatible BIOS) and to access hard drive partitions.
+\layout Itemize
+
+Bugfix in the Linux floppy driver, which could cause 
+\begin_inset Quotes eld
+\end_inset 
+
+No data
+\begin_inset Quotes erd
+\end_inset 
+
+ errors logging in certain disc formats.
 \layout Itemize
 
 Bugfix in the rcpmfs driver: Files saved to user 1 no longer go to user
@@ -300,6 +328,18 @@ floppy
 
  : Host system's floppy drive (under Linux, DOS or Windows).
  
+\layout Description
+
+
+\begin_inset Quotes eld
+\end_inset 
+
+int25
+\begin_inset Quotes erd
+\end_inset 
+
+ : Hard drive partition under DOS.
+ Also used for the floppy drive on Apricot PCs.
 \layout Description
 
 
@@ -805,7 +845,7 @@ filename
 \end_inset 
 
  is the name of the disc image file.
- On Win32, 
+ On DOS and Windows, 
 \begin_inset Quotes eld
 \end_inset 
 
@@ -822,7 +862,23 @@ B:
 \end_inset 
 
  refer to the two floppy drives.
- 
+ On Apricot MS-DOS, 
+\begin_inset Quotes eld
+\end_inset 
+
+0:
+\begin_inset Quotes erd
+\end_inset 
+
+ and 
+\begin_inset Quotes eld
+\end_inset 
+
+1:
+\begin_inset Quotes erd
+\end_inset 
+
+ refer to the floppy drives.
 \layout Itemize
 
 

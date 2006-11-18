@@ -1,3 +1,49 @@
+2006-11-18 John Elliott
+
+	* libdsk-1.1.11 released.
+
+2006-08-02 John Elliott
+
+	* cpcemu driver: Bug fix when a sector is not found and it has
+	 to start searching again at the beginning of the track.
+
+2006-07-23 John Elliott
+
+	* libdsk-1.1.11 released.
+
+2006-07-02 Ramlaid <www.ramlaid.com>
+
+	* cpcemu driver: Modified so that the dsk_trkids() function more
+	 accurately reflects the result from a real disk. Also exposed the
+	 ST0-ST3 registers.
+	* SQ compression: Doesn't leak file handles if file not compressed.
+	* NTWDM driver: Uses the passed sector size in dsk_xread / dsk_xwrite 
+	 rather than the sector size in the geometry structure.
+
+2006-04-18 John Elliott
+
+	* libdsk-1.1.10 released.
+
+2006-04-11 John Elliott
+
+	* Extended the Apricot -> PCDOS boot sector conversion code to save
+	 a copy of the original boot sector.
+	* Created a reverse conversion, PCDOS -> Apricot
+	* dsktrans: The -apricot option now converts *to* Apricot format,
+	 not *from*. A -pcdos option has been added to convert from Apricot
+	 to PCDOS format.
+	* A new utility, apriboot, just rewrites the boot sector in place.
+
+2006-04-07 John Elliott
+
+	* Made a start on a driver for Apricot MS-DOS.
+
+2006-04-01 John Elliott
+
+	* Corrected a problem in the Linux floppy driver that caused 'no data'
+	 errors reading 70-track Apricot discs if the geometry was probed
+	 automatically. 
+
 2006-01-21 John Elliott
 
 	* libdsk-1.1.9 released.

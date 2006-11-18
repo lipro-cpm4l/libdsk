@@ -589,7 +589,11 @@ dsk_err_t sq_open(COMPRESS_DATA *self)
 
 	/* Check for SQ signature */
 	err = readu(sq_self, &magic);
-	if (err) return err;
+	if (err) 	/* v1.1.11 Don't leak file handles */
+	{
+		fclose(sq_self->fp_in);
+		return err;
+	}
 
 	if (magic != MAGIC)
 	{

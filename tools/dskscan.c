@@ -290,6 +290,7 @@ int scan_cyl(DSK_PDRIVER indr, DSK_GEOMETRY *dg,
 					(int)sector_id.fmt_secsize);			
 			}
 		}
+		dsk_free(fmt_track);
 	}
 	return DSK_ERR_OK;
 }

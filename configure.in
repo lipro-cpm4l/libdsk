@@ -2,8 +2,8 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(lib/dskopen.c)
 AC_CONFIG_AUX_DIR(config)
 AC_CANONICAL_SYSTEM
-VERSION=1.1.9
-UPDATED='January 15, 2005'
+VERSION=1.1.12
+UPDATED='November 18, 2006'
 AM_INIT_AUTOMAKE(libdsk, $VERSION)
 AM_CONFIG_HEADER(config.h)
 

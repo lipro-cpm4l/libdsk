@@ -1,4 +1,4 @@
-LibDsk v1.1.9 
+LibDsk v1.1.12 
 
 John Elliott
 
@@ -153,9 +153,9 @@ DSK / EDSK recording mode extension
 
 This document only covers LibDsk -- the library -- 
 itself. For information on the example utilities 
-supplied with LibDsk (dskform, dsktrans, dskid, 
-dskdump, dskscan, dskutil and md3serial) see their 
-respective manual pages.
+supplied with LibDsk (apriboot, dskform, dsktrans, 
+dskid, dskdump, dskscan, dskutil and md3serial) see 
+their respective manual pages.
 
  About LibDsk
 
@@ -183,7 +183,7 @@ following disc image formats:
  The floppy drive under Windows. Windows support is a 
   complicated subject - see section [ldwindows] below.
 
- The floppy drive under DOS.
+ The floppy drive (and hard drive partitions) under DOS.
 
 LibDsk also supports compressed disc images in the 
 following formats: 
@@ -197,6 +197,17 @@ following formats:
  What's new? 
 
 For full details, see the file ChangeLog.
+
+ Changes by Ramlaid <www.ramlaid.com> to the DSK and 
+  NTWDM drivers to improve compatibility, and another 
+  fix to stop file handles leaking.
+
+ Added a new driver: "int25". This allows the DOS version 
+  to run on Apricot PCs (which do not have an 
+  IBM-compatible BIOS) and to access hard drive partitions.
+
+ Bugfix in the Linux floppy driver, which could cause "
+  No data" errors logging in certain disc formats.
 
  Bugfix in the rcpmfs driver: Files saved to user 1 no 
   longer go to user 0.
@@ -274,6 +285,9 @@ The following disc image file formats are supported by LibDsk.
 
   "floppy" : Host system's floppy drive (under Linux, DOS 
   or Windows). 
+
+  "int25" : Hard drive partition under DOS. Also used for 
+  the floppy drive on Apricot PCs.
 
   "ntwdm" : Enhanced floppy support under Windows 2000 
   and XP, using an additional kernel-mode driver.
@@ -454,8 +468,10 @@ Enter with:
   the variable will be non-null (if the operation 
   succeeded) or null (if the operation failed).  
 
- "filename" is the name of the disc image file. On Win32, "A:"
-   and "B:" refer to the two floppy drives. 
+ "filename" is the name of the disc image file. On DOS 
+  and Windows, "A:" and "B:" refer to the two floppy 
+  drives. On Apricot MS-DOS, "0:" and "1:" refer to the 
+  floppy drives.
 
  "type" is NULL to detect the disc image format 
   automatically, or the name of a LibDsk driver to 

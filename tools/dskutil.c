@@ -145,7 +145,7 @@ static VARIABLE vars[] =
 	{ VT_BOOLEAN, &dg.dg_noskip,    "noskip" },
 };
 
-#define MAXVAR ((sizeof(vars)/sizeof(vars[0])))
+#define MAXVAR ((int)((sizeof(vars)/sizeof(vars[0]))))
 
 int check_digit(const char *s)
 {
@@ -861,8 +861,8 @@ dsk_err_t obey(char *cmd)
 		case 'C':
 			switch(toupper(cmd[1]))
 			{
-				case 'A': return change(cmd+2, 1); break;
-				case 'H': return change(cmd+2, 0); break;
+				case 'A': return change(cmd+2, 1); 
+				case 'H': return change(cmd+2, 0); 
 			}
 			printf("C command must be CA or CH\n");
 			return DSK_ERR_OK;
@@ -1075,9 +1075,9 @@ dsk_err_t parse_hex(const char *arg, unsigned char **buf, int *buflen)
 		return DSK_ERR_OK;
 	}
 	ptr[len++] = hex;
-	while (  (t = strchr(arg, ',')) )
+	while (  (t = (unsigned char *)strchr(arg, ',')) )
 	{
-		arg = t + 1;
+		arg = (char *)t + 1;
 		hex = get_hex(arg);
 		if (hex == -1) break;
 		ptr[len++] = hex;

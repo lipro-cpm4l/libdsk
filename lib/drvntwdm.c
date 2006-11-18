@@ -246,13 +246,13 @@ dsk_err_t ntwdm_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 				NULL, 0, &dwRet, NULL)) return xlt_error(GetLastError());
 		ntself->nt_cylinder = cylinder;
 	}
-
-        iobuffer = VirtualAlloc(NULL, geom->dg_secsize, MEM_COMMIT, PAGE_READWRITE);
+/* v1.1.11: Use passed sector size, not geometry sector size */
+        iobuffer = VirtualAlloc(NULL, sector_size, MEM_COMMIT, PAGE_READWRITE);
         if (!iobuffer) return DSK_ERR_NOMEM;
 
 	dwIoCode = (deleted && (*deleted)) ? IOCTL_FDCMD_READ_DELETED_DATA : IOCTL_FDCMD_READ_DATA;
 	if (!DeviceIoControl(ntself->nt_hdisk, dwIoCode, &rwp, sizeof(rwp), iobuffer,
-			geom->dg_secsize, &dwRet, NULL)) err = xlt_error(GetLastError());
+			sector_size, &dwRet, NULL)) err = xlt_error(GetLastError());
 
 	memcpy(buf, iobuffer, geom->dg_secsize);
 	VirtualFree(iobuffer, 0, MEM_RELEASE);
@@ -311,13 +311,14 @@ dsk_err_t ntwdm_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, const void *b
 		ntself->nt_cylinder = cylinder;
 	}
 
-        iobuffer = VirtualAlloc(NULL, geom->dg_secsize, MEM_COMMIT, PAGE_READWRITE);
+/* v1.1.11: Use passed sector size, not geometry sector size */
+        iobuffer = VirtualAlloc(NULL, sector_size, MEM_COMMIT, PAGE_READWRITE);
         if (!iobuffer) return DSK_ERR_NOMEM;
-	memcpy(iobuffer, buf, geom->dg_secsize);
+	memcpy(iobuffer, buf, sector_size);
 
 	dwIoCode = deleted ? IOCTL_FDCMD_WRITE_DELETED_DATA : IOCTL_FDCMD_WRITE_DATA;
 	if (!DeviceIoControl(ntself->nt_hdisk, dwIoCode, &rwp, sizeof(rwp), iobuffer,
-			geom->dg_secsize, &dwRet, NULL)) err = xlt_error(GetLastError());
+			sector_size, &dwRet, NULL)) err = xlt_error(GetLastError());
 
 	VirtualFree(iobuffer, 0, MEM_RELEASE);
 
@@ -617,3 +618,4 @@ dsk_err_t ntwdm_option_get(DSK_DRIVER *self, const char *optname, int *value)
 
 
 #endif
+

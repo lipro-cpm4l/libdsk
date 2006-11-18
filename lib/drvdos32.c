@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2001,2006  John Elliott <jce@seasip.demon.co.uk>       *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -89,7 +89,8 @@ dsk_err_t dos32_open(DSK_DRIVER *self, const char *filename)
 {
 	DOS32_DSK_DRIVER *d32self;
 	char vname[20];
-	int driveno;
+	int driveno, maxdrive;
+	union REGS reg;
 	
 	/* Sanity check: Is this meant for our driver? */
 	if (self->dr_class != &dc_dos32) return DSK_ERR_BADPTR;
@@ -99,8 +100,13 @@ dsk_err_t dos32_open(DSK_DRIVER *self, const char *filename)
 	if (strlen(filename) != 2 || filename[1] != ':') return DSK_ERR_NOTME;
 	d32self->d32_unit  = -1;
 
+	/* Check against count of drives */
+	int86(0x11, &reg, &reg);
+	maxdrive = (reg.w.ax >> 6) & 3;
+
 	vname[0] = (char)toupper(filename[0]);
 	driveno = vname[0] - 'A' + 1;   /* 1=A: 2=B: */
+	if (driveno > (1 + maxdrive)) return DSK_ERR_NOTME;
 
 	d32self->d32_unit = driveno;
 	return DSK_ERR_OK;

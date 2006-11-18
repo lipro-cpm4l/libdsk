@@ -64,6 +64,14 @@ dsk_err_t cpcemu_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, const void *
                               dsk_pcyl_t cylinder, dsk_phead_t head,
                               dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
                               dsk_psect_t sector, size_t sector_size, int deleted);
+dsk_err_t cpcemu_trackids(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                            dsk_pcyl_t cylinder, dsk_phead_t head,
+                            dsk_psect_t *count, DSK_FORMAT **result);
 dsk_err_t cpcemu_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
-                      dsk_phead_t head, unsigned char *result);
+                  dsk_phead_t head, unsigned char *result);
+
+dsk_err_t cpcemu_option_enum(DSK_DRIVER *self, int idx, char **optname);
+
+dsk_err_t cpcemu_option_set(DSK_DRIVER *self, const char *optname, int value);
+dsk_err_t cpcemu_option_get(DSK_DRIVER *self, const char *optname, int *value);
 

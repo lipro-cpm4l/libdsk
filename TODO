@@ -2,6 +2,9 @@ TO BE DONE in LibDSK 1.1.x:
 
 * Weak-sector support is new and may be buggy.
 * Write more functions for dsktool.
+* The INT25/INT26 driver doesn't seem to work in a DJGPP compile; it fails
+ with error 0x701F.
+* The INT25/INT26 driver keeps spitting out diagnostic messages.
 
 * dskid doesn't work on a DFS .DSK file. Why? Because get_id doesn't fail?
 * Support for DMK file format.

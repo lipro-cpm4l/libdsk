@@ -30,6 +30,7 @@
 #include "libdsk.h"
 #include "utilopts.h"
 #include "formname.h"
+#include "apriboot.h"
 
 #ifdef CPM
 #define AV0 "DSKTRANS"
@@ -41,6 +42,7 @@
 
 static int md3 = 0;
 static int apricot = 0;
+static int pcdos = 0;
 static int stubborn = 0;
 static int logical = 0;
 static int noformat = 0;
@@ -104,6 +106,7 @@ int help(int argc, char **argv)
                        "-noformat       Do not format destination disc\n"
                        "-md3            Defeat MicroDesign 3 copy protection\n"
                        "-apricot        Convert Apricot superblock to PC-DOS format\n"
+                       "-pcdos          Convert PC-DOS superblock to Apricot format\n"
                        "-stubborn       Ignore any read errors\n"
 		       "-logical        Rearrange tracks in logical order\n"
                        "                (Only useful when out-image type is 'raw' and reading discs\n"
@@ -130,34 +133,14 @@ int help(int argc, char **argv)
  * mount -o loop -t msdos filename.ufi /mnt/floppy
  */
 
-void apricot_bootsect(unsigned char *bootsect) 
+int apricot_bootsect(const char *filename, byte *bootsect) 
 {
-	int n;
-	int heads     = bootsect[0x16];
-	int sectors   = bootsect[0x10] + 256 * bootsect[0x11];
-	char label[8];
+	return transform(FORCE_APRICOT, bootsect, filename, 0);
+}
 
-/* Check that the first 8 bytes are ASCII or all zeroes. */
-	for (n = 0; n < 8; n++)
-	{
-		if (bootsect[n] != 0 && 
-			(bootsect[n] < 0x20 || bootsect[n] > 0x7E)) return;
-	}
-	memcpy(label, bootsect, 8);
-	bootsect[0] = 0xE9;	/* 80x86 jump */
-	bootsect[1] = 0x40;
-	bootsect[2] = 0x90;
-	memcpy(bootsect + 3, label, 8);	/* OEM ID */
-	memcpy(bootsect + 11, bootsect + 80, 13);	/* BPB */
-	bootsect[24] = sectors & 0xFF;
-	bootsect[25] = sectors >> 8;
-	bootsect[26] = heads & 0xFF;
-	bootsect[27] = heads >> 8;
-	memset(bootsect + 28, 0, 512 - 28);
-	bootsect[0x40] = 0x90;	/* Minimal boot code: INT 18, diskless boot */
-	bootsect[0x41] = 0x90;  /* or ROM BASIC (delete as applicable) */
-	bootsect[0x42] = 0xcd;
-	bootsect[0x43] = 0x18;
+int pcdos_bootsect(const char *filename, byte *bootsect) 
+{
+	return transform(FORCE_PCDOS, bootsect, filename, 0);
 }
 
 
@@ -187,6 +170,7 @@ int main(int argc, char **argv)
 	if (present_arg("-odstep", &argc, argv)) odstep = 1;
 	if (present_arg("-md3", &argc, argv)) md3 = 1;
 	if (present_arg("-apricot", &argc, argv)) apricot = 1;
+	if (present_arg("-pcdos", &argc, argv)) pcdos = 1;
 	if (present_arg("-stubborn", &argc, argv)) stubborn = 1;
 	if (present_arg("-noformat", &argc, argv)) noformat = 1;
 	if (present_arg("-logical", &argc, argv)) logical = 1;
@@ -319,7 +303,15 @@ int do_copy(char *infile, char *outfile)
 #endif
 				if (apricot && cyl == 0 && head == 0 && 
 						sec == 0)
-					apricot_bootsect((unsigned char *)buf);
+				{
+					if (apricot_bootsect(infile, (byte *)buf))
+						goto abort;
+				}
+				if (pcdos && cyl == 0 && head == 0 && sec == 0)
+				{
+					if (pcdos_bootsect(infile, (byte *)buf))
+						goto abort;
+				}
 				e = dsk_pwrite(outdr,&dg,buf,cyl,head, sec + dg.dg_secbase);
 				if (e) break;
 			}
@@ -329,6 +321,7 @@ int do_copy(char *infile, char *outfile)
 		}
 	
 	}
+abort:
 	printf("\r                                     \r");
 	if (indr)  dsk_close(&indr);
 	if (outdr) dsk_close(&outdr);

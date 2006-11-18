@@ -6,6 +6,7 @@ EXTRA_DIST= $(srcdir)/config/* \
 	    $(srcdir)/dskwrite/* \
 	    $(srcdir)/dos16ppd/Makefile      \
 	    $(srcdir)/dos16ppd/errno.h       \
+	    $(srcdir)/dos16ppd/int25l.as     \
 	    $(srcdir)/dos16ppd/config.h	     \
 	    $(srcdir)/dos32gcc/Makefile	     \
 	    $(srcdir)/dos32gcc/config.h      \

@@ -48,8 +48,10 @@ extern DRV_CLASS dc_win16;	/* Win16 driver */
 #endif
 #ifdef DOS32FLOPPY
 extern DRV_CLASS dc_dos32;	/* DOS32 driver */
+extern DRV_CLASS dc_dosint25;	/* DOS (INT 25h) driver */
 #endif
 #ifdef DOS16FLOPPY
 extern DRV_CLASS dc_dos16;	/* DOS16 driver */
+extern DRV_CLASS dc_dosint25;	/* DOS (INT 25h) driver */
 #endif
 
