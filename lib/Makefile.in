@@ -114,8 +114,8 @@ EXTRA_DIST = $(CLASSDPRE)/Drive.java 	   $(CLASSDPRE)/DskException.java 	   $(CL
 # If interfaces have been removed set the right-hand number to 0.
 # 
 #
-libdsk_la_LDFLAGS = -version-info 5:1:2
-libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c 		   dsklphys.c dskfmt.c   dskopen.c  dskpars.c 		   dskerror.c dskseek.c  dsksecid.c dskgeom.c 		   dsktread.c dsksgeom.c dskjni.c   dskreprt.c 		   dskcmt.c dskretry.c dskdirty.c dsktrkid.c dskrtrd.c 		   comp.h compi.h compress.h compress.inc compress.c 		   compsq.c compsq.h 		   compgz.c compgz.h 		   compbz2.c compbz2.h 		   crctable.c crctable.h 		   crc16.c    crc16.h 		   rpccli.c  rpcfuncs.h  rpcmap.c  	           rpcpack.c  rpcserv.c 		   remote.c   remote.h  remote.inc remall.h 		   rpctios.c  rpctios.h 		   rpcfork.c  rpcfork.h 		   rpcfossl.c rpcfossl.h 		   rpcwin32.c rpcwin32.h 		   drv.h drvi.h drivers.h drivers.inc 		   drvlinux.h drvlinux.c 		   drvntwdm.h drvntwdm.c 		   drvwin32.h drvwin32.c w95defs.h 		   drvwin16.h drvwin16.c w16defs.h 		   drvint25.h drvint25.c 		   drvdos16.h drvdos16.c 		   drvdos32.h drvdos32.c 		   drvcpcem.h drvcpcem.c 		   drvposix.h drvposix.c 		   drvnwasp.h drvnwasp.c 		   drvadisk.h drvadisk.c 		   drvrcpm.h  drvrcpm.c 		   drvmyz80.h drvmyz80.c 		   drvcfi.h   drvcfi.c 		   drvqm.h    drvqm.c 
+libdsk_la_LDFLAGS = -version-info 5:3:2
+libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c 		   dsklphys.c dskfmt.c   dskopen.c  dskpars.c 		   dskerror.c dskseek.c  dsksecid.c dskgeom.c 		   dsktread.c dsksgeom.c dskjni.c   dskreprt.c 		   dskcmt.c dskretry.c dskdirty.c dsktrkid.c dskrtrd.c 		   comp.h compi.h compress.h compress.inc compress.c 		   compsq.c compsq.h 		   compgz.c compgz.h 		   compbz2.c compbz2.h 		   crctable.c crctable.h 		   crc16.c    crc16.h 		   rpccli.c  rpcfuncs.h  rpcmap.c  	           rpcpack.c  rpcserv.c 		   remote.c   remote.h  remote.inc remall.h 		   rpctios.c  rpctios.h 		   rpcfork.c  rpcfork.h 		   rpcfossl.c rpcfossl.h 		   rpcwin32.c rpcwin32.h 		   drv.h drvi.h drivers.h drivers.inc 		   drvlinux.h drvlinux.c 		   drvntwdm.h drvntwdm.c 		   drvwin32.h drvwin32.c w95defs.h 		   drvwin16.h drvwin16.c w16defs.h 		   drvint25.h drvint25.c 		   drvdos16.h drvdos16.c 		   drvdos32.h drvdos32.c 		   drvcpcem.h drvcpcem.c 		   drvlogi.h  drvlogi.c 		   drvposix.h drvposix.c 		   drvnwasp.h drvnwasp.c 		   drvadisk.h drvadisk.c 		   drvrcpm.h  drvrcpm.c 		   drvtele.h  drvtele.c 		   drvmyz80.h drvmyz80.c 		   drvcfi.h   drvcfi.c 		   drvqm.h    drvqm.c 
 
 
 JARCLASSES = $(CLASSDPRE)/Drive.class 	   $(CLASSDPRE)/DskException.class 	   $(CLASSDPRE)/FormatData.class 	   $(CLASSDPRE)/FormatType.class 	   $(CLASSDPRE)/Geometry.class 	   $(CLASSDPRE)/Reporter.class 	   $(CLASSDPRE)/LibDsk.class
@@ -141,8 +141,8 @@ dskcmt.lo dskretry.lo dskdirty.lo dsktrkid.lo dskrtrd.lo compress.lo \
 compsq.lo compgz.lo compbz2.lo crctable.lo crc16.lo rpccli.lo rpcmap.lo \
 rpcpack.lo rpcserv.lo remote.lo rpctios.lo rpcfork.lo rpcfossl.lo \
 rpcwin32.lo drvlinux.lo drvntwdm.lo drvwin32.lo drvwin16.lo drvint25.lo \
-drvdos16.lo drvdos32.lo drvcpcem.lo drvposix.lo drvnwasp.lo drvadisk.lo \
-drvrcpm.lo drvmyz80.lo drvcfi.lo drvqm.lo
+drvdos16.lo drvdos32.lo drvcpcem.lo drvlogi.lo drvposix.lo drvnwasp.lo \
+drvadisk.lo drvrcpm.lo drvtele.lo drvmyz80.lo drvcfi.lo drvqm.lo
 noinst_PROGRAMS =  @LIBDSKJAR@
 PROGRAMS =  $(noinst_PROGRAMS)
 
@@ -325,6 +325,8 @@ drvint25.lo drvint25.o : drvint25.c drvi.h ../config.h \
 	../include/libdsk.h drv.h drvint25.h
 drvlinux.lo drvlinux.o : drvlinux.c drvi.h ../config.h \
 	../include/libdsk.h drv.h drvlinux.h
+drvlogi.lo drvlogi.o : drvlogi.c ../include/libdsk.h drvi.h ../config.h \
+	drv.h drvlogi.h
 drvmyz80.lo drvmyz80.o : drvmyz80.c ../include/libdsk.h drvi.h \
 	../config.h drv.h drvmyz80.h
 drvntwdm.lo drvntwdm.o : drvntwdm.c drvi.h ../config.h \
@@ -337,6 +339,8 @@ drvqm.lo drvqm.o : drvqm.c ../include/libdsk.h drvi.h ../config.h drv.h \
 	drvqm.h crctable.h
 drvrcpm.lo drvrcpm.o : drvrcpm.c ../include/libdsk.h drvi.h ../config.h \
 	drv.h drvrcpm.h
+drvtele.lo drvtele.o : drvtele.c drvi.h ../config.h ../include/libdsk.h \
+	drv.h drvtele.h
 drvwin16.lo drvwin16.o : drvwin16.c drvi.h ../config.h \
 	../include/libdsk.h drv.h drvwin16.h
 drvwin32.lo drvwin32.o : drvwin32.c drvi.h ../config.h \

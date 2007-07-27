@@ -91,186 +91,626 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=..\lib\compbz2.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\compgz.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\compress.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\compsq.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\crc16.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\crctable.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvadisk.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvcfi.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvcpcem.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvdos16.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvdos32.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvlinux.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvlogi.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvmyz80.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvntwdm.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvnwasp.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvposix.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvqm.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvrcpm.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvtele.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvwin16.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvwin32.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskcheck.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskcmt.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskerror.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskfmt.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskgeom.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskjni.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dsklphys.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskopen.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskpars.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskread.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskreprt.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskretry.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskrtrd.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dsksecid.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskseek.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dsksgeom.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskstat.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dsktread.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dsktrkid.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\dskwrite.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\remote.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\rpccli.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\rpcmap.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\rpcpack.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\rpcserv.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\rpcwin32.c
+
+!IF  "$(CFG)" == "libdsk - Win32 Release"
+
+# SUBTRACT CPP /YX
+
+!ELSEIF  "$(CFG)" == "libdsk - Win32 Debug"
+
+!ENDIF 
+
 # End Source File
 # End Group
 # Begin Group "Header Files"

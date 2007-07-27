@@ -34,6 +34,8 @@ typedef struct dsk_namedgeom
     struct dsk_namedgeom *next;
 } DSK_NAMEDGEOM;
 
+/* These must match the order of the entries in dsk_format_t in libdsk.h */
+
 static DSK_NAMEDGEOM stdg[] = 
 {
         /*    sidedness cyl hd sec  psn  sz   rate    rwgap  fmtgap  fm  nomulti*/
@@ -60,6 +62,11 @@ static DSK_NAMEDGEOM stdg[] =
 {"bbc200",  { SIDES_ALT,     80, 1,10,    0, 256, RATE_SD, 0x2A, 0x50,   1,  0 }, "BBC 200k" }, /* 200k */
 {"mbee400", { SIDES_ALT,     40, 1,10,    0, 512, RATE_SD, 0x0C, 0x17,   0,  0 }, "Microbee 400k" }, /* 400k */
 {"mgt800",  { SIDES_OUTOUT,  80, 2,10,    1, 512, RATE_SD, 0x0C, 0x17,   0,  0 }, "MGT 800k" }, /* MGT 800k */
+{"trdos640",{ SIDES_ALT,     80, 2,16,    1, 256, RATE_SD, 0x12, 0x60,   0,  0 }, "TR-DOS 640k" }, /* TR-DOS 640k */
+
+/* Geometries below this line don't appear in dsk_format_t and can be accessed
+ * only by name. */
+
 {"myz80",   { SIDES_ALT,     64, 1,128,   0,1024, RATE_ED, 0x2A, 0x52,   0,  0 }, "MYZ80 8Mb" }, /* MYZ80 8Mb */
 };
 

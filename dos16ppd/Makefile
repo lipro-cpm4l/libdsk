@@ -9,7 +9,8 @@ OBS6=drvcfi.obj      drvwin32.obj    dskopen.obj    dsktread.obj  dskretry.obj
 OBS7=drvcpcem.obj    dskcheck.obj    dskpars.obj    dskwrite.obj  dskcmt.obj 
 OBS8=drvadisk.obj    drvrcpm.obj     drvqm.obj      crctable.obj  dskretry.obj
 OBS9=dskreprt.obj    dskdirty.obj    dskrtrd.obj    dsktrkid.obj  remote.obj
-OBSA=rpcfossl.obj    crc16.obj       drvint25.obj   int25l.obj
+OBSA=rpcfossl.obj    crc16.obj       drvint25.obj   int25l.obj    drvtele.obj
+OBSB=drvlogi.obj
 OBS10=dskid.obj       utilopts.obj    libdsk.lib
 OBS11=dskform.obj     utilopts.obj    formname.obj   libdsk.lib
 OBS12=dsktrans.obj   utilopts.obj    formname.obj   bootsec.obj libdsk.lib
@@ -47,7 +48,7 @@ serslave.exe:	$(OBS13)
 	$(CC) $(CFLAGS) $(OBS13)
 
 libdsk.lib:	$(OBS1) $(OBS2) $(OBS3) $(OBS4) $(OBS5) $(OBS6) $(OBS7) \
-		$(OBS8) $(OBS9) $(OBSA)
+		$(OBS8) $(OBS9) $(OBSA) $(OBSB)
 	libr r $@ $(OBS1)
 	libr r $@ $(OBS2)
 	libr r $@ $(OBS3)
@@ -58,6 +59,7 @@ libdsk.lib:	$(OBS1) $(OBS2) $(OBS3) $(OBS4) $(OBS5) $(OBS6) $(OBS7) \
 	libr r $@ $(OBS8)
 	libr r $@ $(OBS9)
 	libr r $@ $(OBSA)
+	libr r $@ $(OBSB)
 
 %.obj:	%.as
 	$(CC) -c $(CFLAGS) $<

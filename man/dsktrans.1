@@ -2,7 +2,7 @@
 .\"
 .\" dsktrans.1: dsktrans man page
 .\" Copyright (c) 2002 Darren Salt
-.\" Copyright (c) 2005-6 John Elliott
+.\" Copyright (c) 2005-7 John Elliott
 .\"
 .\" This library is free software; you can redistribute it and/or modify it
 .\" under the terms of the GNU Library General Public License as published by
@@ -21,7 +21,7 @@
 .\" Author contact information:
 .\" John Elliott: email: jce@seasip.demon.co.uk
 .\"
-.TH dsktrans 1 "18 November, 2006" "Version 1.1.12" "Emulators"
+.TH dsktrans 1 "18 November, 2007" "Version 1.1.14" "Emulators"
 .\"
 .\"------------------------------------------------------------------
 .\"
@@ -71,7 +71,8 @@ details.
 .SH OPTIONS
 .TP
 .B -itype TYPE
-Determines which driver is to be used to read from the source disc.
+Determines which driver is to be used to read from the source disc. Some 
+examples are:
 .RS
 .TP 8
 .B auto
@@ -85,6 +86,9 @@ Use the extended version of the DSK format.
 .TP
 .B floppy
 Use the floppy driver.
+.TP
+.B ntwdm 
+(Under Windows 2000 and later) Use Simon Owen's FDRAWCMD floppy driver.
 .TP
 .B myz80
 Use the hard disk (MYZ80 format) image driver.
@@ -100,6 +104,18 @@ Use the ApriDisk image driver (from the utility of the same name).
 .TP
 .B raw
 Use the raw driver.
+.TP
+.B logical
+Similar to the raw driver, but the resulting disc image contains tracks 
+laid out in logical filesystem order. Mainly used for imaging discs in
+formats (such as ADFS) where the mapping of tracks to cylinders/heads does 
+not match the way it's done on the PC.
+.TP
+.B qm
+Sydex's CopyQM format (can only be read, not written).
+.TP
+.B teledisk 
+Sydex's Teledisk format (can only be read, not written).
 .RE
 
 .TP
@@ -194,9 +210,9 @@ an Apricot superblock.
 
 .TP
 .B -logical
-Rearrange the tracks in the logical order. This option is useful when the
-output image type is raw and you're reading a disc with a non-IBM track
-layout, such as 144FEAT 1440K or ADFS 'L'.
+Rearrange the tracks in the logical order. This option has been superseded;
+instead you should use -otype logical to output to a logically-sectored raw
+image.
 
 .TP
 .B -noformat

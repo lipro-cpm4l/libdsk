@@ -2,7 +2,7 @@
 
 
 /* File created by MIDL compiler version 5.01.0164 */
-/* at Sat Jan 21 20:59:57 2006
+/* at Sat Jun 09 23:57:17 2007
  */
 /* Compiler settings for J:\C\LibDsk\win32vc6\atlibdsk.idl:
     Oicf (OptLev=i2), W1, Zp8, env=Win32, ms_ext, c_ext

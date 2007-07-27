@@ -1,4 +1,4 @@
-LibDsk v1.1.12 
+LibDsk v1.1.14 
 
 John Elliott
 
@@ -163,7 +163,9 @@ LibDsk is a library for accessing floppy drives and
 disc images transparently. It currently supports the 
 following disc image formats:
 
- Raw "dd if=foo of=bar" images; 
+ Raw "dd if=foo of=bar" images;
+
+ Raw images in logical filesystem order;
 
  CPCEMU-format .DSK images (normal and extended); 
 
@@ -177,6 +179,9 @@ following disc image formats:
   the same name under DOS.
 
  NanoWasp-format disc images, used by the eponymous emulator.
+
+ Disc images created by the Sydex imaging programs 
+  Teledisk and CopyQM (read only in both cases).
 
  The floppy drive under Linux; 
 
@@ -197,6 +202,8 @@ following formats:
  What's new? 
 
 For full details, see the file ChangeLog.
+
+ Added two new drivers: "teledisk" and "logical".
 
  Changes by Ramlaid <www.ramlaid.com> to the DSK and 
   NTWDM drivers to improve compatibility, and another 
@@ -283,6 +290,12 @@ The following disc image file formats are supported by LibDsk.
   . On systems other than Linux, DOS or Windows, this 
   is also used to access the host system's floppy drive.
 
+  "logical" : Raw disc image in logical filesystem order. 
+  Previous versions of LibDsk could generate such 
+  images (for example, by using the now-deprecated 
+  -logical option to dsktrans) but couldn't then write 
+  them back or use them in emulators.
+
   "floppy" : Host system's floppy drive (under Linux, DOS 
   or Windows). 
 
@@ -300,6 +313,9 @@ The following disc image file formats are supported by LibDsk.
 
   "qm" : Disc images created by Sydex's CopyQM. This is a 
   read-only driver.
+
+  "teledisk" : Disc images created by Sydex's TeleDisk. 
+  This is a read-only driver.
 
   "nanowasp" : Disc image in the 400k Microbee format 
   used by the NanoWasp emulator. This is similar to "raw"
@@ -1188,7 +1204,7 @@ DSK_REPORTEND *repend);
 
 Used to set callbacks from LibDsk to your own code, for 
 LibDsk to display messages during processing that may 
-take time. The code should be used to set the text on 
+take time. The code could be used to set the text on 
 the status line of your program window, for example.
 
 typedef void (*DSK_REPORTFUNC)(const char *message); 
@@ -2707,7 +2723,8 @@ dsk_err_t (*rc_open )(DSK_PDRIVER pDriver, const char
 
 Connect to a remote server. 
 
- pDriver contains the pointer to our instance data.
+ pDriver points to a DSK_DRIVER containing the pointer 
+  to your instance data.
 
  name is the filename as passed to LibDsk, starting 
   with "driver:" and containing any connection parameters 

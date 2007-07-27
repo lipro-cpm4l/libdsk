@@ -10,7 +10,8 @@ OBS =   compbz2.o     dskerror.o    dskread.o    drvdos32.o   rpccli.o \
 	drvcpcem.o    dskcheck.o    dskpars.o    dskwrite.o   dskretry.o  \
 	drvadisk.o    drvrcpm.o     drvqm.o      dskretry.o   dskcmt.o \
 	dskreprt.o    crctable.o    dskdirty.o   dskrtrd.o    dsktrkid.o \
-	remote.o      rpcfossl.o    crc16.o      drvint25.o
+	remote.o      rpcfossl.o    crc16.o      drvint25.o   drvtele.o \
+	drvlogi.o
 
 OBS1 = dskid.o       utilopts.o    libdsk.a
 OBS2 = dskform.o     utilopts.o    formname.o   libdsk.a

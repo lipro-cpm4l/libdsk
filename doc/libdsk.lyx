@@ -26,7 +26,7 @@
 
 \layout Title
 
-LibDsk v1.1.12 
+LibDsk v1.1.14 
 \layout Author
 
 John Elliott
@@ -83,7 +83,10 @@ dd if=foo of=bar
 \begin_inset Quotes erd
 \end_inset 
 
- images; 
+ images;
+\layout Itemize
+
+Raw images in logical filesystem order;
 \layout Itemize
 
 CPCEMU-format .DSK images (normal and extended); 
@@ -101,6 +104,10 @@ ApriDisk-format disc images, used by the utility of the same name under
 \layout Itemize
 
 NanoWasp-format disc images, used by the eponymous emulator.
+\layout Itemize
+
+Disc images created by the Sydex imaging programs Teledisk and CopyQM (read
+ only in both cases).
 \layout Itemize
 
 The floppy drive under Linux; 
@@ -134,6 +141,25 @@ What's new?
 \layout Standard
 
 For full details, see the file ChangeLog.
+\layout Itemize
+
+Added two new drivers: 
+\begin_inset Quotes eld
+\end_inset 
+
+teledisk
+\begin_inset Quotes erd
+\end_inset 
+
+ and 
+\begin_inset Quotes eld
+\end_inset 
+
+logical
+\begin_inset Quotes erd
+\end_inset 
+
+.
 \layout Itemize
 
 Changes by Ramlaid <www.ramlaid.com> to the DSK and NTWDM drivers to improve
@@ -322,6 +348,23 @@ dd if=/dev/fd0 of=image
 \begin_inset Quotes eld
 \end_inset 
 
+logical
+\begin_inset Quotes erd
+\end_inset 
+
+ : Raw disc image in logical filesystem order.
+ Previous versions of LibDsk could generate such images (for example, by
+ using the now-deprecated
+\family typewriter 
+ -logical
+\family default 
+ option to dsktrans) but couldn't then write them back or use them in emulators.
+\layout Description
+
+
+\begin_inset Quotes eld
+\end_inset 
+
 floppy
 \begin_inset Quotes erd
 \end_inset 
@@ -399,6 +442,18 @@ qm
 \end_inset 
 
  : Disc images created by Sydex's CopyQM.
+ This is a read-only driver.
+\layout Description
+
+
+\begin_inset Quotes eld
+\end_inset 
+
+teledisk
+\begin_inset Quotes erd
+\end_inset 
+
+ : Disc images created by Sydex's TeleDisk.
  This is a read-only driver.
 \layout Description
 
@@ -2788,7 +2843,7 @@ void dsk_reportfunc_get(DSK_REPORTFUNC *report, DSK_REPORTEND *repend);
 
 Used to set callbacks from LibDsk to your own code, for LibDsk to display
  messages during processing that may take time.
- The code should be used to set the text on the status line of your program
+ The code could be used to set the text on the status line of your program
  window, for example.
 \layout LyX-Code
 
@@ -6372,7 +6427,7 @@ Connect to a remote server.
  
 \layout Itemize
 
-pDriver contains the pointer to our instance data.
+pDriver points to a DSK_DRIVER containing the pointer to your instance data.
 \layout Itemize
 
 name is the filename as passed to LibDsk, starting with 

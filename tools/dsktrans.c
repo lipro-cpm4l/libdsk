@@ -173,7 +173,11 @@ int main(int argc, char **argv)
 	if (present_arg("-pcdos", &argc, argv)) pcdos = 1;
 	if (present_arg("-stubborn", &argc, argv)) stubborn = 1;
 	if (present_arg("-noformat", &argc, argv)) noformat = 1;
-	if (present_arg("-logical", &argc, argv)) logical = 1;
+	if (present_arg("-logical", &argc, argv)) 
+	{
+		logical = 1;
+		fprintf(stderr, "The -logical option is deprecated. Use -otype logical instead.\n");
+	}
 	if (!outtyp) outtyp = "dsk";
         format    = check_format("-format", &argc, argv);
 	args_complete(&argc, argv);

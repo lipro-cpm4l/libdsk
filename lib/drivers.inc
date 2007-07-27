@@ -61,6 +61,7 @@
                          * library. */
     &dc_adisk,  /* APRIDISK image */
     &dc_qm,     /* CopyQM */
+    &dc_tele,	/* Teledisk */
 
 /* 4. Raw files with no magic number. */
     &dc_posix,
@@ -69,6 +70,7 @@
  *   explicitly specified. */
     &dc_myz80,
     &dc_nwasp,
+    &dc_logical,
     &dc_cfi,    /* RLE-compressed raw. The reasons that this isn't 
              * handled by the general compression system are:
              * 1. No magic number, so can't autodetect.

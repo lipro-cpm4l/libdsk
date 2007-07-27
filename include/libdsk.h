@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001-6 John Elliott <jce@seasip.demon.co.uk>           *
+ *    Copyright (C) 2001-7 John Elliott <jce@seasip.demon.co.uk>           *
  *                                                                         *
  *    Modifications to add dsk_dirty()                                     *
  *    (c) 2005 Philip Kendall <pak21-spectrum@srcf.ucam.org>               *
@@ -58,7 +58,7 @@
 extern "C" {
 #endif
 
-#define LIBDSK_VERSION "1.1.12"
+#define LIBDSK_VERSION "1.1.14"
 
 /************************* TYPES ********************************/
 
@@ -148,6 +148,7 @@ typedef enum
 	FMT_BBC200,	/* 10 sectors, 80 tracks, 1 side, FM */
 	FMT_MBEE400,	/* 10 sectors, 80 tracks, 1 side */
 	FMT_MGT800,     /* 10 sectors, 80 tracks, 2 sides out and out */
+	FMT_TRDOS640,	/* 16 sectors,  256 bytes/sector, 2 sides */
 	FMT_UNKNOWN = -1
 } dsk_format_t;
 

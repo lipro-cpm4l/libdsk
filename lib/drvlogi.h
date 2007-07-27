@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001-2  John Elliott <jce@seasip.demon.co.uk>          *
+ *    Copyright (C) 2001, 2007  John Elliott <jce@seasip.demon.co.uk>      *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -20,40 +20,30 @@
  *                                                                         *
  ***************************************************************************/
 
-/* This file lists all possible types of floppy driver in libdsk. Order does
- * not matter in this file. */
+/* Declarations for the logically-sectored POSIX driver */
 
-extern DRV_CLASS dc_cpcemu;	/* CPCEMU DSK driver */
-extern DRV_CLASS dc_cpcext;	/* CPCEMU DSK driver: create in ext. format */
-extern DRV_CLASS dc_dqk;	/* Compressed CPCEMU driver */
-extern DRV_CLASS dc_posix;	/* POSIX driver */
-extern DRV_CLASS dc_nwasp;	/* NanoWasp driver */
-extern DRV_CLASS dc_myz80;	/* MYZ80 driver */
-extern DRV_CLASS dc_cfi;	/* CFI driver */
-extern DRV_CLASS dc_adisk;	/* APRIDISK driver */
-extern DRV_CLASS dc_qm;		/* CopyQM driver */
-extern DRV_CLASS dc_tele;	/* Teledisk driver */
-extern DRV_CLASS dc_logical;	/* Raw, in logical sector order */
-extern DRV_CLASS dc_rcpmfs;	/* Reverse-CP/MFS driver */
-extern DRV_CLASS dc_remote;	/* All remote drivers */
-#ifdef LINUXFLOPPY
-extern DRV_CLASS dc_linux;	/* Linux driver */
-#endif
-#ifdef NTWDMFLOPPY
-extern DRV_CLASS dc_ntwdm;	/* NT WDM driver */
-#endif
-#ifdef WIN32FLOPPY
-extern DRV_CLASS dc_win32;	/* Win32 driver */
-#endif
-#ifdef WIN16FLOPPY
-extern DRV_CLASS dc_win16;	/* Win16 driver */
-#endif
-#ifdef DOS32FLOPPY
-extern DRV_CLASS dc_dos32;	/* DOS32 driver */
-extern DRV_CLASS dc_dosint25;	/* DOS (INT 25h) driver */
-#endif
-#ifdef DOS16FLOPPY
-extern DRV_CLASS dc_dos16;	/* DOS16 driver */
-extern DRV_CLASS dc_dosint25;	/* DOS (INT 25h) driver */
-#endif
+typedef struct
+{
+        DSK_DRIVER lpx_super;
+        FILE *lpx_fp;
+	int   lpx_readonly;
+	unsigned long  lpx_filesize;
+} LOGICAL_DSK_DRIVER;
+
+dsk_err_t logical_open(DSK_DRIVER *self, const char *filename);
+dsk_err_t logical_creat(DSK_DRIVER *self, const char *filename);
+dsk_err_t logical_close(DSK_DRIVER *self);
+dsk_err_t logical_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              void *buf, dsk_pcyl_t cylinder,
+                              dsk_phead_t head, dsk_psect_t sector);
+dsk_err_t logical_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              const void *buf, dsk_pcyl_t cylinder,
+                              dsk_phead_t head, dsk_psect_t sector);
+dsk_err_t logical_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
+                                dsk_pcyl_t cylinder, dsk_phead_t head,
+                                const DSK_FORMAT *format, unsigned char filler);
+dsk_err_t logical_xseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                                dsk_pcyl_t cylinder, dsk_phead_t head);
+dsk_err_t logical_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                                dsk_phead_t head, unsigned char *result);
 

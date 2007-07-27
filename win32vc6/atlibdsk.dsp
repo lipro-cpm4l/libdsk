@@ -434,6 +434,29 @@ SOURCE=..\lib\drvlinux.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvlogi.c
+
+!IF  "$(CFG)" == "atlibdsk - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Debug"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Release MinSize"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Release MinDependency"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Release MinSize"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Release MinDependency"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvmyz80.c
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -461,6 +484,29 @@ SOURCE=..\lib\drvqm.c
 
 SOURCE=..\lib\drvrcpm.c
 # SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvtele.c
+
+!IF  "$(CFG)" == "atlibdsk - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Debug"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Release MinSize"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Release MinDependency"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Release MinSize"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Release MinDependency"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
