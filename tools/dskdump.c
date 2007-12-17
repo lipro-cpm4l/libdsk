@@ -180,7 +180,7 @@ int do_copy(char *infile, char *outfile)
 	if (!e)
 	{
 		maxcyl = dg.dg_cylinders + 4;
-// Head is being forced. Do only one side.
+/* Head is being forced. Do only one side. */
 		if (inside >= 0) maxhead = 1;
 		dsk_get_comment(indr, &cmt);
 		if (outdr) dsk_set_comment(outdr, cmt);
@@ -221,7 +221,7 @@ int dump_cyl(DSK_PDRIVER indr, DSK_GEOMETRY *dg,
 	unsigned buflen = 128;
 
 	dg->dg_noskip = 1;
-	// Guess data rate and recording mode
+	/* Guess data rate and recording mode */
 	for (dg->dg_datarate = RATE_HD; dg->dg_datarate <= RATE_ED; ++dg->dg_datarate)
 	{
 		for (dg->dg_fm = 0; dg->dg_fm < 2; ++dg->dg_fm)
@@ -276,8 +276,8 @@ int dump_cyl(DSK_PDRIVER indr, DSK_GEOMETRY *dg,
 					fmt_track[secnum].fmt_head,
 					fmt_track[secnum].fmt_sector,
 					fmt_track[secnum].fmt_secsize, &deleted);
-			// XXX Need to be able to write sectors with errors,
-			// at least to CPCEMU DSK 
+			/* XXX Need to be able to write sectors with errors,
+			 * at least to CPCEMU DSK  */
 			if (err == DSK_ERR_DATAERR) err = DSK_ERR_OK;
 			if (err) break;
 			op = "Writing";

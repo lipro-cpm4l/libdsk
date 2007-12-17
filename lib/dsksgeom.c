@@ -45,7 +45,9 @@ static DSK_NAMEDGEOM stdg[] =
 {"pcw720",  { SIDES_ALT,     80, 2, 9,    1, 512, RATE_SD, 0x2A, 0x52,   0,  0 }, "PCW / IBM 720k" }, /* 720k */
 {"pcw1440", { SIDES_ALT,     80, 2,18,    1, 512, RATE_HD, 0x1B, 0x54,   0,  0 }, "PcW16 / IBM 1440k "}, /* 1.4M */
 {"ibm160",  { SIDES_ALT,     40, 1, 8,    1, 512, RATE_SD, 0x2A, 0x50,   0,  0 }, "IBM 160k (CP/M-86 / DOSPLUS)" }, /* 160k */
-//{"ibm320",    { SIDES_ALT,     40, 2, 8,    1, 512, RATE_SD, 0x2A, 0x50,   0,  0 }, "IBM 320k (CP/M-86 / DOSPLUS)" }, /* 320k */
+/* This was commented out in libdsk-1.1.3, but I can't remember why. Bring it 
+ * back. */
+{"ibm320",  { SIDES_ALT,     40, 2, 8,    1, 512, RATE_SD, 0x2A, 0x50,   0,  0 }, "IBM 320k (CP/M-86 / DOSPLUS)" }, /* 320k */
 {"pcpm320", { SIDES_OUTBACK, 40, 2, 8,    1, 512, RATE_SD, 0x2A, 0x50,   0,  0 }, "IBM 320k (CP/M-86 / DOSPLUS)" }, /* 320k */
 {"ibm360",  { SIDES_ALT,     40, 2, 9,    1, 512, RATE_SD, 0x2A, 0x52,   0,  0 }, "IBM 360k (DOSPLUS)", }, /* 360k */
 {"ibm720",  { SIDES_OUTBACK, 80, 2, 9,    1, 512, RATE_SD, 0x2A, 0x52,   0,  0 }, "IBM 720k (144FEAT)", }, /* 720k 144FEAT */

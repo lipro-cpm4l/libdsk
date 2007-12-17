@@ -173,7 +173,7 @@ typedef enum
 [
 	uuid(F81955B8-9ECB-4B29-8ACA-B793E2A9DD8E),
 	version(1.0),	// First version of this interface
-	helpstring("LibDsk 1.1.9  Drive / Disk image access library")
+	helpstring("LibDsk 1.2.0  Drive / Disk image access library")
 ]
 library LIBDSK
 {

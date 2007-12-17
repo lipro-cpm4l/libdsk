@@ -172,7 +172,7 @@ int do_scan(char *infile)
 	if (!e)
 	{
 		maxcyl = dg.dg_cylinders + 4;
-// Head is being forced. Do only one side.
+/* Head is being forced. Do only one side. */
 		if (inside >= 0) maxhead = 1;
 		if (xml)
 		{
@@ -226,7 +226,7 @@ int scan_cyl(DSK_PDRIVER indr, DSK_GEOMETRY *dg,
 	dsk_psect_t secnum;
 
 	dg->dg_noskip = 1;
-	// Guess data rate and recording mode
+	/* Guess data rate and recording mode */
 	for (dg->dg_datarate = RATE_HD; dg->dg_datarate <= RATE_ED; ++dg->dg_datarate)
 	{
 		for (dg->dg_fm = 0; dg->dg_fm < 2; ++dg->dg_fm)

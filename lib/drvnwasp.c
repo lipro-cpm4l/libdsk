@@ -212,7 +212,7 @@ dsk_err_t nwasp_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 
 	/* Convert from physical to logical sector. However, unlike the dg_* 
 	 * functions, this _always_ uses "SIDES_OUTOUT" mapping */
-	offset = 204800L * head + 5120L * cylinder;// + 512 * skew[sector-1];
+	offset = 204800L * head + 5120L * cylinder;/* + 512 * skew[sector-1];*/
 	trklen = 5120L;
 
 	err = seekto(nwself, offset);
@@ -244,7 +244,7 @@ dsk_err_t nwasp_xseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 
 	/* Convert from physical to logical sector. However, unlike the dg_* 
 	 * functions, this _always_ uses "SIDES_OUTOUT" mapping */
-	offset = 204800L * head + 5120L * cylinder;// + 512 * skew[sector-1];
+	offset = 204800L * head + 5120L * cylinder;/* + 512 * skew[sector-1];*/
 	
 	if (fseek(nwself->nw_fp, offset, SEEK_SET)) return DSK_ERR_SEEKFAIL;
 

@@ -67,7 +67,7 @@ dsk_err_t dsk_unpack_err(unsigned char **input, int *inp_len, dsk_err_t *value)
 	}
 
 
-// Memory blocks are stored as 2-byte length, followed by data. 
+/* Memory blocks are stored as 2-byte length, followed by data. */ 
 dsk_err_t dsk_unpack_bytes(unsigned char **input, int *inp_len, unsigned char **buf)
 	{
 	dsk_err_t err;
@@ -77,7 +77,7 @@ dsk_err_t dsk_unpack_bytes(unsigned char **input, int *inp_len, unsigned char **
 	if (inp_len[0] < (int)len) return DSK_ERR_RPC;
 	*buf = *input;
 
-	// Null pointers are encoded as 0-byte blocks
+	/* Null pointers are encoded as 0-byte blocks */
 	if (len == 0)
 	{
 		*buf = NULL;
@@ -92,7 +92,7 @@ dsk_err_t dsk_unpack_bytes(unsigned char **input, int *inp_len, unsigned char **
 	return DSK_ERR_OK;
 	}
 
-// Strings are stored as memory blocks
+/* Strings are stored as memory blocks */
 dsk_err_t dsk_unpack_string(unsigned char **input, int *inp_len, char **buf)
 	{
 	return dsk_unpack_bytes(input, inp_len, (unsigned char **)buf); 
@@ -131,7 +131,7 @@ dsk_err_t dsk_unpack_format(unsigned char **input, int *inp_len, DSK_FORMAT *f)
 	return DSK_ERR_OK;
 	}
 
-///////////////////////////////////////////////////////////////////////////////////////////
+/* ///////////////////////////////////////////////////////////////////////// */
 
 
 /* RPC pack functions */
@@ -166,7 +166,7 @@ dsk_err_t dsk_pack_i32(unsigned char **output, int *out_len, int32 value)
 
 dsk_err_t dsk_pack_err(unsigned char **output, int *out_len, dsk_err_t value)
 	{
-	//signed short serr = (signed short)value;
+	/* signed short serr = (signed short)value; */
 
 	return dsk_pack_i16(output, out_len, (int16)value);
 	}

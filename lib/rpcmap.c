@@ -153,7 +153,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_map_delete(unsigned int index)
 
 	if (mapping)
 	{
-		// Trying to unmap something that isn't mapped...
+		/* Trying to unmap something that isn't mapped... */
 		if (index == 0 || index >= maplen) return DSK_ERR_BADPTR;
 		if (mapping[index] == NULL)        return DSK_ERR_BADPTR;
 

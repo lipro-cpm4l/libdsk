@@ -101,7 +101,7 @@ static dsk_err_t serial_open(const char *name)
 		filename = NULL;
 		return DSK_ERR_SYSERR;
 	}	
-	outfd = open(filename, O_CREAT | O_WRONLY | O_APPEND | O_NONBLOCK);
+	outfd = open(filename, O_WRONLY | O_APPEND | O_NONBLOCK);
 	if (outfd < 0) 
 	{
 		close(infd);

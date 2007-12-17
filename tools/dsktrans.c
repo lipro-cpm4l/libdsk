@@ -236,11 +236,11 @@ int do_copy(char *infile, char *outfile)
 		    {
                         if (md3)
                         {
-			// MD3 discs have 256-byte sectors in cyl 1 head 1
+			/* MD3 discs have 256-byte sectors in cyl 1 head 1 */
 			    if (cyl == 1 && head == 1) dg.dg_secsize = 256;
 			    else		       dg.dg_secsize = 512;
                         }
-			// Format track!
+			/* Format track! */
                         if (e == DSK_ERR_OK && (!noformat)) 
 			{
 				op = "Formatting";
@@ -276,7 +276,7 @@ int do_copy(char *infile, char *outfile)
 					if (!e) e = dsk_lread(indr, &dg, buf, ls);
 				}
 				else e = dsk_pread(indr, &dg, buf, cyl,head,sec + dg.dg_secbase);
-				// MD3 discs have deliberate bad sectors in cyl 1 head 1
+				/* MD3 discs have deliberate bad sectors in cyl 1 head 1 */
                                 if (md3 && e == DSK_ERR_DATAERR && dg.dg_secsize == 256) e = DSK_ERR_OK;
 				if (stubborn && (e <= DSK_ERR_NOTRDY && e >= DSK_ERR_CTRLR))
 				{

@@ -88,8 +88,7 @@ dsk_err_t tios_open(DSK_PDRIVER pDriver, const char *name, char *nameout)
 		self->filename = NULL;
 		return DSK_ERR_SYSERR;
 	}	
-	self->outfd = open(self->filename, 
-				O_CREAT | O_WRONLY | O_APPEND | O_NONBLOCK);
+	self->outfd = open(self->filename, O_WRONLY | O_APPEND | O_NONBLOCK);
 	if (self->outfd < 0) 
 	{
 		close(self->infd);

@@ -161,13 +161,13 @@ dsk_err_t remote_open(DSK_DRIVER *self, const char *filename)
 	if (err) return err;
 	err = dsk_r_properties(self, function, self->dr_remote->rd_handle);
 	if (err) return err;
-//	if (implements(self, RPC_DSK_GETCOMMENT))
-//	{
+/*	if (implements(self, RPC_DSK_GETCOMMENT))
+	{ */
 		err = dsk_r_get_comment(self, function, 
 				self->dr_remote->rd_handle, &comment);
 		if (err) return err;
 		if (comment != NULL) err = dsk_set_comment(self, comment);
-//	}	
+/*	}	 */
 	return err;
 }
 
@@ -186,13 +186,13 @@ dsk_err_t remote_creat(DSK_DRIVER *self, const char *filename)
 	if (err) return err;
 	err = dsk_r_properties(self, function, self->dr_remote->rd_handle);
 	if (err) return err;
-//	if (implements(self, RPC_DSK_GETCOMMENT))
-//	{
+/*	if (implements(self, RPC_DSK_GETCOMMENT))
+	{ */
 		err = dsk_r_get_comment(self, function, 
 				self->dr_remote->rd_handle, &comment);
 		if (err) return err;
 		if (comment != NULL) err = dsk_set_comment(self, comment);
-//	}	
+/*	} */
 	return err;
 }
 

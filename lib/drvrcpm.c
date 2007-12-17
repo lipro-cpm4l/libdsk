@@ -373,7 +373,7 @@ static dsk_err_t rcpmfs_option(RCPMFS_DSK_DRIVER *self, char *variable,
 		do
 		{
 			err = dg_stdformat(NULL, fmt, &fname, NULL);
-	//	  RTRACE(("value='%s' fname='%s'\n", value, fname));
+	/*	  RTRACE(("value='%s' fname='%s'\n", value, fname)); */
 			if (err == DSK_ERR_OK && fname &&
 				!strcmp(value, fname))
 			{
@@ -1499,8 +1499,8 @@ dsk_err_t rcpmfs_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	if (!buf || !self || !geom || self->dr_class != &dc_rcpmfs) return DSK_ERR_BADPTR;
 	rcself = (RCPMFS_DSK_DRIVER *)self;
 
-	// Make sure that if we're pretending to be DD, we don't 
-	// return anything useful to someone asking about HD (or vice versa)
+	/* Make sure that if we're pretending to be DD, we don't 
+	 * return anything useful to someone asking about HD (or vice versa) */
 	if (geom->dg_datarate != rcself->rc_geom.dg_datarate)
 		return DSK_ERR_NOADDR;
 
@@ -1819,8 +1819,8 @@ dsk_err_t rcpmfs_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	if (!buf || !self || !geom || self->dr_class != &dc_rcpmfs) return DSK_ERR_BADPTR;
 	rcself = (RCPMFS_DSK_DRIVER *)self;
 
-	// Make sure that if we're pretending to be DD, we don't 
-	// return anything useful to someone asking about HD (or vice versa)
+	/* Make sure that if we're pretending to be DD, we don't 
+	 * return anything useful to someone asking about HD (or vice versa) */
 	if (geom->dg_datarate != rcself->rc_geom.dg_datarate)
 		return DSK_ERR_NOADDR;
 

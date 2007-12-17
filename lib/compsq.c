@@ -171,7 +171,7 @@ static void huf_addnode(SQ_COMPRESS_DATA *self, int n1, int n2)
 {
 	short e_n1, e_n2;
 
-	//printf("%04X:%04X\r\n", n1, n2);
+	/* printf("%04X:%04X\r\n", n1, n2); */
 
 	if (n1 < MAXNODE) e_n1 = n1; else e_n1 = MAXNODE - 1 - n1;
 	if (n2 < MAXNODE) e_n2 = n2; else e_n2 = MAXNODE - 1 - n2;
