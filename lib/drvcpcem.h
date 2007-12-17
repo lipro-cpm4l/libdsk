@@ -30,6 +30,8 @@ typedef struct
 	dsk_psect_t   cpc_sector;	/* Last sector used for DD READ ID */
 	unsigned char cpc_dskhead[256];	/* DSK header */
 	unsigned char cpc_trkhead[256];	/* Track header */
+	unsigned char cpc_status[4];	/* Dummy FDC status regs ST0-ST3: Read */
+	int	      cpc_statusw[4];	/* Dummy FDC status regs ST0-ST3: Write */
 } CPCEMU_DSK_DRIVER;
 
 /* v0.9.0: Use subclassing to create separate drivers for normal and 
@@ -62,6 +64,14 @@ dsk_err_t cpcemu_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, const void *
                               dsk_pcyl_t cylinder, dsk_phead_t head,
                               dsk_pcyl_t cyl_expected, dsk_phead_t head_expected,
                               dsk_psect_t sector, size_t sector_size, int deleted);
+dsk_err_t cpcemu_trackids(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                            dsk_pcyl_t cylinder, dsk_phead_t head,
+                            dsk_psect_t *count, DSK_FORMAT **result);
 dsk_err_t cpcemu_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
-                      dsk_phead_t head, unsigned char *result);
+                  dsk_phead_t head, unsigned char *result);
+
+dsk_err_t cpcemu_option_enum(DSK_DRIVER *self, int idx, char **optname);
+
+dsk_err_t cpcemu_option_set(DSK_DRIVER *self, const char *optname, int value);
+dsk_err_t cpcemu_option_get(DSK_DRIVER *self, const char *optname, int *value);
 

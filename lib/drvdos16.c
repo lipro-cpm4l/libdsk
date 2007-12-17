@@ -86,18 +86,39 @@ dsk_err_t dos16_open(DSK_DRIVER *self, const char *filename)
 {
 	DOS16_DSK_DRIVER *d16self;
 	char vname[20];
-	int driveno;
-	
+	int driveno, maxdrive;
+	union REGS rg;
+	unsigned char far *biosdata = MK_FP(0x40, 0);
+
 	/* Sanity check: Is this meant for our driver? */
 	if (self->dr_class != &dc_dos16) return DSK_ERR_BADPTR;
 	d16self = (DOS16_DSK_DRIVER *)self;
-
+	/* Is this an Apricot PC? If so, there's no INT 13h */
+	if (biosdata[1] <= 2    && 
+	    biosdata[4] == 0x34 && 
+	    biosdata[5] == 0x12 &&
+	    biosdata[6] == 0x78 &&
+	    biosdata[7] == 0x56)
+	{
+		return DSK_ERR_NOTME;	
+	}
 	/* Not a drive? Not interested. */
 	if (strlen(filename) != 2 || filename[1] != ':') return DSK_ERR_NOTME;
 	d16self->d16_unit  = -1;
 
+	/* Is it one of the floppy drives? Start by getting a count of 
+	 * floppies */
+	int86(0x11, &rg, &rg);
+	maxdrive = ((rg.x.ax >> 6) & 3);
+
 	vname[0] = (char)toupper(filename[0]);
 	driveno = vname[0] - 'A' + 1;   /* 1=A: 2=B: */
+
+	/* If passed drive number exceeds count of floppies, fail */
+	if (driveno > (1 + maxdrive))
+	{
+		return DSK_ERR_NOTME;
+	}
 
 	d16self->d16_unit = driveno;
 	return DSK_ERR_OK;

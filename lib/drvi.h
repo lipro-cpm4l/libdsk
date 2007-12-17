@@ -24,9 +24,14 @@
 #include <string.h>
 #include <ctype.h>
 
+
 #include "config.h"
 #include "libdsk.h"
 #include "drv.h"
+
+#ifdef HAVE_LIMITS_H
+# include <limits.h>
+#endif
 
 #ifndef DISABLE_FLOPPY
 # ifdef HAVE_LINUX_FD_H
@@ -43,6 +48,7 @@
 
 #ifdef HAVE_WINIOCTL_H
 #  define WIN32FLOPPY 
+#  define NTWDMFLOPPY 
 #  include <winioctl.h>
 # endif
 #endif
@@ -61,3 +67,29 @@
 # define ANYFLOPPY
 #endif
 
+#if defined(HAVE_UNISTD_H)
+#define HAVE_RCPMFS 1
+#elif defined(_WIN32)
+#define HAVE_RCPMFS 1
+#elif defined(HAVE_DIR_H)
+#define HAVE_RCPMFS 1
+#endif
+
+
+/* Initialise custom formats */
+dsk_err_t dg_custom_init(void);
+const char *dg_homedir(void);
+const char *dg_sharedir(void);
+dsk_err_t dg_parseline(char *linebuf, DSK_GEOMETRY *dg, char *description);
+dsk_err_t dg_parse(FILE *fp, DSK_GEOMETRY *dg, char *description);
+dsk_err_t dg_store(FILE *fp, DSK_GEOMETRY *dg, char *description);
+/* The default geometry probe; driver geometry probes can call it */
+dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom);
+
+#ifdef AUTOSHARE
+# define Q2(x) Q1(x)
+# define Q1(x) #x
+# define SHAREDIR Q2(AUTOSHARE)
+#else
+# define SHAREDIR NULL
+#endif

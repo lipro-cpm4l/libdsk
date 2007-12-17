@@ -1,6 +1,6 @@
-# Makefile.in generated automatically by automake 1.4 from Makefile.am
+# Makefile.in generated automatically by automake 1.4-p6 from Makefile.am
 
-# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# Copyright (C) 1994, 1995-8, 1999, 2001 Free Software Foundation, Inc.
 # This Makefile.in is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
@@ -68,7 +68,9 @@ CC = @CC@
 CLASSPATH = @CLASSPATH@
 CPP = @CPP@
 DLLTOOL = @DLLTOOL@
+ECHO = @ECHO@
 EXEEXT = @EXEEXT@
+HAVE_LIB = @HAVE_LIB@
 JAR = @JAR@
 JAVA = @JAVA@
 JAVAC = @JAVAC@
@@ -77,14 +79,17 @@ JAVADOC = @JAVADOC@
 JAVAFLAGS = @JAVAFLAGS@
 JAVAH = @JAVAH@
 JAVAPREFIX = @JAVAPREFIX@
+LIB = @LIB@
 LIBDSKJAR = @LIBDSKJAR@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
+LTLIB = @LTLIB@
 MAKEINFO = @MAKEINFO@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
 PACKAGE = @PACKAGE@
 RANLIB = @RANLIB@
+STRIP = @STRIP@
 TOOLCLASSES = @TOOLCLASSES@
 VERSION = @VERSION@
 _ACJNI_JAVAC = @_ACJNI_JAVAC@
@@ -92,7 +97,7 @@ uudecode = @uudecode@
 
 SUBDIRS = . include lib tools man doc
 
-EXTRA_DIST = $(srcdir)/config/* 	    $(srcdir)/dskwrite/* 	    $(srcdir)/dos16ppd/Makefile      	    $(srcdir)/dos16ppd/errno.h       	    $(srcdir)/dos16ppd/config.h	     	    $(srcdir)/dos32gcc/Makefile	     	    $(srcdir)/dos32gcc/config.h      	    $(srcdir)/win16vc1/*.MAK         	    $(srcdir)/win16vc1/config.h      	    $(srcdir)/win16vc1/linux/*.h     	    $(srcdir)/win16vc1/sys/*.h       	    $(srcdir)/win16vc1/libdsk.def    	    $(srcdir)/win16bc5/*.ide         	    $(srcdir)/win16bc5/libdsk.def    	    $(srcdir)/win16bc5/config.h	     	    $(srcdir)/win32bc5/*.ide         	    $(srcdir)/win32bc5/libdsk.def    	    $(srcdir)/win32bc5/config.h	     	    $(srcdir)/win32vc6/config.h      	    $(srcdir)/win32vc6/*.dsp         	    $(srcdir)/win32vc6/*.dsw         
+EXTRA_DIST = $(srcdir)/config/* 	    $(srcdir)/dskwrite/* 	    $(srcdir)/dos16ppd/Makefile      	    $(srcdir)/dos16ppd/errno.h       	    $(srcdir)/dos16ppd/int25l.as     	    $(srcdir)/dos16ppd/config.h	     	    $(srcdir)/dos32gcc/Makefile	     	    $(srcdir)/dos32gcc/config.h                  $(srcdir)/rpcserv/*.c	                 $(srcdir)/rpcserv/*.h	                 $(srcdir)/rpcserv/ldserver.rc                $(srcdir)/rpcserv/ldserver.def               $(srcdir)/rpcserv/ldserver.ico               $(srcdir)/rpcserv/shade.bmp	     	    $(srcdir)/win16vc1/*.MAK         	    $(srcdir)/win16vc1/config.h      	    $(srcdir)/win16vc1/linux/*.h     	    $(srcdir)/win16vc1/sys/*.h       	    $(srcdir)/win16vc1/libdsk.def    	    $(srcdir)/win16bc5/*.ide         	    $(srcdir)/win16bc5/libdsk.def    	    $(srcdir)/win16bc5/config.h	     	    $(srcdir)/win32bc5/*.ide         	    $(srcdir)/win32bc5/libdsk.def    	    $(srcdir)/win32bc5/config.h	     	    $(srcdir)/win32vc6/config.h      	    $(srcdir)/win32vc6/*.dsp         	    $(srcdir)/win32vc6/*.idl         	    $(srcdir)/win32vc6/*.rc          	    $(srcdir)/win32vc6/*.def         	    $(srcdir)/win32vc6/*.h           	    $(srcdir)/win32vc6/*.c           	    $(srcdir)/win32vc6/*.rgs         	    $(srcdir)/win32vc6/*.cpp         	    $(srcdir)/win32vc6/vbclient/*    	    $(srcdir)/win32vc6/*.dsw         
 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
@@ -187,7 +192,7 @@ maintainer-clean-recursive:
 	dot_seen=no; \
 	rev=''; list='$(SUBDIRS)'; for subdir in $$list; do \
 	  rev="$$subdir $$rev"; \
-	  test "$$subdir" = "." && dot_seen=yes; \
+	  test "$$subdir" != "." || dot_seen=yes; \
 	done; \
 	test "$$dot_seen" = "no" && rev=". $$rev"; \
 	target=`echo $@ | sed s/-recursive//`; \
@@ -280,15 +285,16 @@ distdir: $(DISTFILES)
 	-chmod 777 $(distdir)
 	$(mkinstalldirs) $(distdir)/$(srcdir)/config \
 	   $(distdir)/$(srcdir)/dos16ppd $(distdir)/$(srcdir)/dos32gcc \
-	   $(distdir)/$(srcdir)/dskwrite $(distdir)/$(srcdir)/win16bc5 \
-	   $(distdir)/$(srcdir)/win16vc1 \
+	   $(distdir)/$(srcdir)/dskwrite $(distdir)/$(srcdir)/rpcserv \
+	   $(distdir)/$(srcdir)/win16bc5 $(distdir)/$(srcdir)/win16vc1 \
 	   $(distdir)/$(srcdir)/win16vc1/linux \
 	   $(distdir)/$(srcdir)/win16vc1/sys \
-	   $(distdir)/$(srcdir)/win32bc5 $(distdir)/$(srcdir)/win32vc6
+	   $(distdir)/$(srcdir)/win32bc5 $(distdir)/$(srcdir)/win32vc6 \
+	   $(distdir)/$(srcdir)/win32vc6/vbclient
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
-	    cp -pr $$/$$file $(distdir)/$$file; \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
 	  else \
 	    test -f $(distdir)/$$file \
 	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \

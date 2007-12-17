@@ -25,7 +25,7 @@ import uk.co.demon.seasip.libdsk.*;
 
 /* Simple wrapper around dsk_getgeom() */
 
-public class DskID
+public class DskID 
 {
 	static void help()
 	{
@@ -43,6 +43,7 @@ public class DskID
 		String outcomp = null;
 		int forcehead = -1;
 
+		LibDsk.setReporter(new ScreenReporter());
 
                 if (UtilOpts.findArg("--help", args) >= 0) help();
                 if (UtilOpts.findArg("--version", args) >= 0) UtilOpts.version();
@@ -78,6 +79,8 @@ public class DskID
 			System.out.println("Format gap:  0x" + Integer.toHexString(dg.fmtgap));
 			drvStatus = outdr.status(dg, 0);
 			System.out.println("Drive status:  " + Integer.toHexString(drvStatus));
+			if (outdr.getComment() != null)
+				System.out.println("Comment:       " + outdr.getComment());
 		}
 		catch (DskException e)
 		{

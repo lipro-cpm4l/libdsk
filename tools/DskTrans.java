@@ -61,6 +61,8 @@ class DskTrans
 		String incomp, outcomp;
 		int inside, outside;
 
+                LibDsk.setReporter(new ScreenReporter());
+
                 if (UtilOpts.findArg("--help", args) >= 0) help();
                 if (UtilOpts.findArg("--version", args) >= 0) UtilOpts.version();
 		if (args.length < 2) help();
@@ -98,7 +100,7 @@ class DskTrans
 			indr.setForceHead(inside);
 			outdr = LibDsk.create(outfile, outtyp, outcomp);
 			outdr.setForceHead(outside);
-
+			outdr.setComment(indr.getComment());			
 			if (format == -1)
 			{
 				op = "Identifying disc";

@@ -40,10 +40,11 @@ static DRV_CLASS *classes[] =
 static void dr_construct(DSK_DRIVER *self, DRV_CLASS *dc)
 {
 	memset(self, 0, dc->dc_selfsize);
-	self->dr_forcehead = -1;	
+/*	self->dr_forcehead = -1; 	 */
 	self->dr_class = dc;
 	self->dr_dirty = 0;
 	self->dr_compress = NULL;
+	self->dr_retry_count = 1;
 }
 
 
@@ -107,6 +108,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_creat(DSK_DRIVER **self, const char *filenam
 
 	if (!self || !filename || !type) return DSK_ERR_BADPTR;
 
+	dg_custom_init();
 	if (compress)
 	{	
 		e = comp_creat(&cd, filename, compress);
@@ -138,6 +140,8 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_open(DSK_DRIVER **self, const char *filename
 	COMPRESS_DATA *cd;
 
 	if (!self || !filename) return DSK_ERR_BADPTR;
+
+	dg_custom_init();
 
 	/* See if it's compressed */
 	e = comp_open(&cd, filename, compress);

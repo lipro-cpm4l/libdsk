@@ -1,6 +1,6 @@
 
-noinst_DATA = libdsk.lyx libdsk.pdf libdsk.txt \
-	      COPYING  TODO INSTALL README cfi.html
+noinst_DATA = libdsk.lyx libdsk.pdf libdsk.txt protocol.txt \
+	      COPYING  TODO INSTALL README cfi.html apridisk.html
 
 EXTRA_DIST = $(noinst_DATA)
 

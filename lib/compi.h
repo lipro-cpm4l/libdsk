@@ -26,6 +26,10 @@
 #include <ctype.h>
 
 #include "config.h"
+#ifdef HAVE_UNISTD_H
+#include <unistd.h>
+#endif
+
 #include "libdsk.h"
 #include "compress.h"
 

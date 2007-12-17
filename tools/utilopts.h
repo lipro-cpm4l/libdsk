@@ -13,7 +13,12 @@
  #endif
 #endif
 
-char *check_type(char *arg, int argc, char **argv);
-int check_forcehead(char *arg, int argc, char **argv);
+char *check_type(char *arg, int *argc, char **argv);
+int check_forcehead(char *arg, int *argc, char **argv);
+unsigned check_retry(char *arg, int *argc, char **argv);
 int find_arg(char *arg, int argc, char **argv);
+int present_arg(char *arg, int *argc, char **argv);
+void excise_arg(int na, int *argc, char **argv);
 int version(void);
+int ignore_arg(char *arg, int count, int *argc, char **argv);
+void args_complete(int *argc, char **argv);

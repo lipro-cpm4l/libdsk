@@ -15,11 +15,17 @@
 /* Define if you have the ANSI C header files.  */
 #undef STDC_HEADERS
 
+/* Define if you have the fork function.  */
+#undef HAVE_FORK
+
 /* Define if you have the GetTempFileName function.  */
 #undef HAVE_GETTEMPFILENAME
 
 /* Define if you have the mkstemp function.  */
 #undef HAVE_MKSTEMP
+
+/* Define if you have the sleep function.  */
+#undef HAVE_SLEEP
 
 /* Define if you have the strcasecmp function.  */
 #undef HAVE_STRCASECMP
@@ -36,6 +42,18 @@
 /* Define if you have the <bzlib.h> header file.  */
 #undef HAVE_BZLIB_H
 
+/* Define if you have the <direct.h> header file.  */
+#undef HAVE_DIRECT_H
+
+/* Define if you have the <dirent.h> header file.  */
+#undef HAVE_DIRENT_H
+
+/* Define if you have the <dir.h> header file.  */
+#undef HAVE_DIR_H
+
+/* Define if you have the <dlfcn.h> header file.  */
+#undef HAVE_DLFCN_H
+
 /* Define if you have the <errno.h> header file.  */
 #undef HAVE_ERRNO_H
 
@@ -45,11 +63,23 @@
 /* Define if you have the <jni.h> header file.  */
 #undef HAVE_JNI_H
 
+/* Define if you have the <limits.h> header file.  */
+#undef HAVE_LIMITS_H
+
 /* Define if you have the <linux/fd.h> header file.  */
 #undef HAVE_LINUX_FD_H
 
 /* Define if you have the <linux/fdreg.h> header file.  */
 #undef HAVE_LINUX_FDREG_H
+
+/* Define if you have the <pwd.h> header file.  */
+#undef HAVE_PWD_H
+
+/* Define if you have the <shlobj.h> header file.  */
+#undef HAVE_SHLOBJ_H
+
+/* Define if you have the <stat.h> header file.  */
+#undef HAVE_STAT_H
 
 /* Define if you have the <sys/ioctl.h> header file.  */
 #undef HAVE_SYS_IOCTL_H
@@ -57,8 +87,20 @@
 /* Define if you have the <sys/stat.h> header file.  */
 #undef HAVE_SYS_STAT_H
 
+/* Define if you have the <sys/types.h> header file.  */
+#undef HAVE_SYS_TYPES_H
+
+/* Define if you have the <termios.h> header file.  */
+#undef HAVE_TERMIOS_H
+
+/* Define if you have the <time.h> header file.  */
+#undef HAVE_TIME_H
+
 /* Define if you have the <unistd.h> header file.  */
 #undef HAVE_UNISTD_H
+
+/* Define if you have the <utime.h> header file.  */
+#undef HAVE_UTIME_H
 
 /* Define if you have the <windows.h> header file.  */
 #undef HAVE_WINDOWS_H

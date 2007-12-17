@@ -384,6 +384,33 @@ public class Drive
 /** Get the description of the compression scheme being used for this drive. 
  * for example: "Squeezed (Huffman coding)" */
 	public native String getCompressDesc();
+
+/** Get the comment for this file (if the file format supports it). 
+ * Currently only the APRIDISK format supports comments. Other file
+ * formats will return null.
+ *
+ * @return The comment string - null if there is no comment string. 
+ * @exception DskException If there is an error. */
+	public native String getComment() throws DskException;
+
+/** Set the comment for this file (if the file format supports it). 
+ * Currently only the APRIDISK format supports comments. Other file
+ * formats will return null.
+ *
+ * @param c The comment string - null if there is to be no comment string. 
+ * @exception DskException If there is an error. */
+	public native void setComment(String c) throws DskException;
+
+/** Set the number of times an operation will be retried.
+ * @param n The number of times to retry a read, write or format, 1 or more. 
+ * @exception DskException If the number passed is 0. */
+	public native void setRetry(int c) throws DskException;	
+
+/** Get the number of times an operation will be retried.
+ * @return The number of times to a read, write or format will be retried. 
+ * @exception DskException On internal error. */
+	public native int getRetry() throws DskException;	
+
 }
 
 

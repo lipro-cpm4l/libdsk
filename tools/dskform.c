@@ -35,23 +35,36 @@
 #define AV0 argv[0]
 #endif
 
+static int retries = 1;
 
 int do_format(char *outfile, char *outtyp, char *outcomp, int forcehead, dsk_format_t format);
-dsk_format_t check_format(char *arg, int argc, char **argv);
 
 int help(int argc, char **argv)
 {
 	fprintf(stderr, "Syntax: \n"
-                "      %s dskimage { -format <format> } "
-                " { -type <type> } { -side <side> }\n",
+                "      %s { -format <format> } { -retry <count> }"
+                " { -type <type> } { -side <side> } dskimage \n",
 		AV0);
 	fprintf(stderr,"\nDefault type is DSK.\nDefault format is PCW 180k.\n\n");
 		
 	fprintf(stderr, "eg: %s myfile.DSK\n"
-                        "    %s /dev/fd0 -type floppy -format cpcsys -side 1\n", AV0, AV0);
+                        "    %s -type floppy -format cpcsys -side 1 /dev/fd0\n", AV0, AV0);
 
 	valid_formats();
 	return 1;
+}
+
+
+static void report(const char *s)
+{
+        printf("%s\r", s);
+        fflush(stdout);
+}
+
+static void report_end(void)
+{
+        printf("\r%-79.79s\r", "");
+        fflush(stdout);
 }
 
 
@@ -66,11 +79,19 @@ int main(int argc, char **argv)
 	if (argc < 2) return help(argc, argv);
         if (find_arg("--help",    argc, argv) > 0) return help(argc, argv);
         if (find_arg("--version", argc, argv) > 0) return version();
-        outtyp    = check_type("-type", argc, argv); if (!outtyp) outtyp = "dsk";
-        outcomp   = check_type("-comp", argc, argv); 
-        forcehead = check_forcehead("-side", argc, argv);
-	format    = check_format("-format", argc, argv);
+        ignore_arg("-itype", 2, &argc, argv);
+        ignore_arg("-iside", 2, &argc, argv);
+        ignore_arg("-icomp", 2, &argc, argv);
+        ignore_arg("-otype", 2, &argc, argv);
+        ignore_arg("-oside", 2, &argc, argv);
+        ignore_arg("-ocomp", 2, &argc, argv);
+        outtyp    = check_type("-type", &argc, argv); if (!outtyp) outtyp = "dsk";
+        outcomp   = check_type("-comp", &argc, argv); 
+        forcehead = check_forcehead("-side", &argc, argv);
+	format    = check_format("-format", &argc, argv);
+        retries   = check_retry("-retry", &argc, argv);
 	if (format == -1) format = FMT_180K;
+	args_complete(&argc, argv);
 
 	return do_format(argv[1], outtyp, outcomp, forcehead, format);
 }
@@ -90,8 +111,10 @@ int do_format(char *outfile, char *outtyp, char *outcomp, int forcehead, dsk_for
 	DSK_GEOMETRY dg;
 	dsk_cchar_t fdesc;
 
+	dsk_reportfunc_set(report, report_end);
 	e = dsk_creat(&outdr, outfile, outtyp, outcomp);
-	if (!e) e = dsk_set_forcehead(outdr, forcehead);
+	if (!e) e = dsk_set_retry(outdr, retries);
+	if (!e && forcehead >= 0) e = dsk_set_forcehead(outdr, forcehead);
 	if (!e) e = dg_stdformat(&dg, format, NULL, &fdesc);
 	if (!e)
 	{

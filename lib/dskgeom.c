@@ -30,10 +30,7 @@
 LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 {
         DRV_CLASS *dc; 
-	DSK_FORMAT secid;
 	dsk_err_t e;
-	unsigned char *secbuf;
-	unsigned long dsksize;
 
         if (!self || !geom || !self->dr_class) return DSK_ERR_BADPTR;
 
@@ -45,8 +42,27 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom
 	if (dc->dc_getgeom)
 	{
 		e = (dc->dc_getgeom)(self, geom);
-		if (e != DSK_ERR_NOTME) return e;	
+		if (e != DSK_ERR_NOTME && e != DSK_ERR_NOTIMPL) return e;	
 	}	
+	return dsk_defgetgeom(self, geom);
+}
+
+
+	
+/* Probe the geometry of a disc. This will always use the boot sector. */
+dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
+{
+        DRV_CLASS *dc; 
+	DSK_FORMAT secid;
+	dsk_err_t e;
+	unsigned char *secbuf;
+	unsigned long dsksize;
+	dsk_rate_t oldrate;
+
+        if (!self || !geom || !self->dr_class) return DSK_ERR_BADPTR;
+
+	dc = self->dr_class; 
+	memset(geom, 0, sizeof(*geom));
 
 	/* Switch to a minimal format */
 	e = dg_stdformat(geom, FMT_180K, NULL, NULL);
@@ -126,41 +142,69 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom
 				if (dsksize ==  640) return dg_stdformat(geom, FMT_ACORN160, NULL, NULL);
 				if (dsksize == 1280) return dg_stdformat(geom, FMT_ACORN320, NULL, NULL);
 				if (dsksize == 2560) return dg_stdformat(geom, FMT_ACORN640, NULL, NULL);
+				/* The DOS Plus boot floppy has 2720 here for
+				 * some reason */
+				if (dsksize == 2720) return dg_stdformat(geom, FMT_ACORN640, NULL, NULL);
 				return DSK_ERR_BADFMT;
 			}
 		}
 		if (secid.fmt_secsize == 1024)
 		{
+			/* Save the data rate, which we know to be correct */
+			dsk_rate_t rate = geom->dg_datarate;
+
 			dsk_free(secbuf);
 			/* Switch to a format with 1k sectors */
 			if (geom->dg_datarate == RATE_HD)
 				e = dg_stdformat(geom, FMT_ACORN1600, NULL, NULL);	
 			else	e = dg_stdformat(geom, FMT_ACORN800, NULL, NULL);
 			if (e) return e;
+			/* And restore it. */
+			geom->dg_datarate = rate;
 			/* Allocate buffer for boot sector (1k bytes) */
 			secbuf = dsk_malloc(geom->dg_secsize);
 			if (!secbuf) return DSK_ERR_NOMEM;
 			e = dsk_lread(self, geom, secbuf, 0);
 			if (!e)
 			{
-				
 				dsksize = secbuf[0xFC] + 256 * secbuf[0xFD] +
 					65536L * secbuf[0xFE];
-				dsk_free(secbuf);
 				/* Check for 1600k-format */
 				if (geom->dg_datarate == RATE_HD)
 				{
 				/* XXX Need a better check for Acorn 1600k */
+					dsk_free(secbuf);
 					return DSK_ERR_OK;
 				}
 				/* Check for D-format magic */
-				if (dsksize == 3200) return DSK_ERR_OK;
+				if (dsksize == 3200) 
+				{
+					dsk_free(secbuf);
+					return DSK_ERR_OK;
+				}
 				/* Check for E-format magic */
 				if (secbuf[4] == 10 && secbuf[5] == 5 &&
 				    secbuf[6] == 2  && secbuf[7] == 2)
-						return DSK_ERR_OK;
+				{
+					dsk_free(secbuf);
+					return DSK_ERR_OK;
+				}
 			}
-			else	dsk_free(secbuf);
+			/* Check for DOS Plus magic. DOS Plus has sectors
+			 * based at 1, not 0. */
+			geom->dg_secbase = 1;
+			e = dsk_lread(self, geom, secbuf, 0);
+			if (!e)
+			{
+				if (secbuf[0] == 0xFD && 
+				    secbuf[1] == 0xFF && 
+				    secbuf[2] == 0xFF)
+				{
+					dsk_free(secbuf);
+					return DSK_ERR_OK;
+				}
+			}
+			dsk_free(secbuf);
 			return DSK_ERR_BADFMT;
 		}	
 		/* Can't handle other discs with non-512 sector sizes. */
@@ -179,10 +223,16 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom
 		dsk_free(secbuf);
 		return e; 
 	}
+
+	/* Save the data rate, because what we have is right, and what's
+	 * in the sector might not be. */
+	oldrate = geom->dg_datarate;	
 	/* We have the sector. Let's try to guess what it is */
 	e = dg_dosgeom(geom, secbuf);	
 	if (e == DSK_ERR_BADFMT) e = dg_pcwgeom(geom, secbuf);
+	if (e == DSK_ERR_BADFMT) e = dg_aprigeom(geom, secbuf);
 	if (e == DSK_ERR_BADFMT) e = dg_cpm86geom(geom, secbuf);
+	geom->dg_datarate = oldrate;
 	
 	dsk_free(secbuf);
 	return e;
@@ -203,8 +253,15 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_dosgeom(DSK_GEOMETRY *self, const unsigned ch
 
 	if (bootsect[0] != 0xE9 && bootsect[0] != 0xEB)
 	{
-		if (bootsect[0] || bootsect[1] || bootsect[2]) 
-			return DSK_ERR_BADFMT;
+/* However, the Mini Office distribution floppies for the Atari have only 
+ * two zeroes. So if bytes 0B 0C 15 and 1B look something like a BPB, 
+ * allow them. This should be sufficient to reject PCW diskettes */
+		if (bootsect[0x0b] != 0   || bootsect[0x0c] != 2 || 
+		    bootsect[0x15] < 0xF8 || bootsect[0x1b] != 0)
+		{ 
+			if (bootsect[0] || bootsect[1] || bootsect[2]) 
+				return DSK_ERR_BADFMT;
+		}
 	}
 
 	/* Reject fake DOS bootsectors created by 144FEAT */ 	
@@ -212,7 +269,10 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_dosgeom(DSK_GEOMETRY *self, const unsigned ch
 		return DSK_ERR_BADFMT;
 
 	self->dg_secsize   = bootsect[11] + 256 * bootsect[12];
-	if (!self->dg_secsize) self->dg_secsize = 512;
+	if ((self->dg_secsize % 128) || (self->dg_secsize == 0)) 
+/* Possible Apricot bootdisk if sector size is 0, or not a multiple of 128 */ 
+/* 		self->dg_secsize = 512; */
+		return DSK_ERR_BADFMT; 
 	self->dg_secbase   = 1;
 	self->dg_heads     = bootsect[26] + 256 * bootsect[27];
 	self->dg_sectors   = bootsect[24] + 256 * bootsect[25];
@@ -270,6 +330,8 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_pcwgeom(DSK_GEOMETRY *dg, const unsigned char
 	}
 	dg->dg_cylinders = bootsec[2];
 	dg->dg_sectors   = bootsec[3];
+	/* Zeroes here may mean an Apricot superblock */
+	if (!dg->dg_cylinders || !dg->dg_sectors) return DSK_ERR_BADFMT;
 	dg->dg_secbase   = 1;
 	dg->dg_secsize   = 128;
 	/* My PCW16 extension to the PCW superblock encodes data rate. Fancy that. */
@@ -298,4 +360,45 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16  dg_cpm86geom(DSK_GEOMETRY *dg, const unsigned c
 	}
 	return DSK_ERR_BADFMT;
 }
+
+
+
+/* Interpret an Apricot superblock */
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_aprigeom(DSK_GEOMETRY *self, const unsigned char *bootsect)
+{
+	int n;
+
+	if (!self || !bootsect) return DSK_ERR_BADPTR;
+
+/* Check that the first 8 bytes are ASCII (OEM label) or all zeroes */
+	for (n = 0; n < 8; n++) 
+		if (bootsect[n] != 0 && (bootsect[n] < 0x20 || bootsect[n] > 0x7E))
+			return DSK_ERR_BADFMT;
+
+	/* Sector size */
+	self->dg_secsize   = bootsect[0x0E] + 256 * bootsect[0x0F];
+	self->dg_secbase   = 1;
+	self->dg_heads     = bootsect[0x16];
+	self->dg_sectors   = bootsect[0x10] + 256 * bootsect[0x11];
+	if (!self->dg_heads || !self->dg_sectors) return DSK_ERR_BADFMT;
+	self->dg_cylinders = bootsect[0x12] + 256 * bootsect[0x13];
+	/* Sector doesn't store the data rate. We guess that if there are >12
+	 * sectors per track, it must have used high density to get them all in */
+	self->dg_datarate  = (self->dg_sectors >= 12) ? RATE_HD : RATE_SD;
+	/* Similarly it doesn't store the gap lengths: */
+	switch(self->dg_sectors)
+	{
+		case 8:  self->dg_rwgap = 0x2A; self->dg_fmtgap = 0x50; break;
+		case 9:  self->dg_rwgap = 0x2A; self->dg_fmtgap = 0x52; break;
+		case 10: self->dg_rwgap = 0x0C; self->dg_fmtgap = 0x17; break;
+		case 15: self->dg_rwgap = 0x1B; self->dg_fmtgap = 0x50; break;
+		case 18: self->dg_rwgap = 0x1B; self->dg_fmtgap = 0x50; break;
+		default: self->dg_rwgap = 0x2A; self->dg_fmtgap = 0x52; break;
+	}
+	self->dg_fm      = 0;
+	self->dg_nomulti = 0;
+
+	return DSK_ERR_OK;
+}
+
 

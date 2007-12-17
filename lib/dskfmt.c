@@ -30,7 +30,9 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_pformat(DSK_DRIVER *self, DSK_GEOMETRY *geom
                                 const DSK_FORMAT *format, unsigned char filler)
 {
         DRV_CLASS *dc;
-	dsk_err_t e;
+	dsk_err_t e = DSK_ERR_UNKNOWN;
+	unsigned n;
+
         if (!self || !geom || !format || !self->dr_class) return DSK_ERR_BADPTR;
 
         dc = self->dr_class;
@@ -39,7 +41,11 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_pformat(DSK_DRIVER *self, DSK_GEOMETRY *geom
                 return DSK_ERR_RDONLY;
 
         if (!dc->dc_format) return DSK_ERR_NOTIMPL;
-        e = (dc->dc_format)(self,geom,cylinder,head,format,filler);      
+	for (n = 0; n < self->dr_retry_count; n++)
+	{
+	        e = (dc->dc_format)(self,geom,cylinder,head,format,filler);      
+		if (!DSK_TRANSIENT_ERROR(e)) break;
+	}
 	if (e == DSK_ERR_OK) self->dr_dirty = 1;
 	return e;
 }

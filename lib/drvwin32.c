@@ -23,6 +23,7 @@
 
 #include "drvi.h"
 #include "drvwin32.h"
+#include "rpcfuncs.h"
 
 #ifdef WIN32FLOPPY
 /* This struct contains function pointers to the driver's functions, and the
@@ -47,12 +48,15 @@ DRV_CLASS dc_win32 =
 /*********************************************************************************
  * WIN32 driver: general comments
  * 
- * This driver is rather big, as it incorporates separate sets of code for
- * Win32c (95, 98, ME) and Win32 proper (NT, 2000, XP). There's then a vast chunk
- * of wrapper functions for things done via ioctls.
+ * This driver is rather big, as it incorporates three separate sets of code for
+ * Win32c (95, 98, ME), Win32 proper (NT, 2000, XP), and handing off to Win16 
+ * using mailslots (Win32m). There's then a vast chunk of wrapper functions for 
+ * things done via ioctls.
  *
  * The function win32_open() detects the version of Windows in use, and switches
- * the device class to use win32c or win32 functions as appropriate.
+ * the device class to use win32c or win32 functions as appropriate. If it is 
+ * able to open the "LibDsk16" mailslot, it will select the "win32m" functions 
+ * and use them to call the 16-bit version. 
  *
  ********************************************************************************/
 
@@ -301,14 +305,26 @@ dsk_err_t win32_open(DSK_DRIVER *self, const char *filename)
 	w32self->w32_hdisk = INVALID_HANDLE_VALUE;
 	w32self->w32_unit   = -1;
 
-        dwVers = GetVersion();
+	/* If there is a mailslot server running, use it. It is likely to be a
+	 * 16-bit server, capable of more than the 32-bit API can manage. */
+	if (win32m_open(self, filename) == DSK_ERR_OK)
+		{
+		dc_win32.dc_close  = win32m_close;
+		dc_win32.dc_write  = win32m_write;
+		dc_win32.dc_read   = win32m_read;
+		dc_win32.dc_format = win32m_format;
+		dc_win32.dc_secid  = win32m_secid;
+		dc_win32.dc_status = win32m_status;
+		return DSK_ERR_OK;
+		}
+	dwVers = GetVersion();
 
-        if (dwVers & 0x80000000L) /* Win32s (3.1) or Win32c (Win95) */
-        {
-        	dc_win32.dc_close  = win32c_close;
-        	dc_win32.dc_write  = win32c_write;
-        	dc_win32.dc_read   = win32c_read;
-        	dc_win32.dc_format = win32c_format;
+	if (dwVers & 0x80000000L) /* Win32s (3.1) or Win32c (Win95) */
+	{
+		dc_win32.dc_close  = win32c_close;
+		dc_win32.dc_write  = win32c_write;
+		dc_win32.dc_read   = win32c_read;
+		dc_win32.dc_format = win32c_format;
 		dc_win32.dc_secid  = win32c_secid;
 		dc_win32.dc_status = win32c_status;
 		return win32c_open(self, filename);
@@ -409,11 +425,11 @@ dsk_err_t win32_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
         res = ReadFile(w32self->w32_hdisk, iobuffer, geom->dg_secsize, &bytesread, NULL);
         if (!res)
         {
-            VirtualFree(iobuffer, geom->dg_secsize, MEM_RELEASE);
+            VirtualFree(iobuffer, 0, MEM_RELEASE);
        	    return translate_win32_error();
         }
         memcpy(buf, iobuffer, geom->dg_secsize);
-        VirtualFree(iobuffer, geom->dg_secsize, MEM_RELEASE);
+        VirtualFree(iobuffer, 0, MEM_RELEASE);
 
         if (bytesread < geom->dg_secsize)
         {
@@ -463,10 +479,10 @@ dsk_err_t win32_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
         res = WriteFile(w32self->w32_hdisk, iobuffer, geom->dg_secsize, &byteswritten, NULL);
         if (!res || (byteswritten < (unsigned)geom->dg_secsize))
         {
-            VirtualFree(iobuffer, geom->dg_secsize, MEM_RELEASE);
+            VirtualFree(iobuffer, 0, MEM_RELEASE);
        	    return translate_win32_error();
         }
-        VirtualFree(iobuffer, geom->dg_secsize, MEM_RELEASE);
+        VirtualFree(iobuffer, 0, MEM_RELEASE);
 	return DSK_ERR_OK;
 }
 
@@ -996,6 +1012,170 @@ dsk_err_t win32c_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	return DSK_ERR_OK;
 }
 
+
+/************************** RPC Functions ***********************************/
+/* These functions are used to talk to a remote instance of LibDsk over 
+ * mailslots. */
+
+/* Send a packet down a mailslot and get a response. 
+ * This function is passed as a callback to the RPC client functions which
+ * construct and interpret the packets. 
+ * 
+ * For the format of a packet, see rpcfuncs.h
+ * */
+dsk_err_t win32_mailslot(DSK_DRIVER *self, unsigned char *input,  int inp_len,
+										   unsigned char *output, int *out_len)
+	{
+	WIN32_DSK_DRIVER *w32self;
+	DWORD dw;
+	unsigned char *buf;
+	int buflen;
+
+/* Generate the packet header: 
+ *	2 bytes length of following string
+ * 	0-terminated string giving mailslot to reply to */
+	w32self = (WIN32_DSK_DRIVER *)self;
+	buflen = 1 + strlen(w32self->w32_slotname);
+	buf = dsk_malloc(inp_len + 2 + buflen);
+	if (!buf) return DSK_ERR_NOMEM;
+
+	buf[0] = (buflen >> 8) & 0xFF;
+	buf[1] = (buflen & 0xFF);
+	strcpy(buf+2, w32self->w32_slotname);
+/* Put the packet body into the buffer */
+	memcpy(buf+2+buflen, input, inp_len);
+
+/* Send out the packet */
+	if (!WriteFile(w32self->w32_hdisk, buf, buflen + 2 + inp_len, &dw, NULL)) return DSK_ERR_SYSERR;
+/* Retrieve the response. */
+	ReadFile (w32self->w32_hmail, output, *out_len, &dw, NULL);
+
+	dsk_free(buf);
+	*out_len = dw;
+	return DSK_ERR_OK;
+	}
+										
+
+
+dsk_err_t win32m_open(DSK_DRIVER *self, const char *filename)
+	{
+	int n = rand();
+
+	// Set up the RPC transport - mailslot to server
+	WIN32_DSK_DRIVER *w32self;
+	w32self = (WIN32_DSK_DRIVER *)self;
+
+/* Look for the server running on a well-known mailslot */ 
+	w32self->w32_hdisk = CreateFile("\\\\.\\mailslot\\LibDsk16", 
+		GENERIC_WRITE, 
+		FILE_SHARE_READ,  // required to write to a mailslot 
+		(LPSECURITY_ATTRIBUTES) NULL, 
+		OPEN_EXISTING, 
+		FILE_ATTRIBUTE_NORMAL, 
+		(HANDLE) NULL); 
+ 
+	if (w32self->w32_hdisk == INVALID_HANDLE_VALUE) return DSK_ERR_SYSERR;
+
+	/* Open a mailslot with to listen on. Keep trying different numbers
+	 * until we find one that isn't in use. */
+	do
+		{
+		sprintf(w32self->w32_slotname, "\\\\.\\mailslot\\%08x", n);
+		w32self->w32_hmail = CreateMailslot(w32self->w32_slotname, 16384, MAILSLOT_WAIT_FOREVER, NULL);
+
+		if (w32self->w32_hmail == INVALID_HANDLE_VALUE)
+			{
+			if (GetLastError() != ERROR_FILE_EXISTS) 
+				{
+				CloseHandle(w32self->w32_hdisk);
+				return DSK_ERR_SYSERR;
+				}
+			}
+		} while (w32self->w32_hmail == INVALID_HANDLE_VALUE);
+
+	// Send RPC "open" command
+	return dsk_r_open(self, win32_mailslot, &w32self->w32_unit, filename, "floppy", NULL);
+	}
+
+/* Close mailslot connection */
+dsk_err_t win32m_close(DSK_DRIVER *self)
+	{
+	WIN32_DSK_DRIVER *w32self;
+
+	if (!self || self->dr_class != &dc_win32) return DSK_ERR_BADPTR;
+	w32self = (WIN32_DSK_DRIVER *)self;
+
+	dsk_r_close(self, win32_mailslot, w32self->w32_unit);
+	CloseHandle(w32self->w32_hdisk);
+	CloseHandle(w32self->w32_hmail);
+	return DSK_ERR_OK;
+	}
+
+
+dsk_err_t win32m_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              void *buf, dsk_pcyl_t cylinder,
+                              dsk_phead_t head, dsk_psect_t sector)
+	{
+	WIN32_DSK_DRIVER *w32self;
+
+	if (!self || !geom || !buf || self->dr_class != &dc_win32) return DSK_ERR_BADPTR;
+	w32self = (WIN32_DSK_DRIVER *)self;
+
+	return dsk_r_read(self, win32_mailslot, w32self->w32_unit, geom, buf, cylinder, head, sector);
+	}
+
+
+dsk_err_t win32m_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                              const void *buf, dsk_pcyl_t cylinder,
+                              dsk_phead_t head, dsk_psect_t sector)
+	{
+	WIN32_DSK_DRIVER *w32self;
+
+	if (!self || !geom || !buf || self->dr_class != &dc_win32) return DSK_ERR_BADPTR;
+	w32self = (WIN32_DSK_DRIVER *)self;
+
+	return dsk_r_write(self, win32_mailslot, w32self->w32_unit, geom, buf, cylinder, head, sector);
+	}
+
+
+dsk_err_t win32m_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
+                                dsk_pcyl_t cylinder, dsk_phead_t head,
+                                const DSK_FORMAT *format, unsigned char filler)
+	{
+	WIN32_DSK_DRIVER *w32self;
+
+	if (!self || !geom || !format || self->dr_class != &dc_win32) return DSK_ERR_BADPTR;
+	w32self = (WIN32_DSK_DRIVER *)self;
+
+	return dsk_r_format(self, win32_mailslot, w32self->w32_unit, geom, cylinder, head, format, filler);
+	}
+
+
+
+dsk_err_t win32m_secid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                                dsk_pcyl_t cylinder, dsk_phead_t head,
+                                DSK_FORMAT *result)
+	{
+	WIN32_DSK_DRIVER *w32self;
+
+	if (!self || !geom || !result || self->dr_class != &dc_win32) return DSK_ERR_BADPTR;
+	w32self = (WIN32_DSK_DRIVER *)self;
+
+	return dsk_r_secid(self, win32_mailslot, w32self->w32_unit, geom, cylinder, head, result);
+	}
+
+
+
+dsk_err_t win32m_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
+                      dsk_phead_t head, unsigned char *result)
+	{
+	WIN32_DSK_DRIVER *w32self;
+
+	if (!self || !geom || !result || self->dr_class != &dc_win32) return DSK_ERR_BADPTR;
+	w32self = (WIN32_DSK_DRIVER *)self;
+
+	return dsk_r_drive_status(self, win32_mailslot, w32self->w32_unit, geom, head, result);
+	}
 
 
 
