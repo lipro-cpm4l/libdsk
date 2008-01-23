@@ -1,4 +1,46 @@
-TO BE DONE in LibDSK 1.1.x:
+TO BE DONE in LibDSK 1.3.x:
+
+- Partition support.
+	It looks as if the way to do it is to have a filter driver.
+	Something like 
+		dsk_err_t dsk_part_open(DSK_PDRIVER *guest,
+					DSK_PDRIVER host, 
+					DSK_GEOMETRY *dg,
+					int npartition);
+
+	This requires:
+		- Reference-counting on the host. Either fail dsk_close()
+		 if its refcount is > 1, or let it succeed silently.
+	
+	Once dsk_part_open() is in place, we can also allow partitions to
+	be passed as filenames:
+
+		partition:n,filename
+
+	which will have a dsk_open that:
+
+		* passes filename to inner dsk_open
+		* do a dsk_getgeom
+		* pass the resulting parameters to dsk_part_open
+
+	Also: False partition (ie, add a partition table to an image)
+
+		dsk_err_t dsk_false_partition(DSK_PDRIVER *guest,
+					DSK_PDRIVER host,
+					DSK_GEOMETRY *dg,
+					unsigned char type);
+
+		with matching open-by-filename:
+
+		falsepart:n,filename
+
+	The alternative to a filter driver is dsk_option_set with a variable
+	of PARTITION, but that has certain problems (eg: you can't have
+	multiple partitions open at one time)
+
+	[nb: What sort of partition table do the likes of +3e use, because
+	 that's going to give all sorts more fun]
+
 
 * Weak-sector support is new and may be buggy.
 * Write more functions for dsktool.

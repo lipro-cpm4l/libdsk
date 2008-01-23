@@ -932,9 +932,10 @@ static dsk_err_t rcpmfs_initdir(RCPMFS_DSK_DRIVER *self)
 	if (self->rc_fsversion < 3)
 	{
 		memset(label, 0x0E5, 32);
-		for (entry = rcpmfs_max_dirent(self) - 1; entry >= 0; entry--)
+		/* 1.2.1: 'entry' is unsigned, so ">= 0" is always true */
+		for (entry = rcpmfs_max_dirent(self); entry >= 1; entry--)
 		{
-			err = rcpmfs_write_dirent(self, entry, label, NULL);
+			err = rcpmfs_write_dirent(self, entry - 1, label, NULL);
 			if (err) break;
 		}
 		return err; 

@@ -1,3 +1,16 @@
+2008-01-23 John Elliott
+
+	* libdsk-1.2.1 released.
+
+2008-01-19 Sven Klose
+
+	* Corrected a compilation problem on FreeBSD.
+
+2008-01-12 John Elliott
+
+	* Corrected a bug which caused rcpmfs to give 'overrun' errors 
+	 when emulating a CP/M 2 filesystem.
+
 2007-12-17 John Elliott
 
 	* libdsk-1.2.0 released.

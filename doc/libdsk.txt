@@ -1,4 +1,4 @@
-LibDsk v1.2.0 
+LibDsk v1.2.1 
 
 John Elliott
 
@@ -202,6 +202,11 @@ following formats:
  What's new? 
 
 For full details, see the file ChangeLog.
+
+ Should now compile out of the box on FreeBSD.
+
+ A bugfix to the rcpmfs driver should allow it to 
+  simulate a CP/M 2 filesystem as well as CP/M 3.
 
  Added two new drivers: "teledisk" and "logical".
 
