@@ -22,6 +22,10 @@
 
 #ifdef HAVE_FORK
 
+#ifdef HAVE_FCNTL_H
+#include <fcntl.h>
+#endif
+
 typedef struct fork_remote_data
 {
 	REMOTE_DATA super;
