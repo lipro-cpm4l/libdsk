@@ -23,6 +23,7 @@
 /* Simple wrapper around dsk_getgeom() */
 
 #include <stdio.h>
+#include <string.h>
 #include "libdsk.h"
 #include "utilopts.h"
 
@@ -105,6 +106,7 @@ int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead
 	const char *comp;
 	char *comment;
 	int indent = 0;
+	int opt, any;
 
 	dsk_reportfunc_set(report, report_end);	
 	e = dsk_open(&outdr, outfile, outtyp, outcomp);
@@ -174,6 +176,30 @@ int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead
 			}
 		}	
 		putchar('\n');
+/* Dump filesystem options -- ie, any options beginning "FS." */
+		opt = 0;
+		any = 0;
+		while (dsk_option_enum(outdr, opt, &comment) == DSK_ERR_OK &&
+				comment != NULL)
+		{
+			int value;
+			char buf[30];
+
+			if (!strncmp(comment, "FS:", 3) &&
+		            dsk_get_option(outdr, comment, &value) == DSK_ERR_OK)
+			{
+				if (!any) 
+				{
+					printf("%-*.*sFilesystem parameters:\n",
+						indent, indent, "");
+					any = 1;
+				}
+				sprintf(buf, "%s:", comment + 3);
+				printf("%-*.*s%-15.15s0x%02x\n",
+					indent, indent, "", buf, value);
+			}			
+			++opt;
+		}
 	}
 	if (outdr) dsk_close(&outdr);
 	if (e)

@@ -1,4 +1,4 @@
-LibDsk v1.2.1 
+LibDsk v1.3.0 
 
 John Elliott
 
@@ -48,6 +48,7 @@ LibDsk Function Reference
     dg_stdformat : Initialise disc geometry from a standard LibDsk format.
     dsk_*_forcehead: Override disc head
     dsk_*_option: Set/get driver option
+        Filesystem driver options
     dsk_option_enum: Get list of driver options
     dsk_*_comment: Set comment for disc image
     dsk_type_enum 
@@ -180,6 +181,9 @@ following disc image formats:
 
  NanoWasp-format disc images, used by the eponymous emulator.
 
+ Yaze 'ydsk' disc images, created by the 'yaze' and 
+  'yaze-ag' emulators.
+
  Disc images created by the Sydex imaging programs 
   Teledisk and CopyQM (read only in both cases).
 
@@ -203,74 +207,18 @@ following formats:
 
 For full details, see the file ChangeLog.
 
+ Added a new 'ydsk' driver for YAZE ydsk-format disc images.
+
+ Some disc image files include filesystem information 
+  as part of the disc image metadata. dskid and 
+  dsktrans now display and copy this information.
+
  Should now compile out of the box on FreeBSD.
 
  A bugfix to the rcpmfs driver should allow it to 
   simulate a CP/M 2 filesystem as well as CP/M 3.
 
  Added two new drivers: "teledisk" and "logical".
-
- Changes by Ramlaid <www.ramlaid.com> to the DSK and 
-  NTWDM drivers to improve compatibility, and another 
-  fix to stop file handles leaking.
-
- Added a new driver: "int25". This allows the DOS version 
-  to run on Apricot PCs (which do not have an 
-  IBM-compatible BIOS) and to access hard drive partitions.
-
- Bugfix in the Linux floppy driver, which could cause "
-  No data" errors logging in certain disc formats.
-
- Bugfix in the rcpmfs driver: Files saved to user 1 no 
-  longer go to user 0.
-
- Enhanced the ApriDisk driver to handle disc images 
-  that start with a 'creator' block.
-
- Enhanced the rcpmfs driver to deal with truncation of 
-  existing files.
-
- Added initial support for 'multiple/weak' sectors in 
-  the 'dsk' driver. LibDsk can read such sectors, but 
-  not write them (they get written as normal sectors).
-
- Bug fix: Don't leak file handles in the 'dsk' driver.
-
- The internal RPC system has been expanded to allow 
-  operation over a serial line. 
-
- The Win32 (VC++ 6) version now includes an ATL project 
-  to present LibDsk as a COM object.
-
- 'ntwdm' driver added by Simon Owen.
-
- dsk_dirty() function added by Philip Kendall.
-
- LibDsk now reads a 'libdskrc' file (section [sub:libdskrc-format]) at 
-  startup; this can contain additional format definitions.
-
- An experimental read-only driver to handle CopyQM disc 
-  images (written by Per Ola Ingvarsson, who also 
-  documented the file format - section [sec:copyqm]).
-
- Experimental support for an 'rcpmfs' driver (section [sec:rcpmfs]) 
-  which presents directories as CP/M disk images.
-
- DSK files now store density and recording mode.
-
- LibDsk can now retry failed reads/writes/formats.
-
- Extra functions have been added to support disc images 
-  that contain comments.
-
- Extra functions have been added for display of 
-  messages from LibDsk.
-
- A driver has been added for the disc image files used 
-  by the ApriDisk utility.
-
- The parameter order of the example utilities has been 
-  made less rigid.
 
  Terms and definitions
 
@@ -341,6 +289,9 @@ The following disc image file formats are supported by LibDsk.
 
   "remote": Remote LibDsk server, most likely at the 
   other end of a serial line.
+
+  "ydsk": Disc image format used by the yaze and yaze-ag 
+  CP/M emulators.
 
  Architecture 
 
@@ -1109,6 +1060,66 @@ any options that the remote driver supports):
   purpose of this is to ensure that all calls to the 
   remote driver result in RPC packets being sent.
 
+ Filesystem driver options
+
+It is possible that as part of its geometry probe, 
+LibDsk will have detected a CP/M or DOS filesystem on a 
+disc image. Alternatively, a disc image may contain 
+filesystem metadata (for example, the YAZE ydsk and 
+RCPMFS drivers both contain CP/M filesystem 
+parameters). These parameters appear as driver options, 
+prefixed with the name FS:. When making a copy, 
+dsktrans enumerates the driver options on the source 
+disc image and sets them to the same values on the 
+destination image. This is necessary to ensure that 
+(for example) when one YDSK is copied to another, its 
+filesystem parameters are transferred. The current 
+filesystem options supported by LibDsk are:
+
+  FS:CP/M:BSH Block shift - 3 => 1k, 4 => 2k, 5 => 4k...
+
+  FS:CP/M:BLM Block mask - (block size / 128) - 1
+
+  FS:CP/M:EXM Extent mask - roughly, how much does a 
+  directory entry cover? (0 => 16k, 1 => 32k, 3 => 64k...)
+
+  FS:CP/M:DSM Number of data and directory blocks, 
+  minus 1
+
+  FS:CP/M:DRM Number of directory entries, minus 1
+
+  FS:CP/M:AL0 Allocation bitmap of directory blocks 
+  (first 8 blocks)
+
+  FS:CP/M:AL1 Allocation bitmap of directory blocks 
+  (second 8 blocks)
+
+  FS:CP/M:CKS Checksum vector size (normally 
+  (FS:CP/M:DRM + 1) / 4); can be 0x8000 for a fixed disc
+
+  FS:CP/M:OFF Number of boot tracks
+
+  FS:CP/M:VERSION Filesystem version (2 or 3. This is 
+  only supported by the 'rcpmfs' driver.)
+
+  FS:FAT:SECCLUS Number of sectors per cluster
+
+  FS:FAT:RESERVED Number of reserved sectors
+
+  FS:FAT:FATCOPIES Number of FAT copies
+
+  FS:FAT:DIRENTRIES Number of root directory entries
+
+  FS:FAT:MEDIABYTE Media byte (usually the first byte 
+  of the FAT)
+
+  FS:FAT:SECFAT Number of sectors per FAT
+
+Note that it is theoretically possible for a disc to 
+have FS:CP/M and FS:FAT information - for example, a 
+CP/M filesystem saved in a disc image that also 
+contains FAT metadata, or vice versa.
+
  dsk_option_enum: Get list of driver options
 
 dsk_err_t dsk_option_enum(DSK_PDRIVER self, int idx, 
@@ -1549,6 +1560,30 @@ If there is no .libdsk.ini file present, LibDsk will
 assume BlockSize=1024, DirBlocks=2, 
 TotalBlocks=175,SysTracks=1, Version=3, Format=pcw180.
 
+If you call dsk_option_set with any of the following options:
+
+ FS:CP/M:BSH 
+
+ FS:CP/M:BLM 
+
+ FS:CP/M:DSM 
+
+ FS:CP/M:DRM 
+
+ FS:CP/M:OFF
+
+ FS:CP/M:VERSION
+
+and the value written differs from the one used before, 
+then a new .libdsk.ini file will be written with the 
+revised filesystem parameters and the directory 
+rescanned. This allows a command of the form:
+
+dsktrans -otype rcpmfs disc-image directory
+
+to stand a reasonable chance of working as long as the 
+source disc image has a CP/M filesystem that LibDsk can detect.
+
  Bugs
 
 rcpmfs is new and untried code. The following are known 
@@ -1570,8 +1605,11 @@ bugs or missing features:
   doesn't contain the CP/M filesystem parameters (block 
   size, block count, etc.) these will be the ones 
   previously used in that directory, and quite possibly 
-  completely wrong. It's a much better idea to 'format' 
-  the directory using means other than LibDsk.
+  completely wrong. If you want to 'format' the 
+  directory using LibDsk, call dsk_set_option() with 
+  the six "FS:CP/M:" options listed above to set up the 
+  correct filesystem parameters. Or create the 
+  .libdsk.ini by other means.
 
  <sec:copyqm>The CopyQM file format
 
@@ -2343,7 +2381,8 @@ NULL unless either:
   single fixed geometry.
 
  Your disc image file contains enough information to 
-  populate a DSK_GEOMETRY completely. rcpmfs does this. 
+  populate a DSK_GEOMETRY completely. The rcpmfs and 
+  ydsk drivers do this. 
 
  You want to do an extended geometry probe including a 
   call to the default one. The internal function 
@@ -2455,8 +2494,46 @@ dsk_err_t (*dc_option_get)(DSK_DRIVER *self, const char
 *optname, int *value);
 
 Get or set the value of a numerical option. Again, if 
-your driver has no settable options, this need not be 
-implemented.
+your driver has no numerical options, this need not be 
+implemented. 
+
+Note that numerical options can 'belong' either to a 
+driver or to the LibDsk core, with the driver taking 
+priority. For example:
+
+ If LibDsk accesses a FAT-format disc image using the 
+  'dsk' driver, neither LibDsk nor the driver will 
+  support the FS:CP/M:BSH option.
+
+ If LibDsk accesses a CP/M-format disc image using the 
+  'dsk' driver, dsk_get_geometry() will detect the CP/M 
+  filesystem. Since the driver does not support the 
+  FS:CP/M:BSH option, it will be handled by the LibDsk core.
+
+ If LibDsk accesses a CP/M-format disc image using the 
+  'ydsk' driver, the driver does support the 
+  FS:CP/M:BSH option and so it will be handled by the driver.
+
+It is possible for a driver to rely on the option 
+support in the LibDsk core rather than implement its 
+own. This means a lot less code needs to be written; 
+but it does not allow any validation to be performed on 
+the values an option can hold, nor does it notify the 
+driver when the value of an option is changed. 
+Currently this system is used by the myz80 driver.
+
+To use this system, create the variables you require 
+with dsk_isetoption:
+
+dsk_err_t dsk_isetoption(DSK_DRIVER *self, const char 
+*optname, int value, int create);
+
+The first three parameters are the same as for 
+dsk_set_option(). The last should be set to 1 to create 
+the new variable, or 0 to return DSK_ERR_BADOPT if the 
+variable is not present.
+
+To read a value back, use dsk_get_option() as normal.
 
  dc_trackids
 

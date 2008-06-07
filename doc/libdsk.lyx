@@ -26,7 +26,7 @@
 
 \layout Title
 
-LibDsk v1.2.1 
+LibDsk v1.3.0 
 \layout Author
 
 John Elliott
@@ -106,6 +106,9 @@ ApriDisk-format disc images, used by the utility of the same name under
 NanoWasp-format disc images, used by the eponymous emulator.
 \layout Itemize
 
+Yaze 'ydsk' disc images, created by the 'yaze' and 'yaze-ag' emulators.
+\layout Itemize
+
 Disc images created by the Sydex imaging programs Teledisk and CopyQM (read
  only in both cases).
 \layout Itemize
@@ -143,6 +146,14 @@ What's new?
 For full details, see the file ChangeLog.
 \layout Itemize
 
+Added a new 'ydsk' driver for YAZE ydsk-format disc images.
+\layout Itemize
+
+Some disc image files include filesystem information as part of the disc
+ image metadata.
+ dskid and dsktrans now display and copy this information.
+\layout Itemize
+
 Should now compile out of the box on FreeBSD.
 \layout Itemize
 
@@ -167,111 +178,6 @@ logical
 \end_inset 
 
 .
-\layout Itemize
-
-Changes by Ramlaid <www.ramlaid.com> to the DSK and NTWDM drivers to improve
- compatibility, and another fix to stop file handles leaking.
-\layout Itemize
-
-Added a new driver: 
-\begin_inset Quotes eld
-\end_inset 
-
-int25
-\begin_inset Quotes erd
-\end_inset 
-
-.
- This allows the DOS version to run on Apricot PCs (which do not have an
- IBM-compatible BIOS) and to access hard drive partitions.
-\layout Itemize
-
-Bugfix in the Linux floppy driver, which could cause 
-\begin_inset Quotes eld
-\end_inset 
-
-No data
-\begin_inset Quotes erd
-\end_inset 
-
- errors logging in certain disc formats.
-\layout Itemize
-
-Bugfix in the rcpmfs driver: Files saved to user 1 no longer go to user
- 0.
-\layout Itemize
-
-Enhanced the ApriDisk driver to handle disc images that start with a 'creator'
- block.
-\layout Itemize
-
-Enhanced the rcpmfs driver to deal with truncation of existing files.
-\layout Itemize
-
-Added initial support for 'multiple/weak' sectors in the 'dsk' driver.
- LibDsk can read such sectors, but not write them (they get written as normal
- sectors).
-\layout Itemize
-
-Bug fix: Don't leak file handles in the 'dsk' driver.
-\layout Itemize
-
-The internal RPC system has been expanded to allow operation over a serial
- line.
- 
-\layout Itemize
-
-The Win32 (VC++ 6) version now includes an ATL project to present LibDsk
- as a COM object.
-\layout Itemize
-
-'ntwdm' driver added by Simon Owen.
-\layout Itemize
-
-dsk_dirty() function added by Philip Kendall.
-\layout Itemize
-
-LibDsk now reads a 'libdskrc' file (section 
-\begin_inset LatexCommand \ref{sub:libdskrc-format}
-
-\end_inset 
-
-) at startup; this can contain additional format definitions.
-\layout Itemize
-
-An experimental read-only driver to handle CopyQM disc images (written by
- Per Ola Ingvarsson, who also documented the file format - section 
-\begin_inset LatexCommand \ref{sec:copyqm}
-
-\end_inset 
-
-).
-\layout Itemize
-
-Experimental support for an 'rcpmfs' driver (section 
-\begin_inset LatexCommand \ref{sec:rcpmfs}
-
-\end_inset 
-
-) which presents directories as CP/M disk images.
-\layout Itemize
-
-DSK files now store density and recording mode.
-\layout Itemize
-
-LibDsk can now retry failed reads/writes/formats.
-\layout Itemize
-
-Extra functions have been added to support disc images that contain comments.
-\layout Itemize
-
-Extra functions have been added for display of messages from LibDsk.
-\layout Itemize
-
-A driver has been added for the disc image files used by the ApriDisk utility.
-\layout Itemize
-
-The parameter order of the example utilities has been made less rigid.
 \layout Subsection
 
 Terms and definitions
@@ -523,6 +429,17 @@ remote
 \end_inset 
 
 : Remote LibDsk server, most likely at the other end of a serial line.
+\layout Description
+
+
+\begin_inset Quotes eld
+\end_inset 
+
+ydsk
+\begin_inset Quotes erd
+\end_inset 
+
+: Disc image format used by the yaze and yaze-ag CP/M emulators.
 \layout Section
 
 Architecture 
@@ -2638,6 +2555,80 @@ REMOTE:TESTING This disables an optimisation in the remote driver, so that
  to.
  The purpose of this is to ensure that all calls to the remote driver result
  in RPC packets being sent.
+\layout Subsubsection
+
+Filesystem driver options
+\layout Standard
+
+It is possible that as part of its geometry probe, LibDsk will have detected
+ a CP/M or DOS filesystem on a disc image.
+ Alternatively, a disc image may contain filesystem metadata (for example,
+ the YAZE ydsk and RCPMFS drivers both contain CP/M filesystem parameters).
+ These parameters appear as driver options, prefixed with the name FS:.
+ When making a copy, dsktrans enumerates the driver options on the source
+ disc image and sets them to the same values on the destination image.
+ This is necessary to ensure that (for example) when one YDSK is copied
+ to another, its filesystem parameters are transferred.
+ The current filesystem options supported by LibDsk are:
+\layout Description
+
+FS:CP/M:BSH Block shift - 3 => 1k, 4 => 2k, 5 => 4k...
+\layout Description
+
+FS:CP/M:BLM Block mask - (block size / 128) - 1
+\layout Description
+
+FS:CP/M:EXM Extent mask - roughly, how much does a directory entry cover?
+ (0 => 16k, 1 => 32k, 3 => 64k...)
+\layout Description
+
+FS:CP/M:DSM Number of data and directory blocks, minus 1
+\layout Description
+
+FS:CP/M:DRM Number of directory entries, minus 1
+\layout Description
+
+FS:CP/M:AL0 Allocation bitmap of directory blocks (first 8 blocks)
+\layout Description
+
+FS:CP/M:AL1 Allocation bitmap of directory blocks (second 8 blocks)
+\layout Description
+
+FS:CP/M:CKS Checksum vector size (normally (FS:CP/M:DRM + 1) / 4); can be
+ 0x8000 for a fixed disc
+\layout Description
+
+FS:CP/M:OFF Number of boot tracks
+\layout Description
+
+FS:CP/M:VERSION Filesystem version (2 or 3.
+ This is only supported by the 'rcpmfs' driver.)
+\layout Description
+
+FS:FAT:SECCLUS Number of sectors per cluster
+\layout Description
+
+FS:FAT:RESERVED Number of reserved sectors
+\layout Description
+
+FS:FAT:FATCOPIES Number of FAT copies
+\layout Description
+
+FS:FAT:DIRENTRIES Number of root directory entries
+\layout Description
+
+FS:FAT:MEDIABYTE Media byte (usually the first byte of the FAT)
+\layout Description
+
+FS:FAT:SECFAT Number of sectors per FAT
+\layout Standard
+
+Note that it is theoretically possible for a disc to have FS:CP/M 
+\emph on 
+and
+\emph default 
+ FS:FAT information - for example, a CP/M filesystem saved in a disc image
+ that also contains FAT metadata, or vice versa.
 \layout Subsection
 
 dsk_option_enum: Get list of driver options
@@ -3477,6 +3468,40 @@ Format Name of one of the LibDsk built-in or user-supplied formats, giving
 
 If there is no .libdsk.ini file present, LibDsk will assume BlockSize=1024,
  DirBlocks=2, TotalBlocks=175,SysTracks=1, Version=3, Format=pcw180.
+\layout Standard
+
+If you call dsk_option_set with any of the following options:
+\layout Itemize
+
+FS:CP/M:BSH 
+\layout Itemize
+
+FS:CP/M:BLM 
+\layout Itemize
+
+FS:CP/M:DSM 
+\layout Itemize
+
+FS:CP/M:DRM 
+\layout Itemize
+
+FS:CP/M:OFF
+\layout Itemize
+
+FS:CP/M:VERSION
+\layout Standard
+
+and the value written differs from the one used before, then a new .libdsk.ini
+ file will be written with the revised filesystem parameters and the directory
+ rescanned.
+ This allows a command of the form:
+\layout LyX-Code
+
+dsktrans -otype rcpmfs disc-image directory
+\layout Standard
+
+to stand a reasonable chance of working as long as the source disc image
+ has a CP/M filesystem that LibDsk can detect.
 \layout Subsection
 
 Bugs
@@ -3501,8 +3526,17 @@ Formatting (or reformatting) an rcpmfs directory writes out a new .libdsk.ini
  However, since DSK_GEOMETRY doesn't contain the CP/M filesystem parameters
  (block size, block count, etc.) these will be the ones previously used in
  that directory, and quite possibly completely wrong.
- It's a much better idea to 'format' the directory using means other than
- LibDsk.
+ If you want to 'format' the directory using LibDsk, call dsk_set_option()
+ with the six 
+\begin_inset Quotes eld
+\end_inset 
+
+FS:CP/M:
+\begin_inset Quotes erd
+\end_inset 
+
+ options listed above to set up the correct filesystem parameters.
+ Or create the .libdsk.ini by other means.
 \layout Section
 
 
@@ -5785,7 +5819,7 @@ Your disc image does not allow a caller to use an arbitrary disc geometry.
 
 Your disc image file contains enough information to populate a DSK_GEOMETRY
  completely.
- rcpmfs does this.
+ The rcpmfs and ydsk drivers do this.
  
 \layout Enumerate
 
@@ -5934,7 +5968,51 @@ dsk_err_t (*dc_option_get)(DSK_DRIVER *self, const char *optname, int *value);
 \layout Standard
 
 Get or set the value of a numerical option.
- Again, if your driver has no settable options, this need not be implemented.
+ Again, if your driver has no numerical options, this need not be implemented.
+ 
+\layout Standard
+
+Note that numerical options can 'belong' either to a driver or to the LibDsk
+ core, with the driver taking priority.
+ For example:
+\layout Itemize
+
+If LibDsk accesses a FAT-format disc image using the 'dsk' driver, neither
+ LibDsk nor the driver will support the FS:CP/M:BSH option.
+\layout Itemize
+
+If LibDsk accesses a CP/M-format disc image using the 'dsk' driver, dsk_get_geom
+etry() will detect the CP/M filesystem.
+ Since the driver does not support the FS:CP/M:BSH option, it will be handled
+ by the LibDsk core.
+\layout Itemize
+
+If LibDsk accesses a CP/M-format disc image using the 'ydsk' driver, the
+ driver does support the FS:CP/M:BSH option and so it will be handled by
+ the driver.
+\layout Standard
+
+It is possible for a driver to rely on the option support in the LibDsk
+ core rather than implement its own.
+ This means a lot less code needs to be written; but it does not allow any
+ validation to be performed on the values an option can hold, nor does it
+ notify the driver when the value of an option is changed.
+ Currently this system is used by the myz80 driver.
+\layout Standard
+
+To use this system, create the variables you require with dsk_isetoption:
+\layout LyX-Code
+
+dsk_err_t dsk_isetoption(DSK_DRIVER *self, const char *optname, int value,
+ int create);
+\layout Standard
+
+The first three parameters are the same as for dsk_set_option().
+ The last should be set to 1 to create the new variable, or 0 to return
+ DSK_ERR_BADOPT if the variable is not present.
+\layout Standard
+
+To read a value back, use dsk_get_option() as normal.
 \layout Subsubsection
 
 dc_trackids

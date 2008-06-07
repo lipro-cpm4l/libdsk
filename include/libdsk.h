@@ -58,7 +58,7 @@
 extern "C" {
 #endif
 
-#define LIBDSK_VERSION "1.2.1"
+#define LIBDSK_VERSION "1.3.0"
 
 /************************* TYPES ********************************/
 
@@ -233,7 +233,7 @@ LDPUBLIC32 void LDPUBLIC16 dsk_reportfunc_get(DSK_REPORTFUNC *report,
  * operation such as decompression */
 LDPUBLIC32 void LDPUBLIC16 dsk_report(const char *s);
 /* Remove a work-in-progress message, if appropriate */
-LDPUBLIC32 void LDPUBLIC16 dsk_report_end();
+LDPUBLIC32 void LDPUBLIC16 dsk_report_end(void);
 
 /*****************************************************************************/
 

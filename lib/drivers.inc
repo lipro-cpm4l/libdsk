@@ -62,6 +62,8 @@
     &dc_adisk,  /* APRIDISK image */
     &dc_qm,     /* CopyQM */
     &dc_tele,	/* Teledisk */
+/*  &dc_dskf,	   IBM LoadDskF */
+    &dc_ydsk,	/* YAZE YDSK */
 
 /* 4. Raw files with no magic number. */
     &dc_posix,
@@ -69,6 +71,7 @@
  *   the MYZ80 drive image cannot be reliably identified, so it must be 
  *   explicitly specified. */
     &dc_myz80,
+    &dc_simh,
     &dc_nwasp,
     &dc_logical,
     &dc_cfi,    /* RLE-compressed raw. The reasons that this isn't 

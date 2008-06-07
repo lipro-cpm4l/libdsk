@@ -221,6 +221,8 @@ int do_copy(char *infile, char *outfile)
 	}
 	if (!e)
 	{
+		int opt, value;
+
 		/* Copy comment, if any */
 		dsk_get_comment(indr, &cmt);
 		dsk_set_comment(outdr, cmt);
@@ -229,6 +231,19 @@ int do_copy(char *infile, char *outfile)
 			logical ? "[tracks rearranged]\n" : "");
 		if (first < 0) first = 0;
 		if (last < 0) last = dg.dg_cylinders - 1;
+
+		/* Copy filesystem parameters, if any */
+		opt = 0;
+		while (dsk_option_enum(indr, opt, &cmt) == DSK_ERR_OK &&
+				cmt != NULL)
+		{
+			if (!strncmp(cmt, "FS:", 3) &&
+			    dsk_get_option(indr, cmt, &value) == DSK_ERR_OK)
+			{
+				dsk_set_option(outdr, cmt, value);
+			}
+			++opt;
+		}
 
 		for (cyl = first; cyl <= (dsk_pcyl_t)last; ++cyl)
 		{

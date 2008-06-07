@@ -1,3 +1,19 @@
+2008-06-07 John Elliott
+	
+	* libdsk-1.3.0 released.
+	* Added support for SIMH disc image format.
+
+2008-06-01 John Elliott
+
+	* Added support for YAZE ydsk format.
+	* Added skeletal support for IBM dskf format (not yet functional).
+	* Added knowledge of filesystem parameters, since both the above 
+	 formats require these as part of their metadata. 
+
+2008-04-02 Alistair John Bush
+
+	* Patched Makefile.am to pass JAVACFLAGS to Java compiler.
+
 2008-01-23 John Elliott
 
 	* libdsk-1.2.1 released.

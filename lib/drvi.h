@@ -85,6 +85,9 @@ dsk_err_t dg_parse(FILE *fp, DSK_GEOMETRY *dg, char *description);
 dsk_err_t dg_store(FILE *fp, DSK_GEOMETRY *dg, char *description);
 /* The default geometry probe; driver geometry probes can call it */
 dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom);
+/* The default system for storing optional integer properties */
+dsk_err_t dsk_isetoption(DSK_DRIVER *self, const char *name, int value, 
+		int add_if_not_present);
 
 #ifdef AUTOSHARE
 # define Q2(x) Q1(x)

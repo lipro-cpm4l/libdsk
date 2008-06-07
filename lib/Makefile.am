@@ -2,6 +2,7 @@
 
 INCLUDES=-I$(top_srcdir)/include
 JAVAC=@JAVAC@
+JAVACFLAGS=@JAVACFLAGS@
 JAVAH=@JAVAH@
 JAVA=@JAVA@
 JAVADOC=@JAVADOC@
@@ -29,7 +30,7 @@ EXTRA_DIST=$(CLASSDPRE)/Drive.java \
 # If interfaces have been removed set the right-hand number to 0.
 # 
 #
-libdsk_la_LDFLAGS = -version-info 5:3:2
+libdsk_la_LDFLAGS = -version-info 5:4:2
 libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   dsklphys.c dskfmt.c   dskopen.c  dskpars.c \
 		   dskerror.c dskseek.c  dsksecid.c dskgeom.c \
@@ -39,6 +40,7 @@ libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   compsq.c compsq.h \
 		   compgz.c compgz.h \
 		   compbz2.c compbz2.h \
+		   compdskf.c compdskf.h \
 		   crctable.c crctable.h \
 		   crc16.c    crc16.h \
 		   rpccli.c  rpcfuncs.h  rpcmap.c  \
@@ -57,13 +59,16 @@ libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   drvdos16.h drvdos16.c \
 		   drvdos32.h drvdos32.c \
 		   drvcpcem.h drvcpcem.c \
+		   drvdskf.h  drvdskf.c \
 		   drvlogi.h  drvlogi.c \
+		   drvsimh.h  drvsimh.c \
 		   drvposix.h drvposix.c \
 		   drvnwasp.h drvnwasp.c \
 		   drvadisk.h drvadisk.c \
 		   drvrcpm.h  drvrcpm.c \
 		   drvtele.h  drvtele.c \
 		   drvmyz80.h drvmyz80.c \
+		   drvydsk.h  drvydsk.c \
 		   drvcfi.h   drvcfi.c \
 		   drvqm.h    drvqm.c 
 
@@ -85,10 +90,10 @@ libdsk.jar:	$(JARCLASSES)
 	$(JAVADOC) -d $(top_srcdir)/doc/jni $(CLASSCPRE)
 
 $(CLASSDPRE)/%.class:   $(srcdir)/$(CLASSDPRE)/%.java
-	here=`pwd` && cd $(srcdir) && $(JAVAC) -d $$here $<
+	here=`pwd` && cd $(srcdir) && $(JAVAC) $(JAVACFLAGS) -d $$here $<
 
 %.class:        $(srcdir)/%.java
-	here=`pwd` && cd $(srcdir) && $(JAVAC) -d $$here $<
+	here=`pwd` && cd $(srcdir) && $(JAVAC) $(JAVACFLAGS) -d $$here $<
 
 
 $(HEADERPRE)_%.h:         $(CLASSDPRE)/%.class

@@ -84,6 +84,17 @@ dsk_err_t myz80_open(DSK_DRIVER *self, const char *filename)
 	if (fseek(mzself->mz_fp, 0, SEEK_END)) return DSK_ERR_SYSERR;
 	mzself->mz_filesize = ftell(mzself->mz_fp);
 
+	/* Set up CP/M filesystem parameters */
+	dsk_isetoption(self, "FS:CP/M:BSH", 5, 1);
+	dsk_isetoption(self, "FS:CP/M:BLM", 31, 1);
+	dsk_isetoption(self, "FS:CP/M:EXM", 1, 1); 
+	dsk_isetoption(self, "FS:CP/M:DSM", 0x7ff, 1);
+	dsk_isetoption(self, "FS:CP/M:DRM", 0x3ff, 1);
+	dsk_isetoption(self, "FS:CP/M:AL0", 0xFF, 1);
+	dsk_isetoption(self, "FS:CP/M:AL1", 0, 1);
+	dsk_isetoption(self, "FS:CP/M:CKS", 0x8000, 1);
+	dsk_isetoption(self, "FS:CP/M:OFF", 0, 1);
+
 	return DSK_ERR_OK;
 }
 
@@ -109,6 +120,15 @@ dsk_err_t myz80_creat(DSK_DRIVER *self, const char *filename)
 		}
 
 	}
+	dsk_isetoption(self, "FS:CP/M:BSH", 5, 1);
+	dsk_isetoption(self, "FS:CP/M:BLM", 31, 1);
+	dsk_isetoption(self, "FS:CP/M:EXM", 1, 1); 
+	dsk_isetoption(self, "FS:CP/M:DSM", 0x7ff, 1);
+	dsk_isetoption(self, "FS:CP/M:DRM", 0x3ff, 1);
+	dsk_isetoption(self, "FS:CP/M:AL0", 0xFF, 1);
+	dsk_isetoption(self, "FS:CP/M:AL1", 0, 1);
+	dsk_isetoption(self, "FS:CP/M:CKS", 0x8000, 1);
+	dsk_isetoption(self, "FS:CP/M:OFF", 0, 1);
 	return DSK_ERR_OK;
 }
 

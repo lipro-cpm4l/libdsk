@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2005  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2005,2008  John Elliott <jce@seasip.demon.co.uk>       *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -118,6 +118,14 @@ DRV_CLASS dc_rcpmfs =
 	rcpmfs_secid,	/* sector ID */
 	rcpmfs_xseek,   /* seek to track */
 	rcpmfs_status,  /* drive status */
+	NULL,		/* xread */
+	NULL,		/* xwrite */
+	NULL,		/* tread */
+	NULL,		/* xtread */
+	rcpmfs_option_enum,	/* List options */
+	rcpmfs_option_set,	/* Set option */
+	rcpmfs_option_get,	/* Get option */
+
 };
 
 
@@ -488,6 +496,7 @@ static dsk_err_t rcpmfs_parse(RCPMFS_DSK_DRIVER *self, FILE *fp)
 /******************** CP/M DIRECTORY ACCESS ************************/
 /* Look up a block in the CP/M directory and say what file owns it */
 
+#include <assert.h>
 
 static dsk_err_t rcpmfs_writebuffer(RCPMFS_DSK_DRIVER *self,
 		const void *data, dsk_lsect_t lsect)
@@ -500,6 +509,13 @@ static dsk_err_t rcpmfs_writebuffer(RCPMFS_DSK_DRIVER *self,
 	{
 		if (rcb->rcb_lsect == lsect)
 		{
+/* This is a "can't happen" error - trying to write a sector size other than
+ * the one we're using */
+			assert(rcb->rcb_size == self->rc_geom.dg_secsize);
+			if (rcb->rcb_size != self->rc_geom.dg_secsize)
+			{
+				return DSK_ERR_ECHECK;
+			}
 			memcpy(rcb->rcb_data, data, self->rc_geom.dg_secsize);
 			return DSK_ERR_OK;
 		}
@@ -510,6 +526,7 @@ static dsk_err_t rcpmfs_writebuffer(RCPMFS_DSK_DRIVER *self,
 	if (!rcb) return DSK_ERR_NOMEM;
 	memcpy(rcb->rcb_data, data, self->rc_geom.dg_secsize);
 	rcb->rcb_next = NULL;
+	rcb->rcb_size = self->rc_geom.dg_secsize;
 	rcb->rcb_lsect = lsect;
 	RTRACE(("rcpmfs_writebuffer: Wrote %02x %02x %02x\n",
 		rcb->rcb_data[0], rcb->rcb_data[1], rcb->rcb_data[2]));
@@ -925,7 +942,7 @@ static dsk_err_t rcpmfs_initdir(RCPMFS_DSK_DRIVER *self)
 	unsigned char label[32];
 	char *sep, *dst;
 	int n;
-	dsk_err_t err;
+	dsk_err_t err = DSK_ERR_OK;
 	struct stat st;
 
 	self->rc_dirent = 0;
@@ -1023,6 +1040,11 @@ static dsk_err_t rcpmfs_readdir(RCPMFS_DSK_DRIVER *self)
 
 	if (!self) return DSK_ERR_BADPTR;
 
+	if (self->rc_namemap)
+	{
+		dsk_free(self->rc_namemap);
+		self->rc_namemap = 0;
+	}
 	self->rc_namemap = dsk_malloc( NAMEMAP_ENTRYSIZE * 
 				rcpmfs_max_dirent(self));
 	if (!self->rc_namemap) return DSK_ERR_NOMEM;
@@ -1234,6 +1256,7 @@ dsk_err_t rcpmfs_open(DSK_DRIVER *self, const char *passed)
 	rcself->rc_totalblocks = 175;
 	rcself->rc_systracks = 1;
 	rcself->rc_fsversion = 3;
+	rcself->rc_namemap = NULL;
 
 	/* Now we have to find out if there's a configuration file */
 	filename = rcpmfs_mkname(rcself, CONFIGFILE);
@@ -1301,6 +1324,7 @@ dsk_err_t rcpmfs_creat(DSK_DRIVER *self, const char *passed)
 	rcself->rc_totalblocks = 175;
 	rcself->rc_systracks = 1;
 	rcself->rc_fsversion = 3;
+	rcself->rc_namemap = NULL;
 /* 720k defaults 
 	err = dg_stdformat(&rcself->rc_geom, FMT_720K, NULL, NULL);
 	if (err) return err;
@@ -1334,6 +1358,20 @@ dsk_err_t rcpmfs_creat(DSK_DRIVER *self, const char *passed)
 
 
 
+static void rcpmfs_free_buffers(RCPMFS_DSK_DRIVER *self)
+{
+	RCPMFS_BUFFER *rcb, *rcb2;
+
+	/* Free buffers. The sector size may have changed */
+	rcb = self->rc_bufhead;
+	while (rcb)
+	{
+		rcb2 = rcb->rcb_next;
+		dsk_free(rcb);
+		rcb = rcb2;	
+	}
+	self->rc_bufhead = NULL;
+}
 
 
 dsk_err_t rcpmfs_close(DSK_DRIVER *self)
@@ -1919,10 +1957,23 @@ dsk_err_t rcpmfs_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 	    geom->dg_secsize   != rcself->rc_geom.dg_secsize   ||
 	    geom->dg_secbase   != rcself->rc_geom.dg_secbase)
 	{
+/* If the sector size has changed, trash all buffers because they're going
+ * to be the wrong size */
+		if (geom->dg_secsize != rcself->rc_geom.dg_secsize)
+		{
+			if (rcself->rc_sectorbuf)
+			{
+				dsk_free(rcself->rc_sectorbuf);
+				rcself->rc_sectorbuf
+					= dsk_malloc(geom->dg_secsize);
+				if (!rcself->rc_sectorbuf) return DSK_ERR_NOMEM;
+				memset(rcself->rc_sectorbuf, 0xE5,
+						geom->dg_secsize);
+			}
+			rcpmfs_free_buffers(rcself);
+		}
 		memcpy(&rcself->rc_geom, geom, sizeof(DSK_GEOMETRY));
-    /* Recreate .libdsk.ini 
-     * TODO: We can recreate the geometry; but what of the CP/M filesystem
-     * parameters? */
+    /* Recreate .libdsk.ini */
 		filename = rcpmfs_mkname(rcself, CONFIGFILE);
 		fp = fopen(filename, "w");
 		if (fp)
@@ -2050,5 +2101,162 @@ dsk_err_t rcpmfs_secid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	result->fmt_secsize  = geom->dg_secsize;
 	return DSK_ERR_OK;
 }
+
+
+static dsk_err_t rcpmfs_update_config(RCPMFS_DSK_DRIVER *self)
+{
+	char *filename;
+	FILE *fp;
+	dsk_err_t err;
+
+	/* System option changed. Update the configuration file. */
+	filename = rcpmfs_mkname(self, CONFIGFILE);
+	fp = fopen(filename, "w");
+	if (!fp) return DSK_ERR_SYSERR;
+	err = rcpmfs_dump_options(self, fp);
+	fclose(fp);
+	if (err) return err;
+
+
+	return rcpmfs_readdir(self);
+}
+
+/* CP/M-specific filesystem parameters */
+static char *option_names[] = 
+{
+	"FS:CP/M:BSH", "FS:CP/M:BLM", "FS:CP/M:EXM",
+	"FS:CP/M:DSM", "FS:CP/M:DRM", "FS:CP/M:AL0", "FS:CP/M:AL1",
+	"FS:CP/M:CKS", "FS:CP/M:OFF", "FS:CP/M:VERSION"
+};
+
+#define MAXOPTION (sizeof(option_names) / sizeof(option_names[0]))
+
+dsk_err_t rcpmfs_option_enum(DSK_DRIVER *self, int idx, char **optname)
+{
+	if (!self) return DSK_ERR_BADPTR;
+	if (self->dr_class != &dc_rcpmfs) return DSK_ERR_BADPTR;
+
+	if (idx >= 0 && idx < MAXOPTION)
+	{
+		if (optname) *optname = option_names[idx];
+		return DSK_ERR_OK;
+	}
+	return DSK_ERR_BADOPT;	
+
+}
+
+/* Set a driver-specific option */
+dsk_err_t rcpmfs_option_set(DSK_DRIVER *self, const char *optname, int value)
+{
+	RCPMFS_DSK_DRIVER *rcpmfs_self;
+	int idx;
+	unsigned dirents;
+
+	if (!self || !optname) return DSK_ERR_BADPTR;
+	if (self->dr_class != &dc_rcpmfs) return DSK_ERR_BADPTR;
+	rcpmfs_self = (RCPMFS_DSK_DRIVER *)self;
+
+	for (idx = 0; idx < MAXOPTION; idx++)
+	{
+		if (!strcmp(optname, option_names[idx]))
+			break;
+	}
+	if (idx >= MAXOPTION) return DSK_ERR_BADOPT;
+
+	dirents = (rcpmfs_self->rc_dirblocks * rcpmfs_self->rc_blocksize) / 32;
+	switch(idx)
+	{
+
+		/* If we change the block size, try to keep the directory
+		 * size constant.
+		 *
+		 * If setting an option doesn't actually change anything, 
+		 * return and don't bother rewriting .libdsk.ini 
+		 */
+		case 0: if (rcpmfs_self->rc_blocksize == (128 << value))
+				return DSK_ERR_OK;
+			rcpmfs_self->rc_blocksize = (128 << value);
+			rcpmfs_self->rc_dirblocks = (dirents * 32) / 
+				rcpmfs_self->rc_blocksize;
+			break;
+		case 1: if (rcpmfs_self->rc_blocksize == (128 * (1+value)))
+				return DSK_ERR_OK;
+			rcpmfs_self->rc_blocksize = 128 * (1 + value);
+			rcpmfs_self->rc_dirblocks = (dirents * 32) / 
+				rcpmfs_self->rc_blocksize;
+			break;
+		case 2: return DSK_ERR_RDONLY;	/* EXM can't be changed */
+		case 3: if (rcpmfs_self->rc_totalblocks == (1 + value))
+				return DSK_ERR_OK;
+			rcpmfs_self->rc_totalblocks = value + 1;
+			break;
+		case 4: dirents = (32 * (value+1)) / rcpmfs_self->rc_blocksize;
+			if (rcpmfs_self->rc_dirblocks == dirents)
+				return DSK_ERR_OK;
+			rcpmfs_self->rc_dirblocks = dirents;
+			break;
+		case 5: return DSK_ERR_RDONLY; /* AL0 can't be changed. */
+		case 6: return DSK_ERR_RDONLY; /* AL1 can't be changed. */
+		case 7: return DSK_ERR_RDONLY; /* CKS can't be changed. */
+		case 8: if (rcpmfs_self->rc_systracks == value) 
+				return DSK_ERR_OK;
+			rcpmfs_self->rc_systracks = value;
+			break;
+		case 9:	if (rcpmfs_self->rc_fsversion == value)
+				return DSK_ERR_OK;
+			rcpmfs_self->rc_fsversion = value;
+			break;
+	}
+	return rcpmfs_update_config(rcpmfs_self);
+}
+
+
+dsk_err_t rcpmfs_option_get(DSK_DRIVER *self, const char *optname, int *value)
+{
+	RCPMFS_DSK_DRIVER *rcpmfs_self;
+	int idx, v = 0;
+	unsigned al, dirents;
+
+	if (!self || !optname) return DSK_ERR_BADPTR;
+	if (self->dr_class != &dc_rcpmfs) return DSK_ERR_BADPTR;
+	rcpmfs_self = (RCPMFS_DSK_DRIVER *)self;
+
+	for (idx = 0; idx < MAXOPTION; idx++)
+	{
+		if (!strcmp(optname, option_names[idx]))
+			break;
+	}
+	if (idx >= MAXOPTION) return DSK_ERR_BADOPT;
+
+	al = (1 << 16) - (1 << (16 - rcpmfs_self->rc_dirblocks));
+	dirents = (rcpmfs_self->rc_dirblocks * rcpmfs_self->rc_blocksize) / 32;
+	switch(idx)
+	{
+		case 0: v = dsk_get_psh(rcpmfs_self->rc_blocksize); // BSH
+			break;
+		case 1: v = (rcpmfs_self->rc_blocksize / 128) - 1; // BLM
+			break;
+		case 2: v = rcpmfs_get_exm(rcpmfs_self);	// EXM
+			break;
+		case 3: v = rcpmfs_self->rc_totalblocks - 1;	// DSM
+			break;
+		case 4: v = dirents - 1;
+			break;
+		case 5: v = (al >> 8) & 0xFF;	// AL0
+			break;
+		case 6: v = (al & 0xFF);	// AL1
+			break;
+		case 7: v = (dirents / 4);	// CKS
+			break;
+		case 8: v = rcpmfs_self->rc_systracks;	// OFF
+			break;
+		case 9: v = rcpmfs_self->rc_fsversion;	// Filesystem version
+			break;
+	}
+	if (value) *value = v;
+	return DSK_ERR_OK;
+}
+
+
 
 #endif /* def HAVE_RCPMFS */

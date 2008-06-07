@@ -33,6 +33,7 @@
 typedef struct rcpmfs_buffer
 {
 	struct rcpmfs_buffer *rcb_next;
+	size_t		      rcb_size;
 	dsk_lsect_t           rcb_lsect;	
 	unsigned char         rcb_data[1];
 } RCPMFS_BUFFER;
@@ -87,3 +88,6 @@ dsk_err_t rcpmfs_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                                 dsk_phead_t head, unsigned char *result);
 dsk_err_t rcpmfs_secid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 		         dsk_pcyl_t cyl, dsk_phead_t head, DSK_FORMAT *result);
+dsk_err_t rcpmfs_option_enum(DSK_DRIVER *self, int idx, char **optname);
+dsk_err_t rcpmfs_option_set(DSK_DRIVER *self, const char *optname, int value);
+dsk_err_t rcpmfs_option_get(DSK_DRIVER *self, const char *optname, int *value);

@@ -33,6 +33,9 @@ extern DRV_CLASS dc_cfi;	/* CFI driver */
 extern DRV_CLASS dc_adisk;	/* APRIDISK driver */
 extern DRV_CLASS dc_qm;		/* CopyQM driver */
 extern DRV_CLASS dc_tele;	/* Teledisk driver */
+extern DRV_CLASS dc_dskf;	/* LoadDskF driver */
+extern DRV_CLASS dc_ydsk;	/* YAZE YDSK driver */
+extern DRV_CLASS dc_simh;	/* SIMH Altair driver */
 extern DRV_CLASS dc_logical;	/* Raw, in logical sector order */
 extern DRV_CLASS dc_rcpmfs;	/* Reverse-CP/MFS driver */
 extern DRV_CLASS dc_remote;	/* All remote drivers */

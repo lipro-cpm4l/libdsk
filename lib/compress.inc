@@ -23,6 +23,7 @@
 /* Compression engines supported by LibDsk */
 
 	&cc_sq,		/* SQueeze */
+/*	&cc_dskf,	 * IBM LoadDskF */
 
 #ifdef HAVE_LIBZ
 	&cc_gz,		/* GZip */

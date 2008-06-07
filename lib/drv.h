@@ -20,12 +20,20 @@
  *                                                                         *
  ***************************************************************************/
 
+typedef struct dsk_option
+{
+	struct dsk_option *do_next;
+	int do_value;
+	char do_name[1];
+} DSK_OPTION;
+
 /* Moved here from libdsk.h; there's no need for it to be public */
 typedef struct dsk_driver
 {
         struct drv_class     *dr_class;
         struct compress_data *dr_compress;      /* Compressed? */
 	struct remote_data   *dr_remote;	/* Remote, if any */
+	struct dsk_option    *dr_options;	/* Optional properties, if any */
 	char *dr_comment;	/* Comment, if any */
 /*        int dr_forcehead;     Force drive to use head 0 or head 1
  *        			Moved to Linux floppy driver; it's the only one

@@ -180,6 +180,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_close(DSK_DRIVER **self)
 {
 	dsk_err_t e, e2;
 	COMPRESS_DATA *dc;
+	DSK_OPTION *opt, *opt2;
 
 	if (!self || (!(*self)) || (!(*self)->dr_class))    return DSK_ERR_BADPTR;
 
@@ -192,6 +193,14 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_close(DSK_DRIVER **self)
 		else		       e2 = comp_abort (&dc);
 
 		if (!e) e = e2;
+	}
+	/* Free any option blocks the driver has accumulated */
+	opt = (*self)->dr_options;
+	while (opt)
+	{
+		opt2 = opt->do_next;
+		dsk_free(opt);
+		opt = opt2;
 	}
 	dsk_free (*self);
 	*self = NULL;

@@ -71,7 +71,6 @@ DLLTOOL = @DLLTOOL@
 ECHO = @ECHO@
 EXEEXT = @EXEEXT@
 HAVE_LIB = @HAVE_LIB@
-JAVACFLAGS = @JAVACFLAGS@
 JAVAFLAGS = @JAVAFLAGS@
 JAVAPREFIX = @JAVAPREFIX@
 LIB = @LIB@
@@ -92,6 +91,7 @@ uudecode = @uudecode@
 
 INCLUDES = -I$(top_srcdir)/include
 JAVAC = @JAVAC@
+JAVACFLAGS = @JAVACFLAGS@
 JAVAH = @JAVAH@
 JAVA = @JAVA@
 JAVADOC = @JAVADOC@
@@ -114,8 +114,8 @@ EXTRA_DIST = $(CLASSDPRE)/Drive.java 	   $(CLASSDPRE)/DskException.java 	   $(CL
 # If interfaces have been removed set the right-hand number to 0.
 # 
 #
-libdsk_la_LDFLAGS = -version-info 5:3:2
-libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c 		   dsklphys.c dskfmt.c   dskopen.c  dskpars.c 		   dskerror.c dskseek.c  dsksecid.c dskgeom.c 		   dsktread.c dsksgeom.c dskjni.c   dskreprt.c 		   dskcmt.c dskretry.c dskdirty.c dsktrkid.c dskrtrd.c 		   comp.h compi.h compress.h compress.inc compress.c 		   compsq.c compsq.h 		   compgz.c compgz.h 		   compbz2.c compbz2.h 		   crctable.c crctable.h 		   crc16.c    crc16.h 		   rpccli.c  rpcfuncs.h  rpcmap.c  	           rpcpack.c  rpcserv.c 		   remote.c   remote.h  remote.inc remall.h 		   rpctios.c  rpctios.h 		   rpcfork.c  rpcfork.h 		   rpcfossl.c rpcfossl.h 		   rpcwin32.c rpcwin32.h 		   drv.h drvi.h drivers.h drivers.inc 		   drvlinux.h drvlinux.c 		   drvntwdm.h drvntwdm.c 		   drvwin32.h drvwin32.c w95defs.h 		   drvwin16.h drvwin16.c w16defs.h 		   drvint25.h drvint25.c 		   drvdos16.h drvdos16.c 		   drvdos32.h drvdos32.c 		   drvcpcem.h drvcpcem.c 		   drvlogi.h  drvlogi.c 		   drvposix.h drvposix.c 		   drvnwasp.h drvnwasp.c 		   drvadisk.h drvadisk.c 		   drvrcpm.h  drvrcpm.c 		   drvtele.h  drvtele.c 		   drvmyz80.h drvmyz80.c 		   drvcfi.h   drvcfi.c 		   drvqm.h    drvqm.c 
+libdsk_la_LDFLAGS = -version-info 5:4:2
+libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c 		   dsklphys.c dskfmt.c   dskopen.c  dskpars.c 		   dskerror.c dskseek.c  dsksecid.c dskgeom.c 		   dsktread.c dsksgeom.c dskjni.c   dskreprt.c 		   dskcmt.c dskretry.c dskdirty.c dsktrkid.c dskrtrd.c 		   comp.h compi.h compress.h compress.inc compress.c 		   compsq.c compsq.h 		   compgz.c compgz.h 		   compbz2.c compbz2.h 		   compdskf.c compdskf.h 		   crctable.c crctable.h 		   crc16.c    crc16.h 		   rpccli.c  rpcfuncs.h  rpcmap.c  	           rpcpack.c  rpcserv.c 		   remote.c   remote.h  remote.inc remall.h 		   rpctios.c  rpctios.h 		   rpcfork.c  rpcfork.h 		   rpcfossl.c rpcfossl.h 		   rpcwin32.c rpcwin32.h 		   drv.h drvi.h drivers.h drivers.inc 		   drvlinux.h drvlinux.c 		   drvntwdm.h drvntwdm.c 		   drvwin32.h drvwin32.c w95defs.h 		   drvwin16.h drvwin16.c w16defs.h 		   drvint25.h drvint25.c 		   drvdos16.h drvdos16.c 		   drvdos32.h drvdos32.c 		   drvcpcem.h drvcpcem.c 		   drvdskf.h  drvdskf.c 		   drvlogi.h  drvlogi.c 		   drvsimh.h  drvsimh.c 		   drvposix.h drvposix.c 		   drvnwasp.h drvnwasp.c 		   drvadisk.h drvadisk.c 		   drvrcpm.h  drvrcpm.c 		   drvtele.h  drvtele.c 		   drvmyz80.h drvmyz80.c 		   drvydsk.h  drvydsk.c 		   drvcfi.h   drvcfi.c 		   drvqm.h    drvqm.c 
 
 
 JARCLASSES = $(CLASSDPRE)/Drive.class 	   $(CLASSDPRE)/DskException.class 	   $(CLASSDPRE)/FormatData.class 	   $(CLASSDPRE)/FormatType.class 	   $(CLASSDPRE)/Geometry.class 	   $(CLASSDPRE)/Reporter.class 	   $(CLASSDPRE)/LibDsk.class
@@ -138,11 +138,12 @@ libdsk_la_OBJECTS =  dskread.lo dskwrite.lo dskcheck.lo dskstat.lo \
 dsklphys.lo dskfmt.lo dskopen.lo dskpars.lo dskerror.lo dskseek.lo \
 dsksecid.lo dskgeom.lo dsktread.lo dsksgeom.lo dskjni.lo dskreprt.lo \
 dskcmt.lo dskretry.lo dskdirty.lo dsktrkid.lo dskrtrd.lo compress.lo \
-compsq.lo compgz.lo compbz2.lo crctable.lo crc16.lo rpccli.lo rpcmap.lo \
-rpcpack.lo rpcserv.lo remote.lo rpctios.lo rpcfork.lo rpcfossl.lo \
-rpcwin32.lo drvlinux.lo drvntwdm.lo drvwin32.lo drvwin16.lo drvint25.lo \
-drvdos16.lo drvdos32.lo drvcpcem.lo drvlogi.lo drvposix.lo drvnwasp.lo \
-drvadisk.lo drvrcpm.lo drvtele.lo drvmyz80.lo drvcfi.lo drvqm.lo
+compsq.lo compgz.lo compbz2.lo compdskf.lo crctable.lo crc16.lo \
+rpccli.lo rpcmap.lo rpcpack.lo rpcserv.lo remote.lo rpctios.lo \
+rpcfork.lo rpcfossl.lo rpcwin32.lo drvlinux.lo drvntwdm.lo drvwin32.lo \
+drvwin16.lo drvint25.lo drvdos16.lo drvdos32.lo drvcpcem.lo drvdskf.lo \
+drvlogi.lo drvsimh.lo drvposix.lo drvnwasp.lo drvadisk.lo drvrcpm.lo \
+drvtele.lo drvmyz80.lo drvydsk.lo drvcfi.lo drvqm.lo
 noinst_PROGRAMS =  @LIBDSKJAR@
 PROGRAMS =  $(noinst_PROGRAMS)
 
@@ -300,11 +301,13 @@ distdir: $(DISTFILES)
 	done
 compbz2.lo compbz2.o : compbz2.c compi.h ../config.h ../include/libdsk.h \
 	compress.h compbz2.h
+compdskf.lo compdskf.o : compdskf.c compi.h ../config.h \
+	../include/libdsk.h compress.h compdskf.h
 compgz.lo compgz.o : compgz.c compi.h ../config.h ../include/libdsk.h \
 	compress.h compgz.h
 compress.lo compress.o : compress.c drvi.h ../config.h \
 	../include/libdsk.h drv.h compi.h compress.h comp.h compsq.h \
-	compgz.h compbz2.h compress.inc
+	compgz.h compbz2.h compdskf.h compress.inc
 compsq.lo compsq.o : compsq.c compi.h ../config.h ../include/libdsk.h \
 	compress.h compsq.h
 crc16.lo crc16.o : crc16.c crc16.h
@@ -321,6 +324,8 @@ drvdos16.lo drvdos16.o : drvdos16.c drvi.h ../config.h \
 	../include/libdsk.h drv.h drvdos16.h
 drvdos32.lo drvdos32.o : drvdos32.c drvi.h ../config.h \
 	../include/libdsk.h drv.h drvdos32.h
+drvdskf.lo drvdskf.o : drvdskf.c ../include/libdsk.h drvi.h ../config.h \
+	drv.h drvdskf.h
 drvint25.lo drvint25.o : drvint25.c drvi.h ../config.h \
 	../include/libdsk.h drv.h drvint25.h
 drvlinux.lo drvlinux.o : drvlinux.c drvi.h ../config.h \
@@ -339,12 +344,16 @@ drvqm.lo drvqm.o : drvqm.c ../include/libdsk.h drvi.h ../config.h drv.h \
 	drvqm.h crctable.h
 drvrcpm.lo drvrcpm.o : drvrcpm.c ../include/libdsk.h drvi.h ../config.h \
 	drv.h drvrcpm.h
+drvsimh.lo drvsimh.o : drvsimh.c ../include/libdsk.h drvi.h ../config.h \
+	drv.h drvsimh.h
 drvtele.lo drvtele.o : drvtele.c drvi.h ../config.h ../include/libdsk.h \
 	drv.h drvtele.h
 drvwin16.lo drvwin16.o : drvwin16.c drvi.h ../config.h \
 	../include/libdsk.h drv.h drvwin16.h
 drvwin32.lo drvwin32.o : drvwin32.c drvi.h ../config.h \
 	../include/libdsk.h drv.h drvwin32.h rpcfuncs.h
+drvydsk.lo drvydsk.o : drvydsk.c ../include/libdsk.h drvi.h ../config.h \
+	drv.h drvydsk.h
 dskcheck.lo dskcheck.o : dskcheck.c drvi.h ../config.h \
 	../include/libdsk.h drv.h
 dskcmt.lo dskcmt.o : dskcmt.c drvi.h ../config.h ../include/libdsk.h \
@@ -492,10 +501,10 @@ libdsk.jar:	$(JARCLASSES)
 	$(JAVADOC) -d $(top_srcdir)/doc/jni $(CLASSCPRE)
 
 $(CLASSDPRE)/%.class:   $(srcdir)/$(CLASSDPRE)/%.java
-	here=`pwd` && cd $(srcdir) && $(JAVAC) -d $$here $<
+	here=`pwd` && cd $(srcdir) && $(JAVAC) $(JAVACFLAGS) -d $$here $<
 
 %.class:        $(srcdir)/%.java
-	here=`pwd` && cd $(srcdir) && $(JAVAC) -d $$here $<
+	here=`pwd` && cd $(srcdir) && $(JAVAC) $(JAVACFLAGS) -d $$here $<
 
 $(HEADERPRE)_%.h:         $(CLASSDPRE)/%.class
 	$(JAVAH) -jni $(CLASSCPRE).`basename $< .class`
