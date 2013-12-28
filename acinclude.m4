@@ -17,7 +17,7 @@ dnl
 dnl @author Stephane Bortzmeyer <bortzmeyer@pasteur.fr>
 dnl @version $Id: ac_check_class.m4,v 1.3 2000/01/28 11:54:26 bortz Exp $
 dnl
-AC_DEFUN(AC_CHECK_CLASS,[
+AC_DEFUN([AC_CHECK_CLASS],[
 AC_REQUIRE([AC_PROG_JAVA])
 ac_var_name=`echo $1 | sed 's/\./_/g'`
 dnl Normaly I'd use a AC_CACHE_CHECK here but since the variable name is
@@ -171,7 +171,7 @@ dnl
 dnl @author Stephane Bortzmeyer <bortzmeyer@pasteur.fr>
 dnl @version $Id: ac_prog_java.m4,v 1.5 2000/01/02 16:07:12 bortz Exp $
 dnl
-AC_DEFUN(AC_PROG_JAVA,[
+AC_DEFUN([AC_PROG_JAVA],[
 AC_REQUIRE([AC_EXEEXT])dnl
 if test x$JAVAPREFIX = x; then
 	test x$JAVA = x && AC_CHECK_PROGS(JAVA, kaffe$EXEEXT java$EXEEXT)
@@ -197,7 +197,7 @@ dnl
 dnl @author Stephane Bortzmeyer <bortzmeyer@pasteur.fr>
 dnl @version $Id: ac_prog_javac_works.m4,v 1.2 1999/12/29 09:58:48 bortz Exp $
 dnl
-AC_DEFUN(AC_PROG_JAVAC_WORKS,[
+AC_DEFUN([AC_PROG_JAVAC_WORKS],[
 AC_CACHE_CHECK([if $JAVAC works], ac_cv_prog_javac_works, [
 JAVA_TEST=Test.java
 CLASS_TEST=Test.class
@@ -233,7 +233,7 @@ dnl
 dnl @author Stephane Bortzmeyer <bortzmeyer@pasteur.fr>
 dnl @version $Id: ac_check_classpath.m4,v 1.3 1999/12/29 10:45:03 bortz Exp $
 dnl
-AC_DEFUN(AC_CHECK_CLASSPATH,[
+AC_DEFUN([AC_CHECK_CLASSPATH],[
 if test "x$CLASSPATH" = x; then
         echo "You have no CLASSPATH, I hope it is good"
 else
@@ -258,7 +258,7 @@ dnl
 dnl @author Stephane Bortzmeyer <bortzmeyer@pasteur.fr>
 dnl @version $Id: ac_prog_java_works.m4,v 1.2 1999/12/29 09:58:48 bortz Exp $
 dnl
-AC_DEFUN(AC_PROG_JAVA_WORKS, [
+AC_DEFUN([AC_PROG_JAVA_WORKS], [
 AC_CHECK_PROG(uudecode, uudecode$EXEEXT, yes)
 if test x$uudecode = xyes; then
 AC_CACHE_CHECK([if uudecode can decode base 64 file], ac_cv_prog_uudecode_base64, [
@@ -359,7 +359,7 @@ dnl @author Stephane Bortzmeyer <bortzmeyer@pasteur.fr>
 dnl @version $Id: ac_check_rqrd_class.m4,v 1.1 1999/12/29 09:22:26 bortz Exp $
 dnl
 
-AC_DEFUN(AC_CHECK_RQRD_CLASS,[
+AC_DEFUN([AC_CHECK_RQRD_CLASS],[
 CLASS=`echo $1|sed 's/\./_/g'`
 AC_CHECK_CLASS($1)
 if test "$HAVE_LAST_CLASS" = "no"; then
@@ -398,7 +398,7 @@ dnl
 dnl @author Stephane Bortzmeyer <bortzmeyer@pasteur.fr>
 dnl @version $Id: ac_prog_javac.m4,v 1.3 1999/12/29 10:46:15 bortz Exp $
 dnl
-AC_DEFUN(AC_PROG_JAVAC,[
+AC_DEFUN([AC_PROG_JAVAC],[
 AC_REQUIRE([AC_EXEEXT])dnl
 if test "x$JAVAPREFIX" = x; then
 	test "x$JAVAC" = x && AC_CHECK_PROGS(JAVAC, "gcj$EXEEXT -C" guavac$EXEEXT jikes$EXEEXT javac$EXEEXT)
@@ -425,7 +425,7 @@ dnl
 dnl @author Devin Weaver <ktohg@tritarget.com>
 dnl @version $Id: ac_java_options.m4,v 1.2 2000/01/02 16:07:12 bortz Exp $
 dnl
-AC_DEFUN(AC_JAVA_OPTIONS,[
+AC_DEFUN([AC_JAVA_OPTIONS],[
 AC_ARG_WITH(java-prefix,
 			[  --with-java-prefix=PFX  prefix where Java runtime is installed (optional)])
 AC_ARG_WITH(javac-flags,
@@ -459,7 +459,7 @@ dnl
 dnl @author Devin Weaver <ktohg@tritarget.com>
 dnl @version $Id: ac_try_compile_java.m4,v 1.1 1999/12/29 09:59:34 bortz Exp $
 dnl
-AC_DEFUN(AC_TRY_COMPILE_JAVA,[
+AC_DEFUN([AC_TRY_COMPILE_JAVA],[
 AC_REQUIRE([AC_PROG_JAVAC])dnl
 cat << \EOF > Test.java
 /* [#]line __oline__ "configure" */
@@ -498,7 +498,7 @@ dnl
 dnl @author Devin Weaver <ktohg@tritarget.com>
 dnl @version $Id: ac_try_run_java.m4,v 1.1 1999/12/29 09:59:34 bortz Exp $
 dnl
-AC_DEFUN(AC_TRY_RUN_JAVA,[
+AC_DEFUN([AC_TRY_RUN_JAVA],[
 AC_REQUIRE([AC_PROG_JAVAC])dnl
 AC_REQUIRE([AC_PROG_JAVA])dnl
 cat << \EOF > Test.java
@@ -578,7 +578,7 @@ dnl
 dnl @author Don Anderson <dda@sleepycat.com>
 dnl @version $Id: ac_jni_include_dirs.m4,v 1.1 2001/09/20 11:58:31 simons Exp $
 dnl
-AC_DEFUN(AC_JNI_INCLUDE_DIR,[
+AC_DEFUN([AC_JNI_INCLUDE_DIR],[
 
 JNI_INCLUDE_DIRS=""
 
@@ -626,7 +626,7 @@ done
 # Follows symbolic links on <path>,
 # finally setting variable _ACJNI_FOLLOWED
 # --------------------
-AC_DEFUN(_ACJNI_FOLLOW_SYMLINKS,[
+AC_DEFUN([_ACJNI_FOLLOW_SYMLINKS],[
 # find the include directory relative to the javac executable
 _cur="$1"
 while ls -ld "$_cur" 2>/dev/null | grep " -> " >/dev/null; do

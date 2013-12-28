@@ -1,8 +1,10 @@
 ## Process this file with automake to produce Makefile.in
 
 SUBDIRS= . include lib tools man doc
+ACLOCAL_AMFLAGS=-I m4
 
 EXTRA_DIST= $(srcdir)/config/* \
+	    $(srcdir)/m4/* \
 	    $(srcdir)/dskwrite/* \
 	    $(srcdir)/dos16ppd/Makefile      \
 	    $(srcdir)/dos16ppd/errno.h       \
