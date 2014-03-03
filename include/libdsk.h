@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001-7 John Elliott <jce@seasip.demon.co.uk>           *
+ *    Copyright (C) 2001-8 John Elliott <jce@seasip.demon.co.uk>           *
  *                                                                         *
  *    Modifications to add dsk_dirty()                                     *
  *    (c) 2005 Philip Kendall <pak21-spectrum@srcf.ucam.org>               *
@@ -58,7 +58,7 @@
 extern "C" {
 #endif
 
-#define LIBDSK_VERSION "1.3.0"
+#define LIBDSK_VERSION "1.3.5"
 
 /************************* TYPES ********************************/
 
@@ -149,6 +149,10 @@ typedef enum
 	FMT_MBEE400,	/* 10 sectors, 80 tracks, 1 side */
 	FMT_MGT800,     /* 10 sectors, 80 tracks, 2 sides out and out */
 	FMT_TRDOS640,	/* 16 sectors,  256 bytes/sector, 2 sides */
+	FMT_AMPRO200,	/* 10 sectors, 512 bytes/sector, 1 side */
+	FMT_AMPRO400D,	/* 10 sectors, 512 bytes/sector, 2 sides */
+	FMT_AMPRO400S,	/* 5 sectors, 1024 bytes/sector, 1 side */
+	FMT_AMPRO800,	/* 5 sectors, 1024 bytes/sector, 2 sides */
 	FMT_UNKNOWN = -1
 } dsk_format_t;
 
@@ -378,6 +382,7 @@ LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_dosgeom(DSK_GEOMETRY *self, const unsigned c
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_pcwgeom(DSK_GEOMETRY *self, const unsigned char *bootsect);
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_cpm86geom(DSK_GEOMETRY *self, const unsigned char *bootsect);
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_aprigeom(DSK_GEOMETRY *self, const unsigned char *bootsect);
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_opusgeom(DSK_GEOMETRY *self, const unsigned char *bootsect);
 
 /* Read a random sector header from current track */
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_psecid(DSK_PDRIVER self, const DSK_GEOMETRY *geom,
@@ -412,6 +417,10 @@ LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_pseek(DSK_PDRIVER self, const DSK_GEOMETRY 
 /* If "index" is in range, returns the n'th driver name in (*drvname).
  * Else sets (*drvname) to null. */
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_type_enum(int idx, char **drvname);
+
+/* If "index" is in range, returns the human-readable description of the 
+ * n'th driver name in (*drvdesc).  Else sets (*drvdesc) to null. */
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_typedesc_enum(int idx, char **drvdesc);
 
 /* If "index" is in range, returns the n'th compressor name in (*compname).
  * Else sets (*drvname) to null. */

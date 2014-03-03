@@ -25,4 +25,5 @@
 #include "compgz.h"
 #include "compbz2.h"
 #include "compdskf.h"
+#include "comptlzh.h"
 

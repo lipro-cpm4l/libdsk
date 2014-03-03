@@ -393,7 +393,7 @@ dsk_err_t ydsk_option_enum(DSK_DRIVER *self, int idx, char **optname)
 	if (!self) return DSK_ERR_BADPTR;
 	if (self->dr_class != &dc_ydsk) return DSK_ERR_BADPTR;
 
-	if (idx >= 0 && idx < MAXOPTION)
+	if (idx >= 0 && idx < (int)MAXOPTION)
 	{
 		if (optname) *optname = option_names[idx];
 		return DSK_ERR_OK;
@@ -406,7 +406,7 @@ dsk_err_t ydsk_option_enum(DSK_DRIVER *self, int idx, char **optname)
 dsk_err_t ydsk_option_set(DSK_DRIVER *self, const char *optname, int value)
 {
 	YDSK_DSK_DRIVER *ydsk_self;
-	int idx;
+	unsigned idx;
 
 	if (!self || !optname) return DSK_ERR_BADPTR;
 	if (self->dr_class != &dc_ydsk) return DSK_ERR_BADPTR;
@@ -453,7 +453,8 @@ dsk_err_t ydsk_option_set(DSK_DRIVER *self, const char *optname, int value)
 dsk_err_t ydsk_option_get(DSK_DRIVER *self, const char *optname, int *value)
 {
 	YDSK_DSK_DRIVER *ydsk_self;
-	int idx, v = 0;
+	unsigned idx;
+	int v = 0;
 
 	if (!self || !optname) return DSK_ERR_BADPTR;
 	if (self->dr_class != &dc_ydsk) return DSK_ERR_BADPTR;

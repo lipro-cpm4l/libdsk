@@ -31,4 +31,4 @@
 #ifdef HAVE_LIBBZ2
 	&cc_bz2,	/* BZip2 */
 #endif
-
+	&cc_tlzh,	/* TeleDisk LZH */

@@ -22,14 +22,22 @@
 
 #include <stdio.h>
 #include "libdsk.h"
+#include "config.h"
+#ifdef HAVE_LIBGEN_H
+#include <libgen.h>
+#endif
 #include "utilopts.h"
 #include "formname.h"
 #include "apriboot.h"
 
-#ifdef __MSDOS__
-#define AV0 "APRIBOOT"
+#ifdef __PACIFIC__
+# define AV0 "APRIBOOT"
 #else
-#define AV0 argv[0]
+# ifdef HAVE_BASENAME
+#  define AV0 (basename(argv[0]))
+# else
+#  define AV0 argv[0]
+# endif
 #endif
 
 static unsigned retries = 1;
@@ -72,7 +80,9 @@ int main(int argc, char **argv)
 	char *outcomp;
 	int forcehead;
 	int n, err;
+        int stdret;
 
+        stdret = standard_args(argc, argv); if (!stdret) return 0;
 	if (argc < 2) return help(argc, argv);
 
         ignore_arg("-itype", 2, &argc, argv);

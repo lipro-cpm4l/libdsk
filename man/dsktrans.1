@@ -45,6 +45,8 @@ dsktrans - Copy from one floppy or image file to another
 .RI [ "-format FMT" ]
 .RI [ "-first CYLINDER" ]
 .RI [ "-last CYLINDER" ]
+.RI [ "-comment TEXT" ]
+.RI [ "-comment @FILE" ]
 .RI [ -md3 ]
 .RI [ -logical ]
 .RI [ -apricot ]
@@ -114,7 +116,7 @@ not match the way it's done on the PC.
 .B qm
 Sydex's CopyQM format (can only be read, not written).
 .TP
-.B teledisk 
+.B tele
 Sydex's Teledisk format (can only be read, not written).
 .RE
 
@@ -181,6 +183,19 @@ formatted or written.
 .TP
 .B -last CYL 
 Copy up to and including the specified cylinder.
+
+.TP
+.B -comment TEXT
+Set the comment field in the disc image to the specified text (if supported
+by the image file format).
+
+.TP
+.B -comment @FILE
+Set the comment field in the disc image to the contents of the specified disc
+file (if supported by the image file format). If the filename is "-" (i.e.
+.B -comment @-
+) then you will be asked to type the comment, terminated with a "." on a line
+by itself.
 
 .TP
 .B -odstep

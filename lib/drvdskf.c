@@ -85,7 +85,7 @@ dsk_err_t dskf_open(DSK_DRIVER *self, const char *filename)
 
 	/* Try to load the header */
 	if (fread(dskfself->dskf_header, 1, sizeof(dskfself->dskf_header), 
-			dskfself->dskf_fp) < sizeof(dskfself->dskf_header))
+			dskfself->dskf_fp) < (int)sizeof(dskfself->dskf_header))
 	{
 		fclose(dskfself->dskf_fp);
 		return DSK_ERR_NOTME;
@@ -126,8 +126,10 @@ dsk_err_t dskf_open(DSK_DRIVER *self, const char *filename)
 		comment = dsk_malloc(clen);
 		if (comment != NULL)
 		{
+			size_t len;
+
 			memset(comment, 0, clen);
-			fread(comment, 1, clen - 1, dskfself->dskf_fp);
+			len = fread(comment, 1, clen - 1, dskfself->dskf_fp);
 			dsk_set_comment(self, comment);
 			dsk_free(comment);
 		}

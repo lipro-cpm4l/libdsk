@@ -193,6 +193,9 @@ dsk_err_t linux_open(DSK_DRIVER *self, const char *filename)
 		lxself->lx_fd = open(filename, O_NONBLOCK | O_RDONLY);
 	}
 	if (lxself->lx_fd < 0) return DSK_ERR_SYSERR;
+/* [v1.3.1] This appears to be necessary, otherwise an aborted dskscan will
+ * not necessarily seek back to cylinder 0 */
+	ioctl(lxself->lx_fd, FDCLRPRM);
 
 	return DSK_ERR_OK;
 }

@@ -1,3 +1,88 @@
+2014-03-02 John Elliott
+
+	* libdsk-1.3.5 released.
+	* Teledisk: Added read-only support for 'advanced' compression.
+	 Based on wteledsk decompression code by Will Kranz (relicensed
+	 under LGPLv2, with permission).
+	* Teledisk: Check CRC of header before opening disk image.
+	* dg_stdgeom(): Built-in geometry specifications were out of step 
+	 with the corresponding dsk_format_t numbers. This wouldn't have 
+	 affected setting formats by name, but some of the automatic geometry 
+	 probes could have returned an incorrect geometry.
+	* dsk_getgeom(): Added four Ampro formats: ampro200, ampro400d, 
+	 ampro400s and ampro800. These correspond to formats AMP1-AMP4 
+	 under 22DISK. The double-sided ones can be autodetected  by
+	 dsk_getgeom(); sadly, the single-sided ones can't.
+	* dsk_typedesc_enum(): New function to enumerate driver 
+	 descriptions without needing to open a disk image in each 
+	 format in turn.
+	* Utilities: All utilities now take options '-types' and '-formats' 
+	 to list supported drivers and disk formats. 
+	* dsktest: New -libdskrc argument to dump all known disk formats
+	 in .libdskrc format.
+
+2014-03-01 John Elliott
+
+	* libdsk-1.3.4 released.
+	* Documentation fix: 'teledisk' -> 'tele'
+	* Included an example .libdskrc file.
+	* Set the dirty flag when a drive comment is changed.
+
+2011-04-20 John Elliott (based on patches from Ralf-Peter Nerlich)
+
+	* Replacement CopyQM driver
+	* All utilities now use basename() (if available) to trim paths
+	 from argv[0]
+
+2011-03-29 John Elliott
+
+	* dsk_creat: Check that this method is implemented before calling		 it.
+	* dskutil: Correct the description of the 'W' command (Ralf-Peter 
+	 Nerlich)
+
+2011-01-10 John Elliott
+
+	* rcpmfs: Added support for the ISX variant of the CP/M 2 format.
+
+2010-09-27 John Elliott
+
+	* libdsk-1.3.3 released.
+	* rcpmfs: Buffer overflow when renaming a file with a full 8.3 name
+		and a nonzero user number. [Thanks to Jurgen Sievers]
+
+2010-06-28 John Elliott
+
+	* Updated to latest autotools, various compiler warnings fixed.
+
+2009-11-07 John Elliott
+
+	* libdsk-1.3.2 released.
+
+2009-11-07 Jacob Nevins
+
+	* CFI format: Ensure that status messages are correctly removed.
+
+2009-05-14 John Elliott
+
+	* Geometry probe: Support Opus Discovery disks.
+
+2008-12-26 John Elliott
+
+	* Linux floppy driver: Do an FDCLRPRM when opening the floppy drive.
+	This seems to be necessary to force a seek on the first read. 
+	[Thanks to Stewart Kay]	
+
+2008-08-24 John Elliott
+
+	* CPCEMU format: Corrected a problem with signed/unsigned integer
+	 comparison.
+
+2008-08-16 John Elliott
+
+	* Fixed some compiler warnings under 16-bit DOS.
+	* Added a -comment option to dsktrans, allowing the comment to be
+	 set when disks are imaged.
+
 2008-06-07 John Elliott
 	
 	* libdsk-1.3.0 released.

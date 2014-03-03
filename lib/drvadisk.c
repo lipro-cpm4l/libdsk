@@ -244,9 +244,9 @@ static dsk_err_t adisk_load_sector(ADISK_DSK_DRIVER *self, dsk_lsect_t nsec, FIL
 	{
 		/* Don't support compressed creator blocks */
 		if (sh_compressed == APRIDISK_COMPRESSED) return DSK_ERR_OK;
-		self->adisk_creator = dsk_malloc(1 + strlen(buf));
+		self->adisk_creator = dsk_malloc(1 + strlen((char *)buf));
 		if (self->adisk_creator)
-			strcpy(self->adisk_creator, buf);
+			strcpy(self->adisk_creator, (char *)buf);
 		return DSK_ERR_OK;
 	}
 	psec = &self->adisk_sectors[nsec];
@@ -470,7 +470,7 @@ dsk_err_t adisk_open(DSK_DRIVER *self, const char *filename)
 
 	/* Try to check the magic number at 0x80 */
 	if (fread(adiskself->adisk_header, 1, sizeof(adiskself->adisk_header), 
-				fp) < sizeof(adiskself->adisk_header) 
+				fp) < (int)sizeof(adiskself->adisk_header) 
 	|| (memcmp(adiskself->adisk_header, adisk_wmagic, sizeof(adisk_wmagic)))
 	|| (adisk_rdlong(fp, &magic) != DSK_ERR_OK) 
 	|| (magic != APRIDISK_MAGIC && 

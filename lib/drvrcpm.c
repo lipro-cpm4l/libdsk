@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2005,2008  John Elliott <jce@seasip.demon.co.uk>       *
+ *    Copyright (C) 2005,2008,2010-11  John Elliott <jce@seasip.demon.co.uk> *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -71,6 +71,11 @@
 
 #define CONFIGFILE ".libdsk.ini"
 #define BOOTFILE   ".libdsk.boot"
+
+static const int DIR_EX = 12;	/* Extent counter (low bits) */
+static const int DIR_S1 = 13;	/* Last record byte count */
+static const int DIR_S2 = 14;	/* Extent counter (high bits) */
+static const int DIR_RC = 15;	/* Record counter */
 
 /* Filename map entry holds real name. We allow 13 bytes for filename.type, 
    plus 4 bytes for the user number. User numbers are done by prepending 
@@ -173,7 +178,7 @@ static unsigned extent_bytes(RCPMFS_DSK_DRIVER *self, unsigned char *dirent)
 {
 	unsigned exm = rcpmfs_get_exm(self);
 
-	return (dirent[15] + ((dirent[12] & exm) * 128)) * 128;
+	return (dirent[DIR_RC] + ((dirent[DIR_EX] & exm) * 128)) * 128;
 }
 
 
@@ -239,6 +244,14 @@ static dsk_err_t rcpmfs_adjust_size(RCPMFS_DSK_DRIVER *self,
 {
 	struct stat st;
 	long newsize;
+
+	/* ISX, annoyingly, gives the last record byte count the opposite
+	 * meaning. That is, it is the number of _unused_ bytes in the last
+	 * record. */
+	if (self->rc_fsversion == FSVERSION_ISX)
+	{
+		lrbc = (128 - lrbc) & 0x7F;
+	}
 
 /* Adjust the size of a file (to within 128 bytes). 
  * Rather than do this by working out how big CP/M thinks the file should
@@ -370,7 +383,11 @@ static dsk_err_t rcpmfs_option(RCPMFS_DSK_DRIVER *self, char *variable,
 	if (!strcmp(variable, "systracks"))	/* We are allowed systracks=0*/ 
 		   self->rc_systracks = atoi(value);	
 	if (!strcmp(variable, "version") && atoi(value)) 
-		   self->rc_fsversion = atoi(value);	
+		   self->rc_fsversion = atoi(value);
+	else if (!strcmp(variable, "version") && !strcmp(value, "isx"))
+		   self->rc_fsversion = FSVERSION_ISX;
+	else if (!strcmp(variable, "version") && !strcmp(value, "ISX"))
+		   self->rc_fsversion = FSVERSION_ISX;
 
 	if (!strcmp(variable, "format"))
 	{
@@ -419,8 +436,9 @@ static dsk_err_t rcpmfs_dump_options(RCPMFS_DSK_DRIVER *self, FILE *fp)
 	                        self->rc_totalblocks);
 	fprintf(fp, "SysTracks=%u    ; Number of system tracks\n", 
 	                    self->rc_systracks);
-	fprintf(fp, "Version=%u      ; Filesystem version (CP/M 2 or 3)\n", 
-	                    self->rc_fsversion);
+	if (self->rc_fsversion == FSVERSION_ISX)
+		fprintf(fp, "Version=ISX    ; Filesystem version (CP/M 2 or 3, or ISX)\n");
+	else	fprintf(fp, "Version=%u      ; Filesystem version (CP/M 2 or 3, or ISX)\n", self->rc_fsversion);
 
 	do
 	{
@@ -682,7 +700,13 @@ static int rcpmfs_83name(RCPMFS_DSK_DRIVER *self,
 		RTRACE(("Not a real file file\n"));
 		return 0;   /* Not a real file */
 	}
-	dirent[13] = (st->st_size & 0x7F);
+
+/* ISX gives the opposite meaning to the S1 byte */
+
+	if (self->rc_fsversion == FSVERSION_ISX)
+		dirent[DIR_S1] = (128 - (st->st_size & 0x7F)) & 0x7F;
+	else	dirent[DIR_S1] = (st->st_size & 0x7F);
+
 /* Set CP/M file attributes */
 #if defined(HAVE_DIR_H)
 	RTRACE(("Attributes from DOS attributes 0x%x\n", attributes)); 
@@ -946,7 +970,7 @@ static dsk_err_t rcpmfs_initdir(RCPMFS_DSK_DRIVER *self)
 	struct stat st;
 
 	self->rc_dirent = 0;
-	if (self->rc_fsversion < 3)
+	if (self->rc_fsversion < FSVERSION_CPM3)
 	{
 		memset(label, 0x0E5, 32);
 		/* 1.2.1: 'entry' is unsigned, so ">= 0" is always true */
@@ -963,7 +987,7 @@ static dsk_err_t rcpmfs_initdir(RCPMFS_DSK_DRIVER *self)
 	sep = strrchr(self->rc_dir, SEPARATOR);
 	if (sep) ++sep;
 	else	 sep = self->rc_dir;
-	dst = label + 1;
+	dst = (char *)(label + 1);
 	for (n = 0; n < 11; n++)
 	{
 		if (!sep[0]) break;
@@ -1139,11 +1163,13 @@ static dsk_err_t rcpmfs_readdir(RCPMFS_DSK_DRIVER *self)
 /* Generate sizes for this extent */
 				extsize = rcpmfs_extent_size(self);
 				if (extsize > filesize) extsize = filesize;
-				cpm_dirent[12]  = (extent * (exm+1)) & 0x1F;
-				cpm_dirent[12] |= ((extsize + 127) / 16384) & exm;
-				cpm_dirent[13]  = (unsigned char)(filesize & 0x7F);
-				cpm_dirent[14]  = (extent * (exm+1)) / 32;
-				cpm_dirent[15]  = (unsigned char)((extsize + 127) / 128);
+				cpm_dirent[DIR_EX]  = (extent * (exm+1)) & 0x1F;
+				cpm_dirent[DIR_EX] |= ((extsize + 127) / 16384) & exm;
+				if (self->rc_fsversion == FSVERSION_ISX)
+					cpm_dirent[DIR_S1]  = (unsigned char)(128 - (filesize & 0x7F)) & 0x7F;
+				else	cpm_dirent[DIR_S1]  = (unsigned char)(filesize & 0x7F);
+				cpm_dirent[DIR_S2]  = (extent * (exm+1)) / 32;
+				cpm_dirent[DIR_RC]  = (unsigned char)((extsize + 127) / 128);
 				filesize -= extsize;
 				++extent;
 /* Add extent to the directory */
@@ -1255,7 +1281,7 @@ dsk_err_t rcpmfs_open(DSK_DRIVER *self, const char *passed)
 	rcself->rc_dirblocks = 2;
 	rcself->rc_totalblocks = 175;
 	rcself->rc_systracks = 1;
-	rcself->rc_fsversion = 3;
+	rcself->rc_fsversion = FSVERSION_CPM3;
 	rcself->rc_namemap = NULL;
 
 	/* Now we have to find out if there's a configuration file */
@@ -1323,7 +1349,7 @@ dsk_err_t rcpmfs_creat(DSK_DRIVER *self, const char *passed)
 	rcself->rc_dirblocks = 2;
 	rcself->rc_totalblocks = 175;
 	rcself->rc_systracks = 1;
-	rcself->rc_fsversion = 3;
+	rcself->rc_fsversion = FSVERSION_CPM3;
 	rcself->rc_namemap = NULL;
 /* 720k defaults 
 	err = dg_stdformat(&rcself->rc_geom, FMT_720K, NULL, NULL);
@@ -1332,7 +1358,7 @@ dsk_err_t rcpmfs_creat(DSK_DRIVER *self, const char *passed)
 	rcself->rc_dirblocks = 4;
 	rcself->rc_totalblocks = 357;
 	rcself->rc_systracks = 1;
-	rcself->rc_fsversion = 3;
+	rcself->rc_fsversion = FSVERSION_CPM3;
 */
 	/* Now we have to find out if there's a configuration file */
 	filename = rcpmfs_mkname(rcself, CONFIGFILE);
@@ -1432,7 +1458,7 @@ static dsk_err_t rcpmfs_psfind2(RCPMFS_DSK_DRIVER *self,
 		return DSK_ERR_OK;
 	}
 	/* Now to find the offset */
-	extent  = (dirent[12] & 0x1F) + (dirent[14] * 32);
+	extent  = (dirent[DIR_EX] & 0x1F) + (dirent[DIR_S2] * 32);
 	extent /= (exm + 1);
 
 	*offset  = diroffs;
@@ -1443,9 +1469,11 @@ static dsk_err_t rcpmfs_psfind2(RCPMFS_DSK_DRIVER *self,
 
 /* See how many bytes there are in the extent */
 	extent_len = extent_bytes(self, dirent);
-	if (dirent[13])
+	if (dirent[DIR_S1])
 	{
-		extent_len = (extent_len - 128) + dirent[13];
+		if (self->rc_fsversion == FSVERSION_ISX)
+			extent_len -= dirent[DIR_S1];
+		else	extent_len = (extent_len - 128) + dirent[DIR_S1];
 	}
 /* And reduce buffer size accordingly */
 	if (extent_len < (diroffs + blockoffs + bufsize[0]))
@@ -1456,7 +1484,7 @@ static dsk_err_t rcpmfs_psfind2(RCPMFS_DSK_DRIVER *self,
 	RTRACE(("Sector 0x%lx (block %lx) is in file %s 0x%02x 0x%02x 0x%02x "
 		" -> 0x%lx len 0x%lx\n", 
 			lsect, blockno, fnbuf,
-			dirent[12], dirent[13], dirent[14],
+			dirent[DIR_EX], dirent[DIR_S1], dirent[DIR_S2],
 			(unsigned long)(*offset), (unsigned long)(*bufsize)));
 
 	return DSK_ERR_OK;
@@ -1618,7 +1646,10 @@ static dsk_err_t rcpmfs_chgdir(RCPMFS_DSK_DRIVER *self,
 		unsigned entryno, unsigned char *old, unsigned char *new)
 {
 	dsk_err_t err;
-	char realname[14], newname[14];
+	// JSIE-Fix: buffer too short to hold cp/m file names including user 
+	// number and two more dots to separate user number from file name 
+	//  char realname[14], newname[14];
+	char realname[17], newname[17];
 	FILE *fp;
 	unsigned exm;
 	unsigned oldextent, newextent;
@@ -1633,8 +1664,8 @@ static dsk_err_t rcpmfs_chgdir(RCPMFS_DSK_DRIVER *self,
 
 
 	exm	  = rcpmfs_get_exm(self);
-	oldextent = ((old[14] * 32) + (old[12] & 31)) / (exm+1);
-	newextent = ((new[14] * 32) + (new[12] & 31)) / (exm+1);
+	oldextent = ((old[DIR_S2] * 32) + (old[DIR_EX] & 31)) / (exm+1);
+	newextent = ((new[DIR_S2] * 32) + (new[DIR_EX] & 31)) / (exm+1);
 
 	RTRACE(("oldextent=%d newextent=%d\n", oldextent, newextent));
 
@@ -1644,7 +1675,7 @@ static dsk_err_t rcpmfs_chgdir(RCPMFS_DSK_DRIVER *self,
 	}
 	if (new[0] == 0x20) /* Directory label being written */
 	{
-		self->rc_dirlabel = new[12];
+		self->rc_dirlabel = new[DIR_EX];
 	}
 /* Creation and deletion requests. We only handle these for extent 0 */
 	if (old[0] >= 0x10 && new[0] < 0x10 && (newextent == 0)) /* new file */
@@ -1756,13 +1787,13 @@ RTRACE(("Rename '%s' as '%s'", realname, newname));
 	{
 		rcpmfs_cpmname(new, realname);
 		RTRACE(("Reduce file size: %s oldlen=%ld newlen=%ld\n", rcpmfs_mkname(self,realname), oldlen, newlen));
-		err = rcpmfs_adjust_size(self, oldlen - newlen, new[13], rcpmfs_mkname(self,realname));
+		err = rcpmfs_adjust_size(self, oldlen - newlen, new[DIR_S1], rcpmfs_mkname(self,realname));
 	}
 /* File remains roughly, the same size, but Last Record Byte Count tweaked. */
 	else if (old[0x0d] != new[0x0d] && (newextent == 0))	
 	{
 		rcpmfs_cpmname(new, realname);
-		err = rcpmfs_adjust_size(self, 0, new[13], rcpmfs_mkname(self,realname));
+		err = rcpmfs_adjust_size(self, 0, new[DIR_S1], rcpmfs_mkname(self,realname));
 	}
 	return DSK_ERR_OK;
 }

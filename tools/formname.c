@@ -29,19 +29,6 @@
 #include "libdsk.h"
 #include "utilopts.h"
 
-void valid_formats(void)
-{
-	dsk_format_t format;
-	dsk_cchar_t fname, fdesc;
-
-	fprintf(stderr, "\nValid formats are:\n");
-
-	format = FMT_180K;
-	while (dg_stdformat(NULL, format++, &fname, &fdesc) == DSK_ERR_OK)
-	{
-		fprintf(stderr, "   %-10.10s : %s\n", fname, fdesc);
-	}
-}
 
 dsk_format_t check_format(char *arg, int *argc, char **argv)
 {

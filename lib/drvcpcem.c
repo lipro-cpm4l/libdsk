@@ -445,10 +445,10 @@ static long sector_offset(CPCEMU_DSK_DRIVER *self, dsk_psect_t sector,
 	{
 /* v1.1.11: Start by looking at the current sector to see if it's the one
  * requested. */ 
-		if (self->cpc_sector >= 0 && (int)self->cpc_sector < maxsec)
+		if (self->cpc_sector >= 0 && self->cpc_sector < maxsec)
 		{
 /* Calculate the offset of the current sector */
-			for (n = 0; n < (int)self->cpc_sector; n++)
+			for (n = 0; n < self->cpc_sector; n++)
 			{
 				*seclen = (*secid)[6] + 256 * (*secid)[7]; /* [v0.9.0] */
 				offset   += (*seclen);
@@ -470,7 +470,7 @@ static long sector_offset(CPCEMU_DSK_DRIVER *self, dsk_psect_t sector,
 	}
 	else	/* Non-extended, all sector sizes are the same */
 	{
-		if (self->cpc_sector >= 0 && (int)self->cpc_sector < maxsec)
+		if (self->cpc_sector >= 0 && self->cpc_sector < maxsec)
 		{
 /* v1.1.11: As above, check the current sector first */
 			offset += (*seclen) * self->cpc_sector;

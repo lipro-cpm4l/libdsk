@@ -25,14 +25,22 @@
 #include <stdio.h>
 #include <string.h>
 #include "config.h"
+#ifdef HAVE_LIBGEN_H
+# include <libgen.h>
+#endif
+#include "config.h"
 #include "libdsk.h"
 #include "utilopts.h"
 #include "formname.h"
 
-#ifdef CPM
-#define AV0 "DSKFORM"
+#ifdef __PACIFIC__
+# define AV0 "DSKFORM"
 #else
-#define AV0 argv[0]
+# ifdef HAVE_BASENAME
+#  define AV0 (basename(argv[0]))
+# else
+#  define AV0 argv[0]
+# endif
 #endif
 
 static int retries = 1;
@@ -42,15 +50,20 @@ int do_format(char *outfile, char *outtyp, char *outcomp, int forcehead, dsk_for
 int help(int argc, char **argv)
 {
 	fprintf(stderr, "Syntax: \n"
-                "      %s { -format <format> } { -retry <count> }"
-                " { -type <type> } { -side <side> } dskimage \n",
-		AV0);
+                "      %s { options} dskimage \n\n"
+		"Options:\n"
+                "  -type <type>       Type of disk image file to write.\n"
+                "                     '%s -types' lists valid types.\n"
+                "  -format <format>   Disk format to use.\n"
+                "                     '%s -formats' lists valid formats.\n"
+                "  -retry <count>     Set number of retries.\n"
+                "  -side <side>       Force format on head 0 or 1.\n",
+		AV0, AV0, AV0);
 	fprintf(stderr,"\nDefault type is DSK.\nDefault format is PCW 180k.\n\n");
 		
 	fprintf(stderr, "eg: %s myfile.DSK\n"
                         "    %s -type floppy -format cpcsys -side 1 /dev/fd0\n", AV0, AV0);
 
-	valid_formats();
 	return 1;
 }
 
@@ -74,11 +87,12 @@ int main(int argc, char **argv)
 	char *outtyp;
 	char *outcomp;
 	int forcehead;
+	int stdret;
 	dsk_format_t format;
 
 	if (argc < 2) return help(argc, argv);
         if (find_arg("--help",    argc, argv) > 0) return help(argc, argv);
-        if (find_arg("--version", argc, argv) > 0) return version();
+	stdret = standard_args(argc, argv); if (!stdret) return 0;
         ignore_arg("-itype", 2, &argc, argv);
         ignore_arg("-iside", 2, &argc, argv);
         ignore_arg("-icomp", 2, &argc, argv);

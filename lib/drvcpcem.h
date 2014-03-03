@@ -27,7 +27,8 @@ typedef struct
         DSK_DRIVER cpc_super;
         FILE *cpc_fp;
 	int   cpc_readonly;
-	dsk_psect_t   cpc_sector;	/* Last sector used for DD READ ID */
+	int   cpc_sector;	/* Last sector used for DD READ ID, or -1
+       				 * if valid last sector not seen */
 	unsigned char cpc_dskhead[256];	/* DSK header */
 	unsigned char cpc_trkhead[256];	/* Track header */
 	unsigned char cpc_status[4];	/* Dummy FDC status regs ST0-ST3: Read */

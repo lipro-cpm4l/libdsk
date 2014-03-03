@@ -118,29 +118,57 @@ static MINIDPB cpm86_minidpb[] =
 	{ 0x90, 5, 0x1F, 1, 0x162, 0xFF, 0xC0, 0x00, 0x40, 0x02, },
 };
 
+static void setup_minidpb(DSK_DRIVER *self, MINIDPB *p)
+{
+	dsk_isetoption(self, "FS:CP/M:BSH", p->bsh, 1);
+	dsk_isetoption(self, "FS:CP/M:BLM", p->blm, 1);
+	dsk_isetoption(self, "FS:CP/M:EXM", p->exm, 1); 
+	dsk_isetoption(self, "FS:CP/M:DSM", p->dsm, 1);
+	dsk_isetoption(self, "FS:CP/M:DRM", p->drm, 1);
+	dsk_isetoption(self, "FS:CP/M:AL0", p->al0, 1);
+	dsk_isetoption(self, "FS:CP/M:AL1", p->al1, 1);
+	dsk_isetoption(self, "FS:CP/M:CKS", p->cks, 1);
+	dsk_isetoption(self, "FS:CP/M:OFF", p->off, 1);
+}
+
 /* We have detected a CP/M-86 superblock. Parse it for CP/M filesystem info */
 static void set_cpm86_fs(DSK_DRIVER *self, DSK_GEOMETRY *geom, 
 		unsigned char *buf)
 {
-	int n;
+	unsigned n;
 	for (n = 0; n < sizeof(cpm86_minidpb) / sizeof(cpm86_minidpb[0]); n++)
 	{
 		MINIDPB *p = &cpm86_minidpb[n];
 		if (p->type == buf[511])
 		{
-			dsk_isetoption(self, "FS:CP/M:BSH", p->bsh, 1);
-			dsk_isetoption(self, "FS:CP/M:BLM", p->blm, 1);
-			dsk_isetoption(self, "FS:CP/M:EXM", p->exm, 1); 
-			dsk_isetoption(self, "FS:CP/M:DSM", p->dsm, 1);
-			dsk_isetoption(self, "FS:CP/M:DRM", p->drm, 1);
-			dsk_isetoption(self, "FS:CP/M:AL0", p->al0, 1);
-			dsk_isetoption(self, "FS:CP/M:AL1", p->al1, 1);
-			dsk_isetoption(self, "FS:CP/M:CKS", p->cks, 1);
-			dsk_isetoption(self, "FS:CP/M:OFF", p->off, 1);
+			setup_minidpb(self, p);
 			break;
 		}
         }   
 }
+
+
+/* We have detected a format where we know the DPB. Populate it. */
+static MINIDPB fixed_formats[] = 
+{
+	{ FMT_AMPRO400D, 4, 0x0F, 1, 0x5E,  0x3F, 0x80, 0x00, 0x10, 0x02 },
+	{ FMT_AMPRO800,  4, 0x0F, 0, 0x18A, 0xFF, 0xF0, 0x00, 0x40, 0x02 },
+	/* There may be more here in the future */
+};
+
+static void set_fixed_fs(DSK_DRIVER *self, dsk_format_t fmt)
+{
+	unsigned n;
+
+	for (n = 0; n < sizeof(fixed_formats) / sizeof(fixed_formats[0]); n++)
+	{
+		if (fixed_formats[n].type == fmt) 
+			setup_minidpb(self, &fixed_formats[n]);
+	}
+}
+
+
+
 
 
 /* Probe the geometry of a disc. This will use the boot sector or the
@@ -217,14 +245,24 @@ dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 	}
 	if (!e)	/* We could get the sector ID */
 	{
-		if ((secid.fmt_sector & 0xC0) == 0x40) 	/* CPC system */
+		if ((secid.fmt_sector & 0xF0) == 0x10 &&
+		     secid.fmt_secsize == 512) 	/* Ampro 40 track double sided */
+		{
+			dsk_free(secbuf);
+			e = dg_stdformat(geom, FMT_AMPRO400D, NULL, NULL);
+			if (!e) set_fixed_fs(self, FMT_AMPRO400D);
+			return e;
+		}
+		if ((secid.fmt_sector & 0xC0) == 0x40 &&
+		     secid.fmt_secsize == 512) 	/* CPC system */
 		{
 			dsk_free(secbuf);
 			e = dg_stdformat(geom, FMT_CPCSYS, NULL, NULL);
 			if (!e) set_pcw_fs(self, geom, boot_cpcsys);
 			return e;
 		}
-		if ((secid.fmt_sector & 0xC0) == 0xC0)	/* CPC data */
+		if ((secid.fmt_sector & 0xC0) == 0xC0 &&
+		     secid.fmt_secsize == 512)	/* CPC data */
 		{
 			dsk_free(secbuf);
 			e = dg_stdformat(geom, FMT_CPCDATA, NULL, NULL);
@@ -273,6 +311,14 @@ dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 		}
 		if (secid.fmt_secsize == 1024)
 		{
+			/* Ampro 80 track double sided */
+			if ((secid.fmt_sector & 0xF0) == 0x10)
+			{
+				dsk_free(secbuf);
+				e = dg_stdformat(geom, FMT_AMPRO800, NULL, NULL);
+				if (!e) set_fixed_fs(self, FMT_AMPRO800);
+				return e;	
+			}
 			/* Save the data rate, which we know to be correct */
 			dsk_rate_t rate = geom->dg_datarate;
 
@@ -376,6 +422,13 @@ dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 		e = dg_cpm86geom(geom, secbuf);
 		if (e == DSK_ERR_OK)
 			set_cpm86_fs(self, geom, secbuf);
+	}
+/* Check for Oups Discovery 1 */
+	if (e == DSK_ERR_BADFMT) 
+	{
+		e = dg_opusgeom(geom, secbuf);
+/*		if (e == DSK_ERR_OK)
+			set_opus_fs(self, geom, secbuf); */
 	}
 	geom->dg_datarate = oldrate;
 	
@@ -542,6 +595,29 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_aprigeom(DSK_GEOMETRY *self, const unsigned c
 	}
 	self->dg_fm      = 0;
 	self->dg_nomulti = 0;
+
+	return DSK_ERR_OK;
+}
+
+/* Interpret an Opus Discovery boot sector */
+LDPUBLIC32 dsk_err_t LDPUBLIC16  dg_opusgeom(DSK_GEOMETRY *dg, 
+		const unsigned char *bootsec)
+{
+	if (bootsec[0] != 0x18)	/* Z80 relative jump */
+		return DSK_ERR_BADFMT;
+
+	dg->dg_cylinders = bootsec[2];
+	dg->dg_heads     = bootsec[3];
+	dg->dg_sectors   = bootsec[4];
+	dg->dg_sidedness = SIDES_OUTOUT;	/* XXX Provisional */
+	dg->dg_secbase   = 1;
+	dg->dg_secsize   = 512;
+	dg->dg_datarate  = RATE_SD;
+	dg->dg_fm        = 0;
+	dg->dg_nomulti   = 0;
+	dg->dg_rwgap     = 0x2A;		/* XXX Provisional */
+	dg->dg_fmtgap    = 0x52;		/* XXX Provisional */
+	dg->dg_secsize   = 128 << bootsec[4];
 
 	return DSK_ERR_OK;
 }

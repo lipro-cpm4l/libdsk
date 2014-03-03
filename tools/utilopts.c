@@ -33,6 +33,48 @@ int version(void)
 	return 0;
 }
 
+int types(void)
+{
+	int n = 0;
+	char *type, *desc;
+	printf("Disk image types supported:\n\n");
+
+	while (!dsk_type_enum(n, &type)) 
+	{
+		dsk_typedesc_enum(n++, &desc);
+                printf("   %-10.10s : %s\n", type, desc);
+	}
+	return 0;
+}
+
+int formats(void)
+{
+        dsk_format_t format;
+        dsk_cchar_t fname, fdesc;
+
+	printf("Disk formats supported:\n\n");
+
+        format = FMT_180K;
+        while (dg_stdformat(NULL, format++, &fname, &fdesc) == DSK_ERR_OK)
+        {
+                printf("   %-10.10s : %s\n", fname, fdesc);
+        }
+	return 0;
+}
+
+
+int standard_args(int argc, char **argv) 
+{
+        if (find_arg("--version", argc, argv) > 0 ||
+            find_arg("-version", argc, argv) > 0) return version();
+        if (find_arg("--formats", argc, argv) > 0 ||
+            find_arg("-formats", argc, argv) > 0) return formats();
+        if (find_arg("--types", argc, argv) > 0 ||
+            find_arg("-types", argc, argv) > 0) return types();
+	return -1;
+}
+
+
 void excise_arg(int na, int *argc, char **argv)
 {	
 	int n;
@@ -94,6 +136,96 @@ unsigned check_retry(char *arg, int *argc, char **argv)
 	excise_arg(n, argc, argv);
 
 	return nr;
+}
+
+static char *st_cmt = NULL;
+static int st_cmt_size = 0;
+
+static void append_comment(char *s)
+{
+	if (st_cmt == NULL)
+	{
+		st_cmt = malloc(1024);
+		if (!st_cmt)
+		{
+			fprintf(stderr, "Out of memory entering comment");
+			exit(1);
+		}
+		st_cmt_size = 1024;
+		st_cmt[0] = 0;
+	}
+	while (strlen(st_cmt) + strlen(s) > st_cmt_size)
+	{
+		st_cmt = realloc(st_cmt, 2 * st_cmt_size);
+		if (!st_cmt)
+		{
+			fprintf(stderr, "Out of memory entering comment");
+			exit(1);
+		}
+		st_cmt_size *= 2;
+	}
+	strcat(st_cmt, s);
+}
+
+
+static char *get_comment_stdin(void)
+{
+	char buf[81];
+	char *p;
+
+	printf("Enter the comment. Use a dot on a line by itself to mark the "
+		"end.\n");
+	do
+	{
+		putchar(':');
+		fflush(stdout);
+		p = fgets(buf, sizeof(buf), stdin);
+		if ((p == NULL) || !strcmp(p, ".") || !strcmp(p, ".\n"))
+			break;
+		append_comment(p);
+	} while (1);
+	
+	return st_cmt;
+}
+
+static char *get_comment(char *filename)
+{
+	char buf[81];
+	FILE *fp = fopen(filename, "r");
+
+	if (!fp)
+	{
+		perror(filename);
+		exit(1);
+	}
+	while (fgets(buf, sizeof(buf), fp))
+	{
+		append_comment(buf);
+	}
+	fclose(fp);
+	return st_cmt;
+}
+
+char *check_comment(char *arg, int *argc, char **argv)
+{
+	int n = find_arg(arg, *argc, argv);
+	char *v;
+
+	if (n < 0) return NULL;
+	/* Remove the "-comment" */
+	excise_arg(n, argc, argv);
+	if (n >= *argc)
+	{
+		return get_comment_stdin();
+	}
+	v = argv[n];
+	excise_arg(n, argc, argv);
+	if (v[0] == '@')
+	{
+		if (v[1] == '-') return get_comment_stdin();
+		return get_comment(v + 1);
+	}
+	return v;
 }
 
 

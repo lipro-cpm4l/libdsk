@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 {
 	int nRefCount = 0;
 	unsigned pkt_len;
-	int out_len, n;
+	int out_len;
 	dsk_err_t err;
 
 	fprintf(stderr, "forkslave launched\n");

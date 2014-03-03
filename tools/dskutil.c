@@ -36,6 +36,9 @@
 #include <string.h>
 #include <errno.h>
 #include "config.h"
+#ifdef HAVE_LIBGEN_H
+# include <libgen.h>
+#endif
 #ifdef HAVE_TIME_H
 #include <time.h>
 #endif
@@ -49,10 +52,14 @@
 #include "utilopts.h"
 #include "formname.h"
 
-#ifdef CPM
-#define AV0 "DSKUTIL"
+#ifdef __PACIFIC__
+# define AV0 "DSKUTIL"
 #else
-#define AV0 argv[0]
+# ifdef HAVE_BASENAME
+#  define AV0 (basename(argv[0]))
+# else
+#  define AV0 argv[0]
+# endif
 #endif
 
 static dsk_format_t format = -1;	/* Format for disc image */
@@ -367,24 +374,26 @@ int help(int argc, char **argv)
 			AV0);
 	fprintf(stderr,"\nOptions are:\n"
 		       "-type <type>   type of input disc image\n"
+                       "               '%s -types' lists valid types.\n"
                        "-side <side>   Force side 0 or side 1 of input\n"
 		       "-retry <count> Set number of retries on error\n"
 		       "-dstep         Double-step\n"
-		       "-format        Force a specified format name\n");
+		       "-format        Force a specified format name\n"
+                       "               '%s -formats' lists valid formats.\n",
+			AV0, AV0);
 	fprintf(stderr,"\nDefault type is autodetect.\n\n");
 		
 	fprintf(stderr, "eg: %s /dev/fd0\n"
                         "    %s -format pcw720 /dev/fd1\n",
 			AV0, AV0);
-	valid_formats();
 	return 1;
 }
 
 
 int main(int argc, char **argv)
 {
+        int stdret = standard_args(argc, argv); if (!stdret) return 0;
 
-	if (find_arg("--version", argc, argv) > 0) return version(); 
 	if (argc < 2) return help(argc, argv);
 	if (find_arg("--help",    argc, argv) > 0) return help(argc, argv);
 
@@ -1265,7 +1274,7 @@ void duhelp(void)
 	       "Tnn\tTrack nn\n"
 /*              U was set user number - a CP/M specific function */
 	       "V\tVerify current sector against buffer\n"
-	       "W\tRead current sector\n"
+	       "W\tWrite current sector\n"
 	       "X\tExit program\n"
 	       "Y\tYank sector into sequential memory\n" 
 	       "$\tPrint geometry variables\n"

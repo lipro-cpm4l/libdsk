@@ -328,15 +328,18 @@ dsk_err_t cfi_open(DSK_DRIVER *self, const char *filename)
 	{
 		err = cfi_load_track(cfiself, nt++, fp);
 		/* DSK_ERR_OVERRUN: End of file */
-		if (err == DSK_ERR_OVERRUN) return DSK_ERR_OK;
+		if (err == DSK_ERR_OVERRUN) break;
 		if (err) 
 		{
 			dsk_free(cfiself->cfi_filename);
 			dsk_free(cfiself->cfi_tracks);
+			dsk_report_end();
+			fclose(fp);
 			return err;
 		}
 	} 
 	dsk_report_end();
+	fclose(fp);
 	return DSK_ERR_OK;
 }
 

@@ -24,13 +24,21 @@
 
 #include <stdio.h>
 #include <string.h>
+#include "config.h"
+#ifdef HAVE_LIBGEN_H
+# include <libgen.h>
+#endif
 #include "libdsk.h"
 #include "utilopts.h"
 
-#ifdef CPM
-#define AV0 "DSKID"
+#ifdef __PACIFIC__
+# define AV0 "DSKID"
 #else
-#define AV0 argv[0]
+# ifdef HAVE_BASENAME
+#  define AV0 (basename(argv[0]))
+# else
+#  define AV0 argv[0]
+# endif
 #endif
 
 static unsigned retries = 1;
@@ -40,9 +48,14 @@ int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead
 int help(int argc, char **argv)
 {
 	fprintf(stderr, "Syntax: \n"
-                "      %s { -type <type> } "
-		"{ -retry <count> } { -side <side> } dskimage \n",
-			AV0);
+                "      %s { options} dskimage \n\n"
+		"Options:\n"
+                "  -type <type>       Type of disk image file to read.\n"
+                "                     '%s -types' lists valid types.\n"
+                "  -retry <count>     Set number of retries.\n"
+                "  -side <side>       Force read of head 0 or 1.\n",
+		AV0, AV0);
+
 	fprintf(stderr,"\nDefault type is autodetect.\n\n");
 		
 	fprintf(stderr, "eg: %s myfile.DSK\n"
@@ -68,6 +81,7 @@ int main(int argc, char **argv)
 	char *outcomp;
 	int forcehead;
 	int n, err;
+        int stdret = standard_args(argc, argv); if (!stdret) return 0;
 
 	if (argc < 2) return help(argc, argv);
 
@@ -84,7 +98,6 @@ int main(int argc, char **argv)
 	retries   = check_retry("-retry", &argc, argv);
 
         if (find_arg("--help",    argc, argv) > 0) return help(argc, argv);
-        if (find_arg("--version", argc, argv) > 0) return version();
 	args_complete(&argc, argv);
 
 	err = 0;

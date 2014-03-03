@@ -45,11 +45,8 @@ static DSK_NAMEDGEOM stdg[] =
 {"pcw720",  { SIDES_ALT,     80, 2, 9,    1, 512, RATE_SD, 0x2A, 0x52,   0,  0 }, "PCW / IBM 720k" }, /* 720k */
 {"pcw1440", { SIDES_ALT,     80, 2,18,    1, 512, RATE_HD, 0x1B, 0x54,   0,  0 }, "PcW16 / IBM 1440k "}, /* 1.4M */
 {"ibm160",  { SIDES_ALT,     40, 1, 8,    1, 512, RATE_SD, 0x2A, 0x50,   0,  0 }, "IBM 160k (CP/M-86 / DOSPLUS)" }, /* 160k */
-/* This was commented out in libdsk-1.1.3, but I can't remember why. Bring it 
- * back. */
 {"ibm320",  { SIDES_ALT,     40, 2, 8,    1, 512, RATE_SD, 0x2A, 0x50,   0,  0 }, "IBM 320k (CP/M-86 / DOSPLUS)" }, /* 320k */
-{"pcpm320", { SIDES_OUTBACK, 40, 2, 8,    1, 512, RATE_SD, 0x2A, 0x50,   0,  0 }, "IBM 320k (CP/M-86 / DOSPLUS)" }, /* 320k */
-{"ibm360",  { SIDES_ALT,     40, 2, 9,    1, 512, RATE_SD, 0x2A, 0x52,   0,  0 }, "IBM 360k (DOSPLUS)", }, /* 360k */
+{"ibm360",  { SIDES_ALT,     40, 2, 9,    1, 512, RATE_SD, 0x2A, 0x52,   0,  0 }, "IBM 360k (CP/M-86 / DOSPLUS)" }, /* 360k */
 {"ibm720",  { SIDES_OUTBACK, 80, 2, 9,    1, 512, RATE_SD, 0x2A, 0x52,   0,  0 }, "IBM 720k (144FEAT)", }, /* 720k 144FEAT */
 {"ibm1200", { SIDES_OUTBACK, 80, 2,15,    1, 512, RATE_HD, 0x1B, 0x54,   0,  0 }, "IBM 1.2M (144FEAT)", }, /* 1.2M 144FEAT */
 {"ibm1440", { SIDES_OUTBACK, 80, 2,18,    1, 512, RATE_HD, 0x1B, 0x54,   0,  0 }, "IBM 1.4M (144FEAT)", }, /* 1.4M 144FEAT */
@@ -65,11 +62,21 @@ static DSK_NAMEDGEOM stdg[] =
 {"mbee400", { SIDES_ALT,     40, 1,10,    0, 512, RATE_SD, 0x0C, 0x17,   0,  0 }, "Microbee 400k" }, /* 400k */
 {"mgt800",  { SIDES_OUTOUT,  80, 2,10,    1, 512, RATE_SD, 0x0C, 0x17,   0,  0 }, "MGT 800k" }, /* MGT 800k */
 {"trdos640",{ SIDES_ALT,     80, 2,16,    1, 256, RATE_SD, 0x12, 0x60,   0,  0 }, "TR-DOS 640k" }, /* TR-DOS 640k */
-
+{"ampro200",{ SIDES_ALT,     40, 1,10,   1, 512, RATE_SD, 0x0C, 0x17,   0,  0 }, "Ampro 40 track single-sided" }, /* Ampro 200k (22DISK AMP1) */
+{"ampro400d",{ SIDES_ALT,     40, 2,10,   17, 512, RATE_SD, 0x0C, 0x17,   0,  0 }, "Ampro 40 track double-sided" }, /* Ampro 400k (22DISK AMP2) */
+{"ampro400s",{ SIDES_ALT,     80, 1, 5,   1,1024, RATE_SD, 0x04, 0x05,   0,  0 }, "Ampro 80 track single-sided" }, /* Ampro 400k (22DISK AMP3) */
+{"ampro800",{ SIDES_ALT,     80, 2, 5,   17,1024, RATE_SD, 0x04, 0x05,   0,  0 }, "Ampro 80 track double-sided" }, /* Ampro 800k (22DISK AMP4) */
 /* Geometries below this line don't appear in dsk_format_t and can be accessed
  * only by name. */
 
 {"myz80",   { SIDES_ALT,     64, 1,128,   0,1024, RATE_ED, 0x2A, 0x52,   0,  0 }, "MYZ80 8Mb" }, /* MYZ80 8Mb */
+
+/* re this comment ('This was commented out in libdsk-1.1.3, but I can't 
+ * remember why. Bring it back.') -- I think I now remember why. The 
+ * numeric format IDs were out of sync with the actual definitions, and I
+ * think this may be part of the reason. Move it down to the bottom, beyond
+ * the last numeric ID. */
+{"pcpm320", { SIDES_OUTBACK, 40, 2, 8,    1, 512, RATE_SD, 0x2A, 0x50,   0,  0 }, "IBM 320k (CP/M-86 / DOSPLUS)" }, /* 320k */
 };
 
 
@@ -435,6 +442,16 @@ dsk_err_t dg_custom_init(void)
 
     static int custom_inited = 0;
 
+/* Assert that the format names and numeric IDs are in sync. */
+
+#ifdef HAVE_ASSERT_H
+    assert(!strcmp(stdg[FMT_180K].name, "pcw180"));
+    assert(!strcmp(stdg[FMT_320K].name, "ibm320"));
+    assert(!strcmp(stdg[FMT_720F].name, "ibm720"));
+    assert(!strcmp(stdg[FMT_1440F].name, "ibm1440"));
+    assert(!strcmp(stdg[FMT_ACORN160].name, "acorn160"));
+    assert(!strcmp(stdg[FMT_AMPRO800].name, "ampro800"));
+#endif
     if (custom_inited < 1)
     {
         path = dg_sharedir();
@@ -481,7 +498,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_stdformat(DSK_GEOMETRY *self, dsk_format_t fo
     dg_custom_init();
 
 /* If index is out of range in the standard set, search the custom set */
-    if (idx >= (sizeof(stdg)/sizeof(stdg[0]))  ) 
+    if ((unsigned)idx >= (sizeof(stdg)/sizeof(stdg[0]))  ) 
     {
         DSK_NAMEDGEOM *cg = customgeom;
         idx -= (sizeof(stdg) / sizeof(stdg[0]));

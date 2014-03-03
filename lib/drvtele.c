@@ -23,7 +23,10 @@
 /* This driver provides limited read-only support for Teledisk files. It is
  * based entirely on the file format documentation at
  * <http://www.fpns.net/willy/wteledsk.htm>. No code from wteledsk has been
- * used, since it is under GPL and LibDsk is under LGPL.
+ * used in this file, since it is under GPL and LibDsk is under LGPL.
+ *
+ * (GPL code from wteledsk was incorporated into comptlzh.c / comptlzh.h;
+ *  in that case, it was relicensed as LGPL with permission).
  *
  * Current bugs / limitations:
  * - No write support. The Teledisk format isn't really adapted to 
@@ -33,24 +36,21 @@
  *
  * - No support for images split into multiple files (.TD0, .TD1, .TD2...)
  *   
- * - No support for advanced compression. There are two ways to get round
- *   this. One is to hack compression into this driver, and the other is to
- *   write a new compression method that checks for the 'td' signature and
- *   does an LZSS decompress when the image is opened and an LZSS compress 
- *   when it's closed. I prefer the second. Note that the source referred
- *   to by wteledsk.htm (lz_comp2.zip) cannot be used by LibDsk as its 
- *   licence disallows commercial use.
+ * - No support for advanced compression. Rather than having it built-in to 
+ *   this driver, we use a compression module to convert advanced-compression 
+ *   TD0 files to normal, using code from wteledsk.
  *
  *   There's also an "old advanced" compression, which uses 12-bit LZ 
  *   compression in 6k blocks, so another 'comp' driver would be needed for 
  *   that.
- *
  *
  */
 
 
 #include "drvi.h"
 #include "drvtele.h"
+
+extern unsigned short teledisk_crc(unsigned char *buf, unsigned short len);
 
 DRV_CLASS dc_tele = 
 {
@@ -390,7 +390,15 @@ dsk_err_t tele_open(DSK_DRIVER *s, const char *filename)
 	self->tele_head.dosmode     = header[8];
 	self->tele_head.sides       = header[9];
 	self->tele_head.crc       = ((tele_word)header[11]) << 8 | header[10];
-	/* XXX Advanced compression not supported */
+
+	/* Check header CRC. */
+	if (teledisk_crc(header, 10) != self->tele_head.crc)
+	{
+		fclose(self->tele_fp);
+		return DSK_ERR_NOTME;
+	}
+
+	/* Advanced compression not supported -- see separate comptele */
 	if (!strcmp((char *)header, "td"))
 	{
 #ifndef WIN16
@@ -421,7 +429,7 @@ dsk_err_t tele_open(DSK_DRIVER *s, const char *filename)
 		self->tele_comment->hour = header[7];
 		self->tele_comment->min = header[8];
 		self->tele_comment->sec = header[9];
-		if (tele_fread(self, self->tele_comment->text, comment_len))
+		if (tele_fread(self, (tele_byte *)self->tele_comment->text, comment_len))
 		{
 			fclose(self->tele_fp);
 			return DSK_ERR_SYSERR;

@@ -70,7 +70,6 @@ DRV_CLASS dc_simh =
 dsk_err_t simh_open(DSK_DRIVER *self, const char *filename)
 {
 	SIMH_DSK_DRIVER *simh_self;
-	int n;
 	
 	/* Sanity check: Is this meant for our driver? */
 	if (self->dr_class != &dc_simh) return DSK_ERR_BADPTR;
@@ -108,7 +107,6 @@ dsk_err_t simh_open(DSK_DRIVER *self, const char *filename)
 dsk_err_t simh_creat(DSK_DRIVER *self, const char *filename)
 {
 	SIMH_DSK_DRIVER *simh_self;
-	int n;
 	
 	/* Sanity check: Is this meant for our driver? */
 	if (self->dr_class != &dc_simh) return DSK_ERR_BADPTR;
@@ -209,7 +207,7 @@ dsk_err_t simh_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	}
 	/* After the sector, write 4 bytes trailer */
 	if (fwrite(trailer, 1, sizeof(trailer), simh_self->simh_fp) < 
-			sizeof(trailer))
+			(int)sizeof(trailer))
 	{
 		return DSK_ERR_NOADDR;
 	}

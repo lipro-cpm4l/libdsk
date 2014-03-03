@@ -33,6 +33,10 @@
 # include <limits.h>
 #endif
 
+#ifdef HAVE_ASSERT_H
+# include <assert.h>
+#endif
+
 #ifndef DISABLE_FLOPPY
 # ifdef HAVE_LINUX_FD_H
 #  include "linux/fd.h"

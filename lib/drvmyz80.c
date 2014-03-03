@@ -92,7 +92,7 @@ dsk_err_t myz80_open(DSK_DRIVER *self, const char *filename)
 	dsk_isetoption(self, "FS:CP/M:DRM", 0x3ff, 1);
 	dsk_isetoption(self, "FS:CP/M:AL0", 0xFF, 1);
 	dsk_isetoption(self, "FS:CP/M:AL1", 0, 1);
-	dsk_isetoption(self, "FS:CP/M:CKS", 0x8000, 1);
+	dsk_isetoption(self, "FS:CP/M:CKS", (int)0x8000, 1);
 	dsk_isetoption(self, "FS:CP/M:OFF", 0, 1);
 
 	return DSK_ERR_OK;
@@ -127,7 +127,7 @@ dsk_err_t myz80_creat(DSK_DRIVER *self, const char *filename)
 	dsk_isetoption(self, "FS:CP/M:DRM", 0x3ff, 1);
 	dsk_isetoption(self, "FS:CP/M:AL0", 0xFF, 1);
 	dsk_isetoption(self, "FS:CP/M:AL1", 0, 1);
-	dsk_isetoption(self, "FS:CP/M:CKS", 0x8000, 1);
+	dsk_isetoption(self, "FS:CP/M:CKS", (int)0x8000, 1);
 	dsk_isetoption(self, "FS:CP/M:OFF", 0, 1);
 	return DSK_ERR_OK;
 }
