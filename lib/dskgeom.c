@@ -199,7 +199,6 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom
 /* Probe the geometry of a disc. This will always use the boot sector. */
 dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 {
-        DRV_CLASS *dc; 
 	DSK_FORMAT secid;
 	dsk_err_t e;
 	unsigned char *secbuf;
@@ -208,7 +207,6 @@ dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 
         if (!self || !geom || !self->dr_class) return DSK_ERR_BADPTR;
 
-	dc = self->dr_class; 
 	memset(geom, 0, sizeof(*geom));
 
 	/* Switch to a minimal format */
@@ -311,6 +309,7 @@ dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 		}
 		if (secid.fmt_secsize == 1024)
 		{
+			dsk_rate_t rate;
 			/* Ampro 80 track double sided */
 			if ((secid.fmt_sector & 0xF0) == 0x10)
 			{
@@ -320,7 +319,7 @@ dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 				return e;	
 			}
 			/* Save the data rate, which we know to be correct */
-			dsk_rate_t rate = geom->dg_datarate;
+			rate = geom->dg_datarate;
 
 			dsk_free(secbuf);
 			/* Switch to a format with 1k sectors */

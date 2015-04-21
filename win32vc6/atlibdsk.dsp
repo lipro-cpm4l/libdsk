@@ -46,7 +46,8 @@ RSC=rc.exe
 # PROP Intermediate_Dir "DebugAtl"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "." /I "../lib" /I "../include" /D "_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "NOTWINDLL" /FR /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "." /I "../lib" /I "../include" /D "_DEBUG" /D "_MBCS" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "NOTWINDLL" /FR /FD /GZ /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
 # ADD RSC /l 0x809 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -80,7 +81,8 @@ SOURCE="$(InputPath)"
 # PROP Intermediate_Dir "DebugU"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "_UNICODE" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "." /I "../include" /I "../lib" /D "_DEBUG" /D "_UNICODE" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "NOTWINDLL" /Yu"stdafx.h" /FD /GZ /c
+# ADD CPP /nologo /MTd /W3 /Gm /ZI /Od /I "." /I "../include" /I "../lib" /D "_DEBUG" /D "_UNICODE" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "NOTWINDLL" /FD /GZ /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
 # ADD RSC /l 0x809 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -120,7 +122,8 @@ SOURCE="$(InputPath)"
 # PROP Intermediate_Dir "ReleaseMinSize"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MT /W3 /O1 /I "." /I "../include" /I "../lib" /D "NDEBUG" /D "_MBCS" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "NOTWINDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MT /W3 /O1 /I "." /I "../include" /I "../lib" /D "NDEBUG" /D "_MBCS" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "NOTWINDLL" /FD /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
 # ADD RSC /l 0x809 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -154,7 +157,8 @@ SOURCE="$(InputPath)"
 # PROP Intermediate_Dir "ReleaseMinDependency"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MT /W3 /O1 /I "." /I "../include" /I "../lib" /D "NDEBUG" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "NOTWINDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MT /W3 /O1 /I "." /I "../include" /I "../lib" /D "NDEBUG" /D "_MBCS" /D "_ATL_STATIC_REGISTRY" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "NOTWINDLL" /FD /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
 # ADD RSC /l 0x809 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -188,7 +192,8 @@ SOURCE="$(InputPath)"
 # PROP Intermediate_Dir "ReleaseUMinSize"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "_UNICODE" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MT /W3 /O1 /I "." /I "../include" /I "../lib" /D "NDEBUG" /D "_UNICODE" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "NOTWINDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MT /W3 /O1 /I "." /I "../include" /I "../lib" /D "NDEBUG" /D "_UNICODE" /D "_ATL_DLL" /D "_ATL_MIN_CRT" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "NOTWINDLL" /FD /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
 # ADD RSC /l 0x809 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -228,7 +233,8 @@ SOURCE="$(InputPath)"
 # PROP Intermediate_Dir "ReleaseUMinDependency"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /O1 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_USRDLL" /D "_UNICODE" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /MT /W3 /O1 /I "." /I "../include" /I "../lib" /D "NDEBUG" /D "_UNICODE" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "NOTWINDLL" /Yu"stdafx.h" /FD /c
+# ADD CPP /nologo /MT /W3 /O1 /I "." /I "../include" /I "../lib" /D "NDEBUG" /D "_UNICODE" /D "_ATL_STATIC_REGISTRY" /D "_ATL_MIN_CRT" /D "WIN32" /D "_WINDOWS" /D "_USRDLL" /D "NOTWINDLL" /FD /c
+# SUBTRACT CPP /YX /Yc /Yu
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
 # ADD RSC /l 0x809 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -394,6 +400,27 @@ SOURCE=..\lib\compsq.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\comptlzh.c
+
+!IF  "$(CFG)" == "atlibdsk - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Debug"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Release MinSize"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Release MinDependency"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Release MinSize"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Release MinDependency"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\crc16.c
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -426,6 +453,27 @@ SOURCE=..\lib\drvdos16.c
 
 SOURCE=..\lib\drvdos32.c
 # SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvimd.c
+
+!IF  "$(CFG)" == "atlibdsk - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Debug"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Release MinSize"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Release MinDependency"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Release MinSize"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Release MinDependency"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -487,6 +535,27 @@ SOURCE=..\lib\drvrcpm.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvsimh.c
+
+!IF  "$(CFG)" == "atlibdsk - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Debug"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Release MinSize"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Release MinDependency"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Release MinSize"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Release MinDependency"
+
+!ENDIF 
+
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvtele.c
 
 !IF  "$(CFG)" == "atlibdsk - Win32 Debug"
@@ -517,6 +586,27 @@ SOURCE=..\lib\drvwin16.c
 
 SOURCE=..\lib\drvwin32.c
 # SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvydsk.c
+
+!IF  "$(CFG)" == "atlibdsk - Win32 Debug"
+
+# SUBTRACT CPP /YX /Yc /Yu
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Debug"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Release MinSize"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Release MinDependency"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Release MinSize"
+
+!ELSEIF  "$(CFG)" == "atlibdsk - Win32 Unicode Release MinDependency"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -723,6 +813,10 @@ SOURCE=..\lib\drvi.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvimd.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvlinux.h
 # End Source File
 # Begin Source File
@@ -751,11 +845,19 @@ SOURCE=..\lib\drvrcpm.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvsimh.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvwin16.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvwin32.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvydsk.h
 # End Source File
 # Begin Source File
 

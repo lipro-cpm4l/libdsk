@@ -93,6 +93,16 @@ dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom);
 dsk_err_t dsk_isetoption(DSK_DRIVER *self, const char *name, int value, 
 		int add_if_not_present);
 
+
+/* "Extended surface" discs have sector IDs that don't match the sectors' 
+ * location on disc. This means, anywhere we reflect dsk_read() to dsk_xread(),
+ * we have to translate the physical location to the sector ID field rather 
+ * than assuming a 1:1 mapping. */
+
+dsk_phead_t dg_x_head  (const DSK_GEOMETRY *dg, dsk_phead_t h);
+dsk_psect_t dg_x_sector(const DSK_GEOMETRY *dg, dsk_phead_t h, dsk_psect_t s);
+
+
 #ifdef AUTOSHARE
 # define Q2(x) Q1(x)
 # define Q1(x) #x

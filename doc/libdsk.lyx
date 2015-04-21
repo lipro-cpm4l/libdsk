@@ -61,7 +61,7 @@
 \begin_body
 
 \begin_layout Title
-LibDsk v1.3.5 
+LibDsk v1.3.7 
 \end_layout
 
 \begin_layout Author
@@ -166,6 +166,10 @@ NanoWasp-format disc images, used by the eponymous emulator.
 \end_layout
 
 \begin_layout Itemize
+IMD-format disc images, as produced by Dave Dunfield's ImageDisk utility.
+\end_layout
+
+\begin_layout Itemize
 Yaze 'ydsk' disc images, created by the 'yaze' and 'yaze-ag' emulators.
 \end_layout
 
@@ -224,6 +228,15 @@ For full details, see the file ChangeLog.
 \end_layout
 
 \begin_layout Itemize
+Added a new 'imd' driver for IMD-format disc images.
+\end_layout
+
+\begin_layout Itemize
+A new SIDES_EXTSURFACE geometry, for disc images where the sector numbers
+ on side 1 follow on from side 0.
+\end_layout
+
+\begin_layout Itemize
 TeleDisk images with 'advanced' (LZH) compression are now supported.
 \end_layout
 
@@ -244,26 +257,6 @@ Should now compile out of the box on FreeBSD.
 \begin_layout Itemize
 A bugfix to the rcpmfs driver should allow it to simulate a CP/M 2 filesystem
  as well as CP/M 3.
-\end_layout
-
-\begin_layout Itemize
-Added two new drivers: 
-\begin_inset Quotes eld
-\end_inset
-
-tele
-\begin_inset Quotes erd
-\end_inset
-
- and 
-\begin_inset Quotes eld
-\end_inset
-
-logical
-\begin_inset Quotes erd
-\end_inset
-
-.
 \end_layout
 
 \begin_layout Subsection
@@ -437,6 +430,17 @@ cfi
 
  : Compressed floppy image, as produced by FDCOPY.COM under DOS.
  Its format is described in cfi.html.
+\end_layout
+
+\begin_layout Description
+\begin_inset Quotes eld
+\end_inset
+
+imd
+\begin_inset Quotes erd
+\end_inset
+
+ : Disc images created by Dave Dunfield's ImageDisk utility.
 \end_layout
 
 \begin_layout Description
@@ -753,6 +757,28 @@ SIDES_OUTOUT
  The tracks go out to the edge on Head 0, then out again on Head 1 (so the
  order goes C(last)H0, C0H1, C1H1, ..., C(last)H1).
  This ordering is used by Acorn-format discs.
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+SIDES_EXTSURFACE
+\family default
+ The tracks are arranged in the same way as SIDES_ALT, but if the sectors
+ on side 0 are numbered 1-
+\emph on
+n
+\emph default
+, the sectors on side 1 are numbered 
+\emph on
+n
+\emph default
++1 - 2*
+\emph on
+n
+\emph default
+ (for example, side 0 are numbered 1-9, and side 1 are numbered 10-18).
+ This is a new option and should be treated with caution!
 \end_layout
 
 \begin_layout Standard
@@ -3643,12 +3669,28 @@ alt
 outback
 \emph default
  (use side 0 tracks 0-79, then side 1 tracks 79-0 -- used by 144FEAT CP/M
- disks), or 
+ disks), 
 \emph on
 outout
 \emph default
  (use side 0 tracks 0-79, then side 1 tracks 0-79 -- used by some Acorn
- formats).
+ formats) or 
+\emph on
+extsurface
+\emph default
+ (sectors on side 0 are numbered 1-
+\emph on
+n
+\emph default
+, sectors on side 1 are numbered 
+\emph on
+n
+\emph default
++1 - 
+\emph on
+n
+\emph default
+*2).
  If the disk is single-sided, this parameter can be omitted.
 \end_layout
 

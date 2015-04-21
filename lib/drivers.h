@@ -31,6 +31,7 @@ extern DRV_CLASS dc_nwasp;	/* NanoWasp driver */
 extern DRV_CLASS dc_myz80;	/* MYZ80 driver */
 extern DRV_CLASS dc_cfi;	/* CFI driver */
 extern DRV_CLASS dc_adisk;	/* APRIDISK driver */
+extern DRV_CLASS dc_imd;	/* IMAGEDISK driver */
 extern DRV_CLASS dc_qm;		/* CopyQM driver */
 extern DRV_CLASS dc_tele;	/* Teledisk driver */
 extern DRV_CLASS dc_dskf;	/* LoadDskF driver */

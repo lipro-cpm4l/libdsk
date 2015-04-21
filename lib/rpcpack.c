@@ -58,7 +58,7 @@ dsk_err_t dsk_unpack_i32(unsigned char **input, int *inp_len, int32 *function)
 
 dsk_err_t dsk_unpack_err(unsigned char **input, int *inp_len, dsk_err_t *value)
 	{
-	signed short val;
+	signed short val = DSK_ERR_OK;
 	dsk_err_t err;
 
 	err = dsk_unpack_i16(input, inp_len, (int16 *)&val);

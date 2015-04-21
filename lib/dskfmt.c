@@ -80,8 +80,8 @@ static DSK_FORMAT * dsk_formauto(const DSK_GEOMETRY *dg,
 	for (ns = 0; ns < dg->dg_sectors; ns++)
 	{
 		fmt[ns].fmt_cylinder = cylinder;
-		fmt[ns].fmt_head     = head;
-		fmt[ns].fmt_sector   = dg->dg_secbase + ns;
+		fmt[ns].fmt_head     = dg_x_head(dg, head);
+		fmt[ns].fmt_sector   = dg_x_sector(dg,head,dg->dg_secbase + ns);
 		fmt[ns].fmt_secsize  = dg->dg_secsize;
 	}
 	return fmt;

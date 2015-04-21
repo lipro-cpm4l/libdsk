@@ -312,6 +312,8 @@ dsk_err_t dg_parseline(char *linebuf, DSK_GEOMETRY *dg, char *description)
             dg->dg_sidedness = SIDES_OUTBACK;
         if (!strcmp(value, "outout"))  
             dg->dg_sidedness = SIDES_OUTOUT;
+        if (!strcmp(value, "extsurface"))	/* [1.3.7] */
+            dg->dg_sidedness = SIDES_EXTSURFACE;
     }
     if (!strcmp(linebuf, "cylinders") && atoi(value))
         dg->dg_cylinders = atoi(value);
@@ -363,10 +365,11 @@ dsk_err_t dg_store(FILE *fp, DSK_GEOMETRY *dg, char *description)
     if (description) fprintf(fp, "description=%s\n", description);
     switch(dg->dg_sidedness)
     {
-        case SIDES_ALT:     fprintf(fp, "sides=alt\n");     break;
-        case SIDES_OUTOUT:  fprintf(fp, "sides=outback\n"); break;
-        case SIDES_OUTBACK: fprintf(fp, "sides=outout\n");  break;
-        }
+        case SIDES_ALT:        fprintf(fp, "sides=alt\n");     break;
+        case SIDES_OUTOUT:     fprintf(fp, "sides=outback\n"); break;
+        case SIDES_OUTBACK:    fprintf(fp, "sides=outout\n");  break;
+        case SIDES_EXTSURFACE: fprintf(fp, "sides=extsurface\n");  break;
+    }
     fprintf(fp, "cylinders=%d\n", dg->dg_cylinders);
     fprintf(fp, "heads=%d\n",     dg->dg_heads);
     fprintf(fp, "sectors=%d\n",   dg->dg_sectors);

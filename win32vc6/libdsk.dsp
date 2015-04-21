@@ -142,6 +142,10 @@ SOURCE=..\lib\compsq.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\comptlzh.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\crc16.c
 
 !IF  "$(CFG)" == "libdsk - Win32 Release"
@@ -230,6 +234,10 @@ SOURCE=..\lib\drvdos32.c
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvimd.c
 # End Source File
 # Begin Source File
 
@@ -337,6 +345,10 @@ SOURCE=..\lib\drvrcpm.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvsimh.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvtele.c
 
 !IF  "$(CFG)" == "libdsk - Win32 Release"
@@ -373,6 +385,10 @@ SOURCE=..\lib\drvwin32.c
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvydsk.c
 # End Source File
 # Begin Source File
 
@@ -742,6 +758,10 @@ SOURCE=..\lib\compsq.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\comptlzh.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\crc16.h
 # End Source File
 # Begin Source File
@@ -782,6 +802,10 @@ SOURCE=..\lib\drvi.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvimd.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvlinux.h
 # End Source File
 # Begin Source File
@@ -802,11 +826,19 @@ SOURCE=..\lib\drvrcpm.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvsimh.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvwin16.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvwin32.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvydsk.h
 # End Source File
 # Begin Source File
 

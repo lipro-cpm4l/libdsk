@@ -58,7 +58,7 @@
 extern "C" {
 #endif
 
-#define LIBDSK_VERSION "1.3.5"
+#define LIBDSK_VERSION "1.3.7"
 
 /************************* TYPES ********************************/
 
@@ -112,8 +112,11 @@ typedef enum
 	SIDES_ALT, 	/* Track n is cylinder (n/heads) head (n%heads) */
 	SIDES_OUTBACK, 	/* Tracks go (head 0) 0,1,2,3,...37,38,39, then
 			             (head 1) 39,38,37,...,2,1,0 */
-	SIDES_OUTOUT	/* Tracks go (head 0) 0,1,2,3,...37,38,39, then
+	SIDES_OUTOUT,	/* Tracks go (head 0) 0,1,2,3,...37,38,39, then
 			             (head 1) 0,1,2,3,...37,38,39 */
+	SIDES_EXTSURFACE/* As SIDES_ALT, but sectors on head 1 identify
+			 * as head 0, with numbers in sequence 
+			 * eg: Head 0 has sectors 1-9, head 1 has 10-18 */
 } dsk_sides_t;
 
 typedef enum

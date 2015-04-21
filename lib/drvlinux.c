@@ -235,8 +235,9 @@ dsk_err_t linux_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                              void *buf, dsk_pcyl_t cylinder,
                               dsk_phead_t head, dsk_psect_t sector)
 {
-	return linux_xread(self, geom, buf, cylinder, head, 
-			   cylinder, head, sector, geom->dg_secsize, 0);
+	return linux_xread(self, geom, buf, cylinder, head, cylinder, 
+			dg_x_head(geom, head), 
+			dg_x_sector(geom, head, sector), geom->dg_secsize, 0);
 }
 
 dsk_err_t linux_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
@@ -297,8 +298,10 @@ dsk_err_t linux_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                              const void *buf, dsk_pcyl_t cylinder,
                               dsk_phead_t head, dsk_psect_t sector)
 {
-	return linux_xwrite(self, geom, buf, cylinder, head, cylinder, head,
-				sector, geom->dg_secsize, 0);
+	return linux_xwrite(self, geom, buf, cylinder, head, cylinder, 
+			dg_x_head(geom, head),
+			dg_x_sector(geom, head, sector), 
+			geom->dg_secsize, 0);
 }
 
 

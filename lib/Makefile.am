@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-INCLUDES=-I$(top_srcdir)/include
+AM_CPPFLAGS=-I$(top_srcdir)/include
 JAVAC=@JAVAC@
 JAVACFLAGS=@JAVACFLAGS@
 JAVAH=@JAVAH@
@@ -30,7 +30,7 @@ EXTRA_DIST=$(CLASSDPRE)/Drive.java \
 # If interfaces have been removed set the right-hand number to 0.
 # 
 #
-libdsk_la_LDFLAGS = -version-info 6:0:3
+libdsk_la_LDFLAGS = -version-info 6:1:3
 libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   dsklphys.c dskfmt.c   dskopen.c  dskpars.c \
 		   dskerror.c dskseek.c  dsksecid.c dskgeom.c \
@@ -61,6 +61,7 @@ libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   drvdos32.h drvdos32.c \
 		   drvcpcem.h drvcpcem.c \
 		   drvdskf.h  drvdskf.c \
+		   drvimd.h   drvimd.c \
 		   drvlogi.h  drvlogi.c \
 		   drvsimh.h  drvsimh.c \
 		   drvposix.h drvposix.c \

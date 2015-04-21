@@ -103,9 +103,10 @@ static int dump_libdskrc(void)
 		printf("[%s]\n", title);
 		printf("Description=%s\n", desc);
 		switch (geom.dg_sidedness) {
-			case SIDES_ALT:     printf("Sidedness=Alt\n"); break;
-			case SIDES_OUTBACK: printf("Sidedness=OutBack\n"); break;
-			case SIDES_OUTOUT:  printf("Sidedness=OutOut\n"); break;
+			case SIDES_ALT:        printf("Sidedness=Alt\n"); break;
+			case SIDES_EXTSURFACE: printf("Sidedness=ExtSurface\n"); break;
+			case SIDES_OUTBACK:    printf("Sidedness=OutBack\n"); break;
+			case SIDES_OUTOUT:     printf("Sidedness=OutOut\n"); break;
 		}
 		printf("Cylinders=%d\n", geom.dg_cylinders);
 		printf("Heads=%d\n", geom.dg_heads);

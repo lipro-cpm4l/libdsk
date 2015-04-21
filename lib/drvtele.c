@@ -78,7 +78,7 @@ DRV_CLASS dc_tele =
 	NULL			/* tele_rtread */
 };
 
-/* #define MONITOR(x) printf x   */
+/* #define MONITOR(x) printf x     */
 
 #define MONITOR(x) 
 
@@ -116,13 +116,17 @@ static dsk_err_t tele_fread(TELE_DSK_DRIVER *self, tele_byte *buf, int count)
 {
 	if (!buf) 
 	{
-		if (fseek(self->tele_fp, count, SEEK_CUR)) 
+		if (fseek(self->tele_fp, count, SEEK_CUR))
+		{
 			return DSK_ERR_SYSERR;
+		}
 	}
 	else
 	{
 		if (fread(buf, 1, count, self->tele_fp) < (size_t)count)
+		{
 			return DSK_ERR_SYSERR;
+		}
 	}
 	return DSK_ERR_OK;
 }
@@ -325,6 +329,9 @@ dsk_err_t tele_seeksec(TELE_DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	int s;
 	long pos;
 
+	MONITOR(("tele_seeksec: Searching for c=%d h=%d s=%d on c=%d h=%d\n",
+				cyl_expected, head_expected, sector,
+				cylinder, head));
 	err = tele_seektrack(self, cylinder, head);
 
 	for (s = 0; s < self->tele_trackhead.sectors; s++)
@@ -338,8 +345,8 @@ dsk_err_t tele_seeksec(TELE_DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 				self->tele_sechead.sector_id, pos,
 				s, self->tele_trackhead.sectors));
 		if (self->tele_sechead.sector_id   == sector   &&
-		    self->tele_sechead.cylinder_id == cylinder &&
-		    self->tele_sechead.head_id     == head)
+		    self->tele_sechead.cylinder_id == cyl_expected &&
+		    self->tele_sechead.head_id     == head_expected)
 		{
 			*sseclen = self->tele_sechead.sector_len;
 /* Sector shorter than expected. Report a data error, and set
@@ -530,8 +537,9 @@ dsk_err_t tele_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                               void *buf, dsk_pcyl_t cylinder,
                               dsk_phead_t head, dsk_psect_t sector)
 {
-	return tele_xread(self, geom, buf, cylinder, head, cylinder, head,
-		sector, geom->dg_secsize, NULL);
+	return tele_xread(self, geom, buf, cylinder, head, cylinder, 
+		dg_x_head(geom, head),
+		dg_x_sector(geom, head, sector), geom->dg_secsize, NULL);
 }
 
 

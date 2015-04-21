@@ -31,7 +31,8 @@ typedef enum
 {	
 	ALT, 	
 	OUTBACK,
-	OUTOUT	
+	OUTOUT,
+	EXTSURFACE
 } Sidedness;
 
 

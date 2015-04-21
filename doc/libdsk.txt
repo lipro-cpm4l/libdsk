@@ -1,4 +1,4 @@
-LibDsk v1.3.5 
+LibDsk v1.3.7 
 
 John Elliott
 
@@ -50,6 +50,9 @@ formats:
 
   NanoWasp-format disc images, used by the eponymous emulator.
 
+  IMD-format disc images, as produced by Dave Dunfield's 
+  ImageDisk utility.
+
   Yaze 'ydsk' disc images, created by the 'yaze' and 'yaze-ag' 
   emulators.
 
@@ -79,6 +82,11 @@ formats:
 
 For full details, see the file ChangeLog.
 
+  Added a new 'imd' driver for IMD-format disc images.
+
+  A new SIDES_EXTSURFACE geometry, for disc images where the 
+  sector numbers on side 1 follow on from side 0.
+
   TeleDisk images with 'advanced' (LZH) compression are now 
   supported.
 
@@ -92,8 +100,6 @@ For full details, see the file ChangeLog.
 
   A bugfix to the rcpmfs driver should allow it to simulate a 
   CP/M 2 filesystem as well as CP/M 3.
-
-  Added two new drivers: “tele” and “logical”.
 
   Terms and definitions
 
@@ -136,6 +142,9 @@ The following disc image file formats are supported by LibDsk.
 
   “cfi” : Compressed floppy image, as produced by FDCOPY.COM 
   under DOS. Its format is described in cfi.html.
+
+  “imd” : Disc images created by Dave Dunfield's ImageDisk 
+  utility.
 
   “qm” : Disc images created by Sydex's CopyQM. Write support in 
   this driver is experimental.
@@ -234,6 +243,12 @@ typedef struct
   SIDES_OUTOUT The tracks go out to the edge on Head 0, then out 
     again on Head 1 (so the order goes C(last)H0, C0H1, C1H1, 
     ..., C(last)H1). This ordering is used by Acorn-format discs.
+
+  SIDES_EXTSURFACE The tracks are arranged in the same way as 
+    SIDES_ALT, but if the sectors on side 0 are numbered 1-n, the 
+    sectors on side 1 are numbered n+1 - 2*n (for example, side 0 
+    are numbered 1-9, and side 1 are numbered 10-18). This is a 
+    new option and should be treated with caution!
 
   */
 
@@ -1181,10 +1196,11 @@ members of the DSK_GEOMETRY structure.
   sides=TREATMENT How a double-sided disk is handled. This can 
   either be alt (sides alternate -- used by most PC-hosted 
   operating systems), outback (use side 0 tracks 0-79, then side 
-  1 tracks 79-0 -- used by 144FEAT CP/M disks), or outout (use 
-  side 0 tracks 0-79, then side 1 tracks 0-79 -- used by some 
-  Acorn formats). If the disk is single-sided, this parameter can 
-  be omitted.
+  1 tracks 79-0 -- used by 144FEAT CP/M disks), outout (use side 
+  0 tracks 0-79, then side 1 tracks 0-79 -- used by some Acorn 
+  formats) or extsurface (sectors on side 0 are numbered 1-n, 
+  sectors on side 1 are numbered n+1 - n*2). If the disk is 
+  single-sided, this parameter can be omitted.
 
   cylinders=COUNT Sets the number of cylinders (usually 40 or 
   80). 
