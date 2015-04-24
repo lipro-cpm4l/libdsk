@@ -1136,10 +1136,10 @@ dsk_err_t imd_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 		switch (trk->imdt_mode)
 		{
 			case 0: testgeom.dg_fm = 1; testgeom.dg_datarate = RATE_HD; break;
-			case 1: testgeom.dg_fm = 1; testgeom.dg_datarate = RATE_HD; break;
-			case 2: testgeom.dg_fm = 1; testgeom.dg_datarate = RATE_DD; break;
-			case 3: testgeom.dg_fm = 0; testgeom.dg_datarate = RATE_DD; break;
-			case 4: testgeom.dg_fm = 0; testgeom.dg_datarate = RATE_SD; break;
+			case 1: testgeom.dg_fm = 1; testgeom.dg_datarate = RATE_DD; break;
+			case 2: testgeom.dg_fm = 1; testgeom.dg_datarate = RATE_SD; break;
+			case 3: testgeom.dg_fm = 0; testgeom.dg_datarate = RATE_HD; break;
+			case 4: testgeom.dg_fm = 0; testgeom.dg_datarate = RATE_DD; break;
 			case 5: testgeom.dg_fm = 0; testgeom.dg_datarate = RATE_SD; break;
 			case 6: testgeom.dg_fm = 1; testgeom.dg_datarate = RATE_ED; break;
 			case 9: testgeom.dg_fm = 0; testgeom.dg_datarate = RATE_ED; break;

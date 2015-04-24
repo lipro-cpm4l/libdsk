@@ -110,6 +110,30 @@ int main(int argc, char **argv)
 }
 
 
+const char *show_sidedness(dsk_sides_t r)
+{
+	switch(r)
+	{
+		case SIDES_ALT: return "Alt";
+		case SIDES_OUTBACK: return "OutBack";
+		case SIDES_OUTOUT: return "OutOut";
+		case SIDES_EXTSURFACE: return "ExtSurface";
+	}
+	return "Out-of-range value";
+}
+
+const char *show_rate(dsk_rate_t r)
+{
+	switch (r)
+	{
+		case RATE_HD: return "HD";
+		case RATE_DD: return "DD";
+		case RATE_SD: return "SD";
+		case RATE_ED: return "ED";
+	}
+	return "??";
+}
+
 int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead)
 {
 	DSK_PDRIVER outdr = NULL;
@@ -148,23 +172,23 @@ int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead
 					indent, indent, "", forcehead);
 		}
 
-		printf("%-*.*sSidedness:     %2d\n"
+		printf("%-*.*sSidedness:     %s\n"
                        "%-*.*sCylinders:     %2d\n"
 		       "%-*.*sHeads:          %d\n"
                        "%-*.*sSectors:      %3d\n"
                        "%-*.*sFirst sector: %3d\n"
                        "%-*.*sSector size: %4ld\n"
-		       "%-*.*sData rate:      %d\n"
+		       "%-*.*sData rate:     %s\n"
 		       "%-*.*sRecord mode:  %s\n"
 		       "%-*.*sR/W gap:     0x%02x\n"
 		       "%-*.*sFormat gap:  0x%02x\n",
-			indent, indent, "", dg.dg_sidedness, 
+			indent, indent, "", show_sidedness(dg.dg_sidedness), 
 			indent, indent, "", dg.dg_cylinders,
 			indent, indent, "", dg.dg_heads, 
 			indent, indent, "", dg.dg_sectors, 
 			indent, indent, "", dg.dg_secbase,
 			indent, indent, "", (long)dg.dg_secsize, 
-			indent, indent, "", dg.dg_datarate,
+			indent, indent, "", show_rate(dg.dg_datarate),
 			indent, indent, "", (dg.dg_fm ? " FM" : "MFM"), 
 			indent, indent, "", dg.dg_rwgap,   
 			indent, indent, "", dg.dg_fmtgap);

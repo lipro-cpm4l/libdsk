@@ -1,4 +1,4 @@
-LibDsk v1.3.7 
+LibDsk v1.3.8 
 
 John Elliott
 
@@ -81,6 +81,9 @@ formats:
   What's new? 
 
 For full details, see the file ChangeLog.
+
+  A bugfix to the automatic geometry probe in the 'imd' driver: 
+  HD discs were not being correctly detected.
 
   Added a new 'imd' driver for IMD-format disc images.
 

@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
-UPDATED='April 20, 2015'
-AC_INIT(LibDsk, 1.3.7)
+UPDATED='April 23, 2015'
+AC_INIT(LibDsk, 1.3.8)
 AC_CONFIG_SRCDIR(lib/dskopen.c)
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(m4)
