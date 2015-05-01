@@ -1,4 +1,4 @@
-LibDsk v1.3.8 
+LibDsk v1.3.9 
 
 John Elliott
 
@@ -56,6 +56,8 @@ formats:
   Yaze 'ydsk' disc images, created by the 'yaze' and 'yaze-ag' 
   emulators.
 
+  JV3-format disc images, used in TRS-80 emulation.
+
   Disc images created by the Sydex imaging programs Teledisk and 
   CopyQM (read only in both cases).
 
@@ -81,6 +83,8 @@ formats:
   What's new? 
 
 For full details, see the file ChangeLog.
+
+  Added a new 'jv3' driver for JV3-format disc images.
 
   A bugfix to the automatic geometry probe in the 'imd' driver: 
   HD discs were not being correctly detected.
@@ -148,6 +152,8 @@ The following disc image file formats are supported by LibDsk.
 
   “imd” : Disc images created by Dave Dunfield's ImageDisk 
   utility.
+
+  “jv3” : Disc images used by Jeff Vavasour's TRS-80 emulators.
 
   “qm” : Disc images created by Sydex's CopyQM. Write support in 
   this driver is experimental.
@@ -2238,8 +2244,8 @@ sector, size_t bytes_to_read, int *deleted);
 Read / write sector whose ID may not match its position on disc, 
 or which is marked as deleted. Only implement this if your disc 
 image emulates sector IDs or your floppy driver exposes this 
-level of functionality. Currently it is only implemented in the 
-Linux and CPCEMU drivers.
+level of functionality. Currently it is implemented in the Linux, 
+NTWDM, CPCEMU, TeleDisk, IMD and JV3 drivers.
 
   dc_status 
 

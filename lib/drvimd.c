@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001-2  John Elliott <jce@seasip.demon.co.uk>          *
+ *    Copyright (C) 2001-2  John Elliott <seasip.webmaster@gmail.com>          *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -780,6 +780,7 @@ static dsk_err_t imd_find_sector(IMD_DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 			}
 		}
 	}
+	self->imd_sec = 0;
 	return DSK_ERR_NOADDR;
 }
 

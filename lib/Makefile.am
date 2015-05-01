@@ -52,6 +52,7 @@ libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   rpcfossl.c rpcfossl.h \
 		   rpcwin32.c rpcwin32.h \
 		   drv.h drvi.h drivers.h drivers.inc \
+		   drvjv3.h   drvjv3.c \
 		   drvlinux.h drvlinux.c \
 		   drvntwdm.h drvntwdm.c \
 		   drvwin32.h drvwin32.c w95defs.h \

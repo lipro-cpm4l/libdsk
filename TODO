@@ -1,5 +1,9 @@
 TO BE DONE in LibDSK 1.3.x:
 
+- The cpcemu driver contains a chunk of code to deal with multitrack reads
+ and writes. Write some test cases to exercise it, and see if other drivers
+ (such as IMD and JV3) can be enhanced to support this.
+
 - Partition support.
 	It looks as if the way to do it is to have a filter driver.
 	Something like 

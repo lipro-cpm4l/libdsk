@@ -1,3 +1,8 @@
+2015-05-01 John Elliott
+
+	* New backend: JV3 (for TRS-80 'JV3' disc images). These have no
+	 magic number, so must be specified manually.
+
 2015-04-24 John Elliott
 
 	* libdsk-1.3.8 released.

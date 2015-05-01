@@ -49,7 +49,7 @@ Source
   DSKWRITE.Z80 contains source for the CP/M version. 
   DSKWRITE.ASM contains source for the DOS version. 
   To get the single .COM file, you need to use FBMAKE: 
-  <http://www.seasip.demon.co.uk/Cpm/software/fatbnsea.com>
+  <http://www.seasip.info/Cpm/software/fatbnsea.com>
 
   It should be possible to build a CP/M-86 version from the DOS source by
 replacing the FDOS function with 

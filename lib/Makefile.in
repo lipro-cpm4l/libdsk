@@ -132,11 +132,11 @@ am_libdsk_la_OBJECTS = dskread.lo dskwrite.lo dskcheck.lo dskstat.lo \
 	dsktrkid.lo dskrtrd.lo compress.lo compsq.lo compgz.lo \
 	comptlzh.lo compbz2.lo compdskf.lo crctable.lo crc16.lo \
 	rpccli.lo rpcmap.lo rpcpack.lo rpcserv.lo remote.lo rpctios.lo \
-	rpcfork.lo rpcfossl.lo rpcwin32.lo drvlinux.lo drvntwdm.lo \
-	drvwin32.lo drvwin16.lo drvint25.lo drvdos16.lo drvdos32.lo \
-	drvcpcem.lo drvdskf.lo drvimd.lo drvlogi.lo drvsimh.lo \
-	drvposix.lo drvnwasp.lo drvadisk.lo drvrcpm.lo drvtele.lo \
-	drvmyz80.lo drvydsk.lo drvcfi.lo drvqm.lo
+	rpcfork.lo rpcfossl.lo rpcwin32.lo drvjv3.lo drvlinux.lo \
+	drvntwdm.lo drvwin32.lo drvwin16.lo drvint25.lo drvdos16.lo \
+	drvdos32.lo drvcpcem.lo drvdskf.lo drvimd.lo drvlogi.lo \
+	drvsimh.lo drvposix.lo drvnwasp.lo drvadisk.lo drvrcpm.lo \
+	drvtele.lo drvmyz80.lo drvydsk.lo drvcfi.lo drvqm.lo
 libdsk_la_OBJECTS = $(am_libdsk_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -383,6 +383,7 @@ libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   rpcfossl.c rpcfossl.h \
 		   rpcwin32.c rpcwin32.h \
 		   drv.h drvi.h drivers.h drivers.inc \
+		   drvjv3.h   drvjv3.c \
 		   drvlinux.h drvlinux.c \
 		   drvntwdm.h drvntwdm.c \
 		   drvwin32.h drvwin32.c w95defs.h \
@@ -523,6 +524,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvdskf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvimd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvint25.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvjv3.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvlinux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvlogi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvmyz80.Plo@am__quote@

@@ -1,6 +1,6 @@
 /*
       LIBDSK: General floppy and diskimage access library                 
-      Copyright (C) 2002, 2014  John Elliott <jce@seasip.demon.co.uk>    
+      Copyright (C) 2002, 2014  John Elliott <seasip.webmaster@gmail.com>    
  
       LZH decompression code based on tdlzhuf.c / tdcrc.c 
       (both from wteledsk by Will Kranz, GPLv2. Permission to 

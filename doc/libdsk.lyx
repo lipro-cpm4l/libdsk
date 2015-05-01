@@ -61,7 +61,7 @@
 \begin_body
 
 \begin_layout Title
-LibDsk v1.3.8 
+LibDsk v1.3.9 
 \end_layout
 
 \begin_layout Author
@@ -174,6 +174,10 @@ Yaze 'ydsk' disc images, created by the 'yaze' and 'yaze-ag' emulators.
 \end_layout
 
 \begin_layout Itemize
+JV3-format disc images, used in TRS-80 emulation.
+\end_layout
+
+\begin_layout Itemize
 Disc images created by the Sydex imaging programs Teledisk and CopyQM (read
  only in both cases).
 \end_layout
@@ -225,6 +229,10 @@ What's new?
 
 \begin_layout Standard
 For full details, see the file ChangeLog.
+\end_layout
+
+\begin_layout Itemize
+Added a new 'jv3' driver for JV3-format disc images.
 \end_layout
 
 \begin_layout Itemize
@@ -446,6 +454,17 @@ imd
 \end_inset
 
  : Disc images created by Dave Dunfield's ImageDisk utility.
+\end_layout
+
+\begin_layout Description
+\begin_inset Quotes eld
+\end_inset
+
+jv3
+\begin_inset Quotes erd
+\end_inset
+
+ : Disc images used by Jeff Vavasour's TRS-80 emulators.
 \end_layout
 
 \begin_layout Description
@@ -6968,7 +6987,8 @@ Read / write sector whose ID may not match its position on disc, or which
  is marked as deleted.
  Only implement this if your disc image emulates sector IDs or your floppy
  driver exposes this level of functionality.
- Currently it is only implemented in the Linux and CPCEMU drivers.
+ Currently it is implemented in the Linux, NTWDM, CPCEMU, TeleDisk, IMD
+ and JV3 drivers.
 \end_layout
 
 \begin_layout Subsubsection
