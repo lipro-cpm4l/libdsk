@@ -158,6 +158,8 @@ typedef enum
 	FMT_AMPRO400S,	/* 5 sectors, 1024 bytes/sector, 1 side */
 	FMT_AMPRO800,	/* 5 sectors, 1024 bytes/sector, 2 sides */
 	FMT_1200K,	/* 15 sectors, 2 sides  */
+	FMT_SCP640,	/* 16 sectors,  256 bytes/sector, 2 sides */
+	FMT_SCP800,	/*  5 sectors, 1024 bytes/sector, 2 sides */
 	FMT_UNKNOWN = -1
 } dsk_format_t;
 
