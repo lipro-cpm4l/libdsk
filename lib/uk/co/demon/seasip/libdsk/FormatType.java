@@ -42,7 +42,7 @@ public class FormatType
  * This corresponds to the PCW 720k format and the PCDOS 720k format. */
 	public static final int FMT_720K = 3;
 /** 18 sectors, 2 sides, 80 tracks, 512 byte sectors.
- * This corresponds to the PCDOS / PCW16 1440k formaat. */
+ * This corresponds to the PCDOS / PCW16 1440k format. */
 	public static final int FMT_1440K = 4;
 /** 8 sectors, 1 side, 40 tracks, 512 byte sectors.
  * This corresponds to the PCDOS 1.0 160k format. */
@@ -83,12 +83,29 @@ public class FormatType
 /** 10 sectors, 1 side, 40 tracks, 512 byte sectors. 
    First sector number is 1. This corresponds to the PCW XCF2 format. */
 	public static final int FMT_200K = 17;
-/** 10 sectors, 1 side, 40 tracks, 256 byte sectors, MFM. 
+/** 10 sectors, 1 side, 40 tracks, 256 byte sectors, FM.
    First sector number is 0. This corresponds to the Acorn DFS 40-track format. */
 	public static final int FMT_BBC100 = 18;
-/** 10 sectors, 1 side, 80 tracks, 256 byte sectors, MFM.
+/** 10 sectors, 1 side, 80 tracks, 256 byte sectors, FM.
    First sector number is 0. This corresponds to the Acorn DFS 80-track format. */
 	public static final int FMT_BBC200 = 19;
+/** 10 sectors, 1 side, 80 tracks, 512 byte sectors, first sector number is 0. */
+	public static final int FMT_MBEE400 = 20;
+/** 10 sectors, 2 sides out and out, 80 tracks, 512 byte sectors, first sector number is 1. */
+	public static final int FMT_MGT800 = 21;
+/** 16 sectors, 2 side, 80 tracks, 256 byte sectors, first sector number is 1. */
+	public static final int FMT_TRDOS640 = 22;
+/** 10 sectors, 1 side, 40 tracks, 512 byte sectors, first sector number is 1. */
+	public static final int FMT_AMPRO200 = 23;
+/** 10 sectors, 2 side, 40 tracks, 512 byte sectors, first sector number is 17. */
+	public static final int FMT_AMPRO400D = 24;
+/** 5 sectors, 1 side, 80 tracks, 1024 byte sectors, first sector number is 1. */
+	public static final int FMT_AMPRO400S = 25;
+/** 5 sectors, 2 side, 80 tracks, 1024 byte sectors, first sector number is 17. */
+	public static final int FMT_AMPRO800 = 26;
+/** 15 sectors, 2 sides, 80 tracks, 512 byte sectors.
+ * This corresponds to the PCDOS / PCW16 1200k format. */
+	public static final int FMT_1200K = 27;
 
 /** Initialise a Geometry object with a standard format. 
  * @param formatId One of the format IDs provided by this class.
