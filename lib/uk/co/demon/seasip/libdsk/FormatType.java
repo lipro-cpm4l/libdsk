@@ -106,6 +106,10 @@ public class FormatType
 /** 15 sectors, 2 sides, 80 tracks, 512 byte sectors.
  * This corresponds to the PCDOS / PCW16 1200k format. */
 	public static final int FMT_1200K = 27;
+/** 16 sectors, 2 side, 80 tracks, 256 byte sectors, first sector number is 1. */
+	public static final int FMT_SCP640 = 28;
+/** 5 sectors, 2 side, 80 tracks, 1024 byte sectors, first sector number is 1. */
+	public static final int FMT_SCP800 = 29;
 
 /** Initialise a Geometry object with a standard format. 
  * @param formatId One of the format IDs provided by this class.

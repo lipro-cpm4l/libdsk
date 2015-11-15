@@ -67,6 +67,8 @@ static DSK_NAMEDGEOM stdg[] =
 {"ampro400s",{ SIDES_ALT,     80, 1, 5,   1,1024, RATE_SD, 0x04, 0x05,   0,  0 }, "Ampro 80 track single-sided" }, /* Ampro 400k (22DISK AMP3) */
 {"ampro800",{ SIDES_ALT,     80, 2, 5,   17,1024, RATE_SD, 0x04, 0x05,   0,  0 }, "Ampro 80 track double-sided" }, /* Ampro 800k (22DISK AMP4) */
 {"pcw1200", { SIDES_ALT,     80, 2,15,    1, 512, RATE_HD, 0x1B, 0x54,   0,  0 }, "PcW16 / IBM 1200k "}, /* 1.2M */
+{"scp640",    { SIDES_ALT,     80, 2,16,    1, 256, RATE_SD, 0x12, 0x60,   0,  0 }, "robotron / PC1715 SCP 640k" }, /* robotron / PC1715 SCP 640k */
+{"scp800",    { SIDES_ALT,     80, 2, 5,    1,1024, RATE_SD, 0x04, 0x05,   0,  0 }, "robotron / PC1715 SCP 800k" }, /* robotron / PC1715 SCP 800k */
 
 /* Geometries below this line don't appear in dsk_format_t and can be accessed
  * only by name. */
