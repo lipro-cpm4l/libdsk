@@ -103,6 +103,10 @@ public class FormatType
 	public static final int FMT_AMPRO400S = 25;
 /** 5 sectors, 2 side, 80 tracks, 1024 byte sectors, first sector number is 17. */
 	public static final int FMT_AMPRO800 = 26;
+/** 16 sectors, 2 side, 80 tracks, 256 byte sectors, first sector number is 1. */
+	public static final int FMT_SCP640 = 27;
+/** 5 sectors, 2 side, 80 tracks, 1024 byte sectors, first sector number is 1. */
+	public static final int FMT_SCP800 = 28;
 
 /** Initialise a Geometry object with a standard format. 
  * @param formatId One of the format IDs provided by this class.
