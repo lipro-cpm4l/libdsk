@@ -69,6 +69,8 @@ static DSK_NAMEDGEOM stdg[] =
 {"pcw1200", { SIDES_ALT,     80, 2,15,    1, 512, RATE_HD, 0x1B, 0x54,   RECMODE_MFM,  0 }, "PcW16 / IBM 1200k "}, /* 1.2M */
 {"mac400",  { SIDES_ALT,     80, 1,12,    1, 512, RATE_SD, 0x0C, 0x17,   RECMODE_GCR_MAC, 0 }, "Macintosh GCR 400k"}, /* Mac GCR 400k */
 {"mac800",  { SIDES_ALT,     80, 2,12,    1, 512, RATE_SD, 0x0C, 0x17,   RECMODE_GCR_MAC, 0 }, "Macintosh GCR 800k"}, /* Mac GCR 800k */
+{"scp640",  { SIDES_ALT,     80, 2,16,    1, 256, RATE_SD, 0x12, 0x60,   RECMODE_MFM,  0 }, "Robotron SCP 640k" }, /* Robotron SCP 640k */
+{"scp800",  { SIDES_ALT,     80, 2, 5,    1,1024, RATE_SD, 0x04, 0x05,   RECMODE_MFM,  0 }, "Robotron SCP 800k" }, /* Robotron SCP 800k */
 
 /* Geometries below this line don't appear in dsk_format_t and can be accessed
  * only by name. */

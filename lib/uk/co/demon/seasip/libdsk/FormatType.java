@@ -112,6 +112,10 @@ public class FormatType
 /** 12 sectors, 2 sides, 80 tracks, 512 byte sectors.
  * This corresponds to the Apple GCR 800k format. */
 	public static final int FMT_MAC800 = 29;
+/** 16 sectors, 2 side, 80 tracks, 256 byte sectors, first sector number is 1. */
+	public static final int FMT_SCP640 = 30;
+/** 5 sectors, 2 side, 80 tracks, 1024 byte sectors, first sector number is 1. */
+	public static final int FMT_SCP800 = 31;
 
 /** Initialise a Geometry object with a standard format. 
  * @param formatId One of the format IDs provided by this class.

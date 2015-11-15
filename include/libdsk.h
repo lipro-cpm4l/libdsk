@@ -161,6 +161,8 @@ typedef enum
 	FMT_1200K,	/* 15 sectors, 2 sides  */
 	FMT_MAC400,	/* Apple GCR 400k */
 	FMT_MAC800,	/* Apple GCR 800k */
+	FMT_SCP640,	/* 16 sectors,  256 bytes/sector, 2 sides */
+	FMT_SCP800,	/*  5 sectors, 1024 bytes/sector, 2 sides */
 	FMT_UNKNOWN = -1
 } dsk_format_t;
 
