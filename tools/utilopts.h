@@ -23,3 +23,4 @@ void excise_arg(int na, int *argc, char **argv);
 int standard_args(int argc, char **argv);
 int ignore_arg(char *arg, int count, int *argc, char **argv);
 void args_complete(int *argc, char **argv);
+int version(void);

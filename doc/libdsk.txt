@@ -1,4 +1,4 @@
-LibDsk v1.3.9 
+LibDsk v1.4.0 
 
 John Elliott
 
@@ -1434,14 +1434,13 @@ dsk_set_option(dsk, “FS:CP/M:VERSION”, -2);
 
   Bugs
 
-rcpmfs is new and untried code. The following are known bugs or 
-missing features:
+rcpmfs is not without its bugs and missing features:
 
-  So far, rcpmfs has only been tested under the dsktrans pattern 
-  of usage (which writes the directory and then the file space), 
-  and with fairly simple operations in a CP/M emulator. It is not 
-  known how well it holds up under heavy use as a live CP/M 
-  filesystem.
+  To my knowledge, rcpmfs has only been tested under the dsktrans 
+  pattern of usage (which writes the directory and then the file 
+  space), and with fairly simple operations in a CP/M emulator. 
+  It is not known how well it holds up under heavy use as a live 
+  CP/M filesystem.
 
   The CP/M attributes F1-F4, passwords and permissions are not 
   mapped. The SYS and ARC attributes are only mapped in the Win32 
@@ -2696,6 +2695,34 @@ can be configured to use LibDsk for all disc access, thus
 allowing CP/M discs and emulator disc images to be read and 
 written. 
 
+cpmtools v2.19+ allow a cpmtools disk definition to be associated 
+with a LibDsk geometry, by adding a “libdsk:format” entry to the 
+disk definition. For example, this entry uses “libdsk:format 
+ibm1440” so that the disk image is accessed using the 'ibm1440' 
+geometry rather than the default 'pcw1440'.
+
+diskdef cpm86-144feat
+
+  seclen 512
+
+  tracks 160
+
+  sectrk 18
+
+  blocksize 4096
+
+  maxdir 256
+
+  skew 1
+
+  boottrk 2
+
+  os 3
+
+  libdsk:format ibm1440
+
+end 
+
 The myz80 and nanowasp drivers use a fixed disk format; here are 
 diskdefs entries which can be used to read them:
 
@@ -2715,7 +2742,7 @@ diskdef myz80
 
   boottrk 0
 
-  os 3 
+  os 3
 
 end
 

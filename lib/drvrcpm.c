@@ -1906,7 +1906,7 @@ dsk_err_t rcpmfs_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	dir_sectors = rcpmfs_secperblock(rcself) * rcself->rc_dirblocks;
 
 /* Directory writes have to follow through to the underlying directory */
-	if (buffer && lsect >= 0 && lsect < dir_sectors)
+	if (buffer && lsect < dir_sectors)
 	{
 		dir_entries  = (rcself->rc_geom.dg_secsize / 32);   
 		dir_first	= lsect * dir_entries;

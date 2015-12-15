@@ -140,10 +140,10 @@ static size_t decode_size(int isfree, unsigned char size)
 {
 	switch (size & JV3_SIZE)
 	{
-		case 0: return (isfree) ?  512 :  256; break;	
-		case 1: return (isfree) ? 1024 :  128; break;	
-		case 2: return (isfree) ?  128 : 1024; break;	
-		case 3: return (isfree) ?  256 :  512; break;	
+		case 0: return (isfree) ?  512 :  256; 
+		case 1: return (isfree) ? 1024 :  128; 	
+		case 2: return (isfree) ?  128 : 1024; 	
+		case 3: return (isfree) ?  256 :  512; 	
 	}
 	/* Can't happen */
 	return 256;
@@ -354,7 +354,7 @@ dsk_err_t jv3_creat(DSK_DRIVER *s, const char *filename)
 	self->jv3_len = sizeof(self->jv3_header);
 
 	if (fwrite(self->jv3_header, 1, sizeof(self->jv3_header), self->jv3_fp)
-		< sizeof(self->jv3_header))
+		< (int)sizeof(self->jv3_header))
 	{
 		return DSK_ERR_SYSERR;
 	}
@@ -441,7 +441,7 @@ dsk_err_t format_sector_callback(JV3_DSK_DRIVER *self,
 				 JV3_ENUM_STATE *state, void *param)
 {
 	READSEC_DATA *rsd = (READSEC_DATA *)param;
-	int n;
+	unsigned n;
 	long pos;
 
 	if (!state->isfree || state->secsize != rsd->sector_size)
@@ -822,7 +822,7 @@ dsk_err_t jv3_status(DSK_DRIVER *s, const DSK_GEOMETRY *geom,
 typedef struct
 {
 	DSK_GEOMETRY testgeom;
-        int minsec0, maxsec0, minsec1, maxsec1;
+        dsk_psect_t minsec0, maxsec0, minsec1, maxsec1;
 } GEOM_RESULT;
 
 static dsk_err_t geom_callback(JV3_DSK_DRIVER *self, 

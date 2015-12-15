@@ -139,7 +139,7 @@ unsigned check_retry(char *arg, int *argc, char **argv)
 }
 
 static char *st_cmt = NULL;
-static int st_cmt_size = 0;
+static unsigned st_cmt_size = 0;
 
 static void append_comment(char *s)
 {

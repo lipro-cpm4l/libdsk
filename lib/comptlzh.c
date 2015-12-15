@@ -479,8 +479,8 @@ static int Decode(TLZH_COMPRESS_DATA *self, unsigned char *buf, int len)
                 if((c = DecodeChar(self)) < 0)
                     return(count); // fatal error
                 if (c < 256) {
-                    *(buf++) = c;
-                    self->text_buf[self->r++] = c;
+                    *(buf++) = (unsigned char)c;
+                    self->text_buf[self->r++] = (unsigned char)c;
                     self->r &= (TLZH_N - 1);
                     count++;                
                 } 
@@ -495,9 +495,9 @@ static int Decode(TLZH_COMPRESS_DATA *self, unsigned char *buf, int len)
             else { // still chars from last string
                 while( self->bufndx < self->bufcnt && count < len ) {
                     c = self->text_buf[(self->bufpos + self->bufndx) & (TLZH_N - 1)];
-                    *(buf++) = c;
+                    *(buf++) = (unsigned char)c;
                     self->bufndx++;
-                    self->text_buf[self->r++] = c;
+                    self->text_buf[self->r++] = (unsigned char)c;
                     self->r &= (TLZH_N - 1);
                     count++;
                 }
@@ -560,7 +560,7 @@ static dsk_err_t uncompress(TLZH_COMPRESS_DATA *self)
 	{
 		if((rd = Decode(self, self->obuf,TLZH_BUFSZ)) > 0)
 		{
-			if (fwrite(self->obuf, 1, rd, self->fp_out) < rd) 
+			if (fwrite(self->obuf, 1, rd, self->fp_out) < (unsigned)rd) 
 				return DSK_ERR_SYSERR;
 		}
 		off += rd;

@@ -541,8 +541,8 @@ static void dump(char *cmd, int showhex, int showascii)
 		if (from == -1) from = 0;
 		upto = 1 + get_hex(t);
 	}
-	if (from < 0  || from >= dg.dg_secsize) from = 0;
-	if (upto <= 0 || upto >  dg.dg_secsize) upto = dg.dg_secsize;
+	if (from < 0  || (unsigned)from >= dg.dg_secsize) from = 0;
+	if (upto <= 0 || (unsigned)upto >  dg.dg_secsize) upto = dg.dg_secsize;
 	if (from > upto) { n = from; from = upto-1; upto = n+1; }
 	for (n = from; n < upto; n = ((n / 16)+1)*16)
 	{
@@ -793,7 +793,7 @@ dsk_err_t save_yank(const char *s)
 	for (b0 = yank_chain; b0 != NULL; b0 = b0->next)
 	{
 		int res = fwrite(b0->data, 1, b0->length, fp);
-		if (res < b0->length)
+		if (res < (int)b0->length)
 		{
 			printf("Write error on file: %s\n", s);
 			fclose(fp);
@@ -900,7 +900,7 @@ dsk_err_t obey(char *cmd)
 		case 'N':
 			return new_geometry(cmd+1);
 		case 'O':
-			for (value = 0; value < dg.dg_secsize; value++)
+			for (value = 0; value < (int)dg.dg_secsize; value++)
 			{
 				secbuf[value] ^= 0xFF;
 			}
@@ -1130,7 +1130,7 @@ dsk_err_t search(const char *arg)
 			showts();
 			return err;
 		}
-		for (n = 0; n < dg.dg_secsize - buflen; n++)
+		for (n = 0; n < (int)(dg.dg_secsize - buflen); n++)
 		{
 			if (!memcmp(secbuf + n, buf, buflen))
 			{
@@ -1177,8 +1177,8 @@ int get_range(const char *arg, int *from, int *upto)
 		printf("Cannot parse as xx or xx-xx: %s\n", arg);
 		return 0;
 	}
-	if (*from >= dg.dg_secsize) *from = dg.dg_secsize - 1;
-	if (*upto >= dg.dg_secsize) *upto = dg.dg_secsize - 1;
+	if (*from >= (int)dg.dg_secsize) *from = (int)dg.dg_secsize - 1;
+	if (*upto >= (int)dg.dg_secsize) *upto = (int)dg.dg_secsize - 1;
 	if (*from > *upto)
 	{
 		int tmp = *from; *from = *upto; *upto = tmp;
@@ -1217,13 +1217,13 @@ dsk_err_t change(const char *arg, int ascii)
 	{
 		for (n = 0; n < buflen; n++)
 		{
-			if (n + from >= dg.dg_secsize) break;
+			if ((unsigned)(n + from) >= dg.dg_secsize) break;
 			secbuf[n+from] = buf[n];
 		}
 	}
 	else for (n = from; n <= upto; n++)
 	{
-		if (n >= dg.dg_secsize) break;
+		if ((unsigned)n >= dg.dg_secsize) break;
 		secbuf[n] = buf[ (n-from) % buflen ];
 	}
 	dsk_free(buf);

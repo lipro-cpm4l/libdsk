@@ -241,6 +241,10 @@ SOURCE=..\lib\drvimd.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvjv3.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvlinux.c
 
 !IF  "$(CFG)" == "libdsk - Win32 Release"
@@ -803,6 +807,10 @@ SOURCE=..\lib\drvi.h
 # Begin Source File
 
 SOURCE=..\lib\drvimd.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvjv3.h
 # End Source File
 # Begin Source File
 

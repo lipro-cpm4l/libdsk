@@ -289,9 +289,11 @@ static dsk_err_t imd_load_track(IMD_DSK_DRIVER *self, dsk_ltrack_t count,
 		tmpsec[n].imds_status = c;
 		switch(tmpsec[n].imds_status)
 		{
-			default:
+			default: 
+#ifndef WIN16
 				fprintf(stderr, "Unsupported IMD status 0x%02x",
-					tmpsec[n].imds_status);
+					tmpsec[n].imds_status);  
+#endif
 				dsk_free(tmpsec);
 				imd_free_track(trkh);
 				return DSK_ERR_NOTME;

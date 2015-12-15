@@ -1,7 +1,7 @@
 # Microsoft Visual C++ generated build script - Do not modify
 
 PROJ = LDSERVER
-DEBUG = 1
+DEBUG = 0
 PROGTYPE = 0
 CALLER = 
 ARGS = 
@@ -86,8 +86,8 @@ LDSERVER.OBJ +
 $(OBJS_EXT)
 $(PROJ).EXE
 $(MAPFILE)
-H:\DOSC\USR\MSVC\LIB\+
-H:\DOSC\USR\MSVC\MFC\LIB\+
+E:\USR\MSVC\LIB\+
+E:\USR\MSVC\MFC\LIB\+
 $(LIBS)
 $(DEFFILE);
 <<

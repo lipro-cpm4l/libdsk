@@ -36,6 +36,8 @@ if errorlevel 1 goto abort
 if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../lib/drvmyz80.c
 if errorlevel 1 goto abort
+%CC% %CFLAGS% -c ../lib/drvjv3.c
+if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../lib/drvnwasp.c
 if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../lib/drvposix.c
@@ -141,6 +143,8 @@ if errorlevel 1 goto abort
 libr r libdsk.lib drvimd.obj
 if errorlevel 1 goto abort
 libr r libdsk.lib drvint25.obj
+if errorlevel 1 goto abort
+libr r libdsk.lib drvjv3.obj
 if errorlevel 1 goto abort
 libr r libdsk.lib drvlogi.obj
 if errorlevel 1 goto abort

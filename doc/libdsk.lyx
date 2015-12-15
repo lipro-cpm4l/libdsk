@@ -61,7 +61,7 @@
 \begin_body
 
 \begin_layout Title
-LibDsk v1.3.9 
+LibDsk v1.4.0 
 \end_layout
 
 \begin_layout Author
@@ -4235,14 +4235,13 @@ Bugs
 \end_layout
 
 \begin_layout Standard
-rcpmfs is new and untried code.
- The following are known bugs or missing features:
+rcpmfs is not without its bugs and missing features:
 \end_layout
 
 \begin_layout Itemize
-So far, rcpmfs has only been tested under the dsktrans pattern of usage
- (which writes the directory and then the file space), and with fairly simple
- operations in a CP/M emulator.
+To my knowledge, rcpmfs has only been tested under the dsktrans pattern
+ of usage (which writes the directory and then the file space), and with
+ fairly simple operations in a CP/M emulator.
  It is not known how well it holds up under heavy use as a live CP/M filesystem.
 \end_layout
 
@@ -7973,6 +7972,73 @@ cpmtools v1.9 and later <http://www.moria.de/~michael/cpmtools/> can be configur
 \end_layout
 
 \begin_layout Standard
+cpmtools v2.19+ allow a cpmtools disk definition to be associated with a
+ LibDsk geometry, by adding a 
+\begin_inset Quotes eld
+\end_inset
+
+libdsk:format
+\begin_inset Quotes erd
+\end_inset
+
+ entry to the disk definition.
+ For example, this entry uses 
+\begin_inset Quotes eld
+\end_inset
+
+libdsk:format ibm1440
+\begin_inset Quotes erd
+\end_inset
+
+ so that the disk image is accessed using the 'ibm1440' geometry rather
+ than the default 'pcw1440'.
+\end_layout
+
+\begin_layout LyX-Code
+diskdef cpm86-144feat
+\end_layout
+
+\begin_layout LyX-Code
+  seclen 512
+\end_layout
+
+\begin_layout LyX-Code
+  tracks 160
+\end_layout
+
+\begin_layout LyX-Code
+  sectrk 18
+\end_layout
+
+\begin_layout LyX-Code
+  blocksize 4096
+\end_layout
+
+\begin_layout LyX-Code
+  maxdir 256
+\end_layout
+
+\begin_layout LyX-Code
+  skew 1
+\end_layout
+
+\begin_layout LyX-Code
+  boottrk 2
+\end_layout
+
+\begin_layout LyX-Code
+  os 3
+\end_layout
+
+\begin_layout LyX-Code
+  libdsk:format ibm1440
+\end_layout
+
+\begin_layout LyX-Code
+end 
+\end_layout
+
+\begin_layout Standard
 The myz80 and nanowasp drivers use a fixed disk format; here are diskdefs
  entries which can be used to read them:
 \end_layout
@@ -8010,7 +8076,7 @@ diskdef myz80
 \end_layout
 
 \begin_layout LyX-Code
-  os 3 
+  os 3
 \end_layout
 
 \begin_layout LyX-Code

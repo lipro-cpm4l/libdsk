@@ -1,4 +1,10 @@
+2015-12-15 John Elliott
+
+	* OK, let's call it stable: libdsk-1.4.0 released.
+
 2015-05-01 John Elliott
+
+	* libdsk-1.3.9 released.
 
 	* New backend: JV3 (for TRS-80 'JV3' disc images). These have no
 	 magic number, so must be specified manually.

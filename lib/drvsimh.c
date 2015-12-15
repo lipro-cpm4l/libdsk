@@ -289,7 +289,7 @@ dsk_err_t simh_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 dsk_err_t simh_xseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
 			dsk_pcyl_t cylinder, dsk_phead_t head)
 {
-	if (cylinder < 0 || cylinder >= 128) return DSK_ERR_SEEKFAIL;
+	if (cylinder >= 128) return DSK_ERR_SEEKFAIL;
 	return DSK_ERR_OK;
 }
 

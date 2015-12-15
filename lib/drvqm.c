@@ -924,8 +924,10 @@ dsk_err_t drv_qm_secid(DSK_DRIVER * self, const DSK_GEOMETRY * geom,
 
     if(result)
     {
+/* This will never happen, qm_self->qm_sector is unsigned
 	if(qm_self->qm_sector < 0)
-	    qm_self->qm_sector = qm_self->qm_h_secbase + 1;	/* reinit */
+	    qm_self->qm_sector = qm_self->qm_h_secbase + 1;	// reinit 
+*/
 	result->fmt_cylinder = cylinder;
 	result->fmt_head = head;
 	result->fmt_sector = ((qm_self->qm_sector++) % qm_self->qm_h_nbr_sec_per_track)

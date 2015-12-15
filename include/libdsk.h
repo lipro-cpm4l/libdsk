@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001-8 John Elliott <seasip.webmaster@gmail.com>           *
+ *    Copyright (C) 2001-2015 John Elliott <seasip.webmaster@gmail.com>    *
  *                                                                         *
  *    Modifications to add dsk_dirty()                                     *
  *    (c) 2005 Philip Kendall <pak21-spectrum@srcf.ucam.org>               *
@@ -58,7 +58,7 @@
 extern "C" {
 #endif
 
-#define LIBDSK_VERSION "1.3.9"
+#define LIBDSK_VERSION "1.4.0"
 
 /************************* TYPES ********************************/
 
