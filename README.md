@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/lipro-cpm4l/libdsk.svg?branch=master)](https://travis-ci.org/lipro-cpm4l/libdsk)
+
 LibDsk - Library for accessing floppy drives and disc images
 ============================================================
 
