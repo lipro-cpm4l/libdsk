@@ -2,7 +2,7 @@
 
 
 /* File created by MIDL compiler version 5.01.0164 */
-/* at Wed Jan 23 19:21:15 2008
+/* at Wed Dec 16 09:56:36 2015
  */
 /* Compiler settings for J:\C\LibDsk\win32vc6\atlibdsk.idl:
     Oicf (OptLev=i2), W1, Zp8, env=Win32, ms_ext, c_ext
@@ -123,7 +123,8 @@ typedef /* [public][public][public] */
 enum __MIDL___MIDL_itf_atlibdsk_0000_0001
     {	ALT	= 0,
 	OUTBACK	= ALT + 1,
-	OUTOUT	= OUTBACK + 1
+	OUTOUT	= OUTBACK + 1,
+	EXTSURFACE	= OUTOUT + 1
     }	Sidedness;
 
 typedef /* [public][public][public] */ 

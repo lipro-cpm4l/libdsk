@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2001  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *   This library is free software; you can redistribute it and/or         *
  *    modify it under the terms of the GNU Library General Public          *
@@ -62,6 +62,9 @@
     &dc_adisk,  /* APRIDISK image */
     &dc_qm,     /* CopyQM */
     &dc_tele,	/* Teledisk */
+    &dc_imd,	/* IMAGEDISK IMD */
+/*  &dc_dskf,	   IBM LoadDskF */
+    &dc_ydsk,	/* YAZE YDSK */
 
 /* 4. Raw files with no magic number. */
     &dc_posix,
@@ -69,8 +72,10 @@
  *   the MYZ80 drive image cannot be reliably identified, so it must be 
  *   explicitly specified. */
     &dc_myz80,
+    &dc_simh,
     &dc_nwasp,
     &dc_logical,
+    &dc_jv3,
     &dc_cfi,    /* RLE-compressed raw. The reasons that this isn't 
              * handled by the general compression system are:
              * 1. No magic number, so can't autodetect.

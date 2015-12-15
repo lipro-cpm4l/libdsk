@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2005  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2005  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -26,8 +26,22 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "config.h"
+#ifdef HAVE_LIBGEN_H
+# include <libgen.h>
+#endif
 #include "libdsk.h"
 #include "utilopts.h"
+
+#ifdef __PACIFIC__
+# define AV0 "DSKTEST"
+#else
+# ifdef HAVE_BASENAME
+#  define AV0 (basename(argv[0]))
+# else
+#  define AV0 argv[0]
+# endif
+#endif
 
 static unsigned retries = 1;
 static int failures = 0;
@@ -41,18 +55,27 @@ int do_test(char *outfile, char *outtyp, char *outcomp, int forcehead);
 int help(int argc, char **argv)
 {
 	fprintf(stderr, "Syntax: \n"
-                "      %s { -type <type> } "
-		"{ -retry <count> } { -side <side> } { -80 } dskimage \n",
-			argv[0]);
+		"      %s -libdskrc              Outputs all known disk\n"
+                "                                formats in .libdskrc format.\n"
+                "      %s { options} dskimage    Tests libdsk drivers on the\n"
+                "                                supplied disk image (this\n"
+                "                                may destroy data!)\n\n", 
+		AV0, AV0);
+
+	fprintf(stderr, "Options:\n"
+                        "-type <type>     Specify libdsk driver to test\n"
+                        "                 %s -types lists all drivers\n"
+                        "-retry <count>   Number of times to retry\n"
+                        "-side <side>     Force head 0 or 1\n"
+                        "-80              Sets up an 80-cylinder 360k disk\n"
+                        "                 geometry; this may be needed to\n"
+                        "                 avoid 'unsuitable media' errors on\n"
+                        "                 80-track drives.\n",
+			AV0);
 	fprintf(stderr,"\nDefault type is DSK.\n\n");
 		
 	fprintf(stderr, "eg: %s myfile.DSK\n"
-                        "    %s -type floppy -side 1 /dev/fd0\n", argv[0], argv[0]);
-	fprintf(stderr, " The -80 option sets up an 80-cylinder 360k "
-			"geometry; this may be needed to\n"
-			"avoid 'unsuitable media' errors on "
-			"80-track drives.\n");
-
+                        "    %s -type floppy -side 1 /dev/fd0\n", AV0, AV0);
 	return 1;
 }
 
@@ -68,12 +91,60 @@ static void report_end(void)
 	fflush(stdout);
 }
 
+
+static int dump_libdskrc(void)
+{
+	int n = 0;
+	DSK_GEOMETRY geom;
+	const char *title;
+	const char *desc;
+
+	while (!dg_stdformat(&geom, n++, &title, &desc)) {
+		printf("[%s]\n", title);
+		printf("Description=%s\n", desc);
+		switch (geom.dg_sidedness) {
+			case SIDES_ALT:        printf("Sidedness=Alt\n"); break;
+			case SIDES_EXTSURFACE: printf("Sidedness=ExtSurface\n"); break;
+			case SIDES_OUTBACK:    printf("Sidedness=OutBack\n"); break;
+			case SIDES_OUTOUT:     printf("Sidedness=OutOut\n"); break;
+		}
+		printf("Cylinders=%d\n", geom.dg_cylinders);
+		printf("Heads=%d\n", geom.dg_heads);
+		printf("Sectors=%d\n", geom.dg_sectors);
+		printf("SecBase=%d\n", geom.dg_secbase);
+		printf("SecSize=%d\n", (int)(geom.dg_secsize));
+		printf("SecBase=%d\n", geom.dg_secbase);
+		switch (geom.dg_datarate) {
+			case RATE_SD: printf("DataRate=SD\n"); break;
+			case RATE_HD: printf("DataRate=HD\n"); break;
+			case RATE_DD: printf("DataRate=DD\n"); break;
+			case RATE_ED: printf("DataRate=ED\n"); break;
+		}
+		printf("RWGap=%d\n", geom.dg_rwgap);
+		printf("FmtGap=%d\n", geom.dg_fmtgap);
+		printf("FM=%c\n", geom.dg_fm ? 'Y' : 'N');
+		printf("Multitrack=%c\n", geom.dg_nomulti ? 'N' : 'Y');
+		printf("SkipDeleted=%c\n", geom.dg_noskip ? 'N' : 'Y');
+		putchar('\n');
+	}
+	return 0;
+}
+
+
 int main(int argc, char **argv)
 {
 	char *outtyp;
 	char *outcomp;
 	int forcehead;
 	int np;
+        int stdret;
+
+        stdret = standard_args(argc, argv); if (!stdret) return 0;
+	if (find_arg("-libdskrc", argc, argv) > 0 ||
+	    find_arg("--libdskrc", argc, argv) > 0)
+	{
+		return dump_libdskrc();
+	}
 
 	if (argc < 2) return help(argc, argv);
 
@@ -90,7 +161,6 @@ int main(int argc, char **argv)
 	retries   = check_retry("-retry", &argc, argv);
 
         if (find_arg("--help",    argc, argv) > 0) return help(argc, argv);
-        if (find_arg("--version", argc, argv) > 0) return version();
 	np = find_arg("-80", argc, argv);
 	if (np > 0) 
 	{
@@ -200,7 +270,7 @@ int do_test(char *outfile, char *outtyp, char *outcomp, int forcehead)
 					pfmt[n].fmt_cylinder,
 					pfmt[n].fmt_head,
 					pfmt[n].fmt_sector,
-					pfmt[n].fmt_secsize);
+					(int)pfmt[n].fmt_secsize);
 			}
 			printf("-----------------\n");
 			dsk_free(pfmt);
@@ -210,7 +280,7 @@ int do_test(char *outfile, char *outtyp, char *outcomp, int forcehead)
 		printf("Checking dsk_lwrite\n");
 		e = dsk_lwrite(outdr, &dg, secbuf, 0);
 		CHECKERR("dsk_lwrite")
-		strcpy(secbuf, "Cyl=3 Head=1 Sec=5");
+		strcpy((char *)secbuf, "Cyl=3 Head=1 Sec=5");
 		printf("Checking dsk_xwrite\n");
 		e = dsk_xwrite(outdr, &dg, secbuf, 0, 0, 3, 1, 5, 512, 0);
 		CHECKERR("dsk_xwrite")
@@ -223,7 +293,7 @@ int do_test(char *outfile, char *outtyp, char *outcomp, int forcehead)
 				secid.fmt_cylinder,
 				secid.fmt_head,
 				secid.fmt_sector,
-				secid.fmt_secsize);
+				(int)secid.fmt_secsize);
 			if (secid.fmt_cylinder != 1 || secid.fmt_head != 0 ||
 			    secid.fmt_secsize != 512) 
 			{
@@ -266,7 +336,7 @@ int do_test(char *outfile, char *outtyp, char *outcomp, int forcehead)
 		printf("Checking dsk_xread\n");
 		e = dsk_xread(outdr, &dg, secbuf, 0, 0, 3, 1, 5, 512, NULL);
 		CHECKERR("dsk_xread")
-		else if (strcmp(secbuf, "Cyl=3 Head=1 Sec=5"))
+		else if (strcmp((char *)secbuf, "Cyl=3 Head=1 Sec=5"))
 		{
 			++failures;
 			printf("-- mismatch!\n");

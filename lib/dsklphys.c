@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2001  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -52,13 +52,34 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16  dg_ls2ps(const DSK_GEOMETRY *self,
 	/* in */	dsk_lsect_t logical, 
 	/* out */	dsk_pcyl_t *cyl, dsk_phead_t *head, dsk_psect_t *sec)
 {
+	dsk_err_t err;
+
 	if (!self) return DSK_ERR_BADPTR;
 	if (!self->dg_sectors || !self->dg_heads) return DSK_ERR_DIVZERO;
 
 	if (logical >= self->dg_cylinders * self->dg_heads * self->dg_sectors)
 		return DSK_ERR_BADPARM;
 
-	if (sec) *sec = (dsk_psect_t)((logical % self->dg_sectors) + self->dg_secbase);
+	if (sec)
+	{
+		if (self->dg_sidedness == SIDES_EXTSURFACE)
+		{
+			dsk_phead_t h;
+
+			logical /= self->dg_sectors;
+			err = dg_lt2pt(self, (dsk_ltrack_t)logical, cyl, &h);
+			if (err) return err;
+		
+			*sec = (dsk_psect_t)((logical % self->dg_sectors) 
+				+ h * self->dg_sectors 
+				+ self->dg_secbase);
+
+		}
+		else
+		{
+			*sec = (dsk_psect_t)((logical % self->dg_sectors) + self->dg_secbase);
+		}
+	}
 
 	logical /= self->dg_sectors;
 	return dg_lt2pt(self, (dsk_ltrack_t)logical, cyl, head);
@@ -82,6 +103,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16  dg_pt2lt(const DSK_GEOMETRY *self,
 
 	switch(self->dg_sidedness)
 	{
+		case SIDES_EXTSURFACE:	/* [1.3.7] */
 		case SIDES_ALT:		track = (cyl * self->dg_heads) + head; break;
 		case SIDES_OUTBACK:	if (self->dg_heads > 2) return DSK_ERR_BADPARM;
 					if (!head)	track = cyl;
@@ -112,6 +134,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_lt2pt(const DSK_GEOMETRY *self,
 
 	switch(self->dg_sidedness)
 	{
+		case SIDES_EXTSURFACE:	/* [1.3.7] */
 		case SIDES_ALT:		c = (logical / self->dg_heads); 
 					h = (logical % self->dg_heads); 
 					break;
@@ -134,6 +157,28 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_lt2pt(const DSK_GEOMETRY *self,
 	if (cyl)  *cyl  = c;
 	if (head) *head = h;
 	return DSK_ERR_OK;
+}
+
+
+/* "Extended surface" discs have sector IDs that don't match the sectors' 
+ * location on disc. This means, anywhere we reflect dsk_read() to dsk_xread(),
+ * we have to translate the physical location to the expected sector ID rather 
+ * than assuming a 1:1 mapping. */
+
+dsk_phead_t dg_x_head(const DSK_GEOMETRY *dg, dsk_phead_t h)
+{
+	if (dg == NULL) return h;
+
+	return (dg->dg_sidedness == SIDES_EXTSURFACE) ? 0 : h;
+}
+
+dsk_phead_t dg_x_sector(const DSK_GEOMETRY *dg, dsk_phead_t h, dsk_psect_t sec)
+{
+	if (dg == NULL) return sec;
+
+	if (dg->dg_sidedness == SIDES_EXTSURFACE) 
+		sec += h * dg->dg_sectors;
+	return sec;
 }
 
 

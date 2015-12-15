@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2001  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -23,13 +23,22 @@
 /* Simple wrapper around dsk_getgeom() */
 
 #include <stdio.h>
+#include <string.h>
+#include "config.h"
+#ifdef HAVE_LIBGEN_H
+# include <libgen.h>
+#endif
 #include "libdsk.h"
 #include "utilopts.h"
 
-#ifdef CPM
-#define AV0 "DSKID"
+#ifdef __PACIFIC__
+# define AV0 "DSKID"
 #else
-#define AV0 argv[0]
+# ifdef HAVE_BASENAME
+#  define AV0 (basename(argv[0]))
+# else
+#  define AV0 argv[0]
+# endif
 #endif
 
 static unsigned retries = 1;
@@ -39,9 +48,14 @@ int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead
 int help(int argc, char **argv)
 {
 	fprintf(stderr, "Syntax: \n"
-                "      %s { -type <type> } "
-		"{ -retry <count> } { -side <side> } dskimage \n",
-			AV0);
+                "      %s { options} dskimage \n\n"
+		"Options:\n"
+                "  -type <type>       Type of disk image file to read.\n"
+                "                     '%s -types' lists valid types.\n"
+                "  -retry <count>     Set number of retries.\n"
+                "  -side <side>       Force read of head 0 or 1.\n",
+		AV0, AV0);
+
 	fprintf(stderr,"\nDefault type is autodetect.\n\n");
 		
 	fprintf(stderr, "eg: %s myfile.DSK\n"
@@ -67,6 +81,7 @@ int main(int argc, char **argv)
 	char *outcomp;
 	int forcehead;
 	int n, err;
+        int stdret = standard_args(argc, argv); if (!stdret) return 0;
 
 	if (argc < 2) return help(argc, argv);
 
@@ -83,7 +98,6 @@ int main(int argc, char **argv)
 	retries   = check_retry("-retry", &argc, argv);
 
         if (find_arg("--help",    argc, argv) > 0) return help(argc, argv);
-        if (find_arg("--version", argc, argv) > 0) return version();
 	args_complete(&argc, argv);
 
 	err = 0;
@@ -96,6 +110,30 @@ int main(int argc, char **argv)
 }
 
 
+const char *show_sidedness(dsk_sides_t r)
+{
+	switch(r)
+	{
+		case SIDES_ALT: return "Alt";
+		case SIDES_OUTBACK: return "OutBack";
+		case SIDES_OUTOUT: return "OutOut";
+		case SIDES_EXTSURFACE: return "ExtSurface";
+	}
+	return "Out-of-range value";
+}
+
+const char *show_rate(dsk_rate_t r)
+{
+	switch (r)
+	{
+		case RATE_HD: return "HD";
+		case RATE_DD: return "DD";
+		case RATE_SD: return "SD";
+		case RATE_ED: return "ED";
+	}
+	return "??";
+}
+
 int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead)
 {
 	DSK_PDRIVER outdr = NULL;
@@ -105,6 +143,7 @@ int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead
 	const char *comp;
 	char *comment;
 	int indent = 0;
+	int opt, any;
 
 	dsk_reportfunc_set(report, report_end);	
 	e = dsk_open(&outdr, outfile, outtyp, outcomp);
@@ -133,23 +172,23 @@ int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead
 					indent, indent, "", forcehead);
 		}
 
-		printf("%-*.*sSidedness:     %2d\n"
+		printf("%-*.*sSidedness:     %s\n"
                        "%-*.*sCylinders:     %2d\n"
 		       "%-*.*sHeads:          %d\n"
                        "%-*.*sSectors:      %3d\n"
                        "%-*.*sFirst sector: %3d\n"
                        "%-*.*sSector size: %4ld\n"
-		       "%-*.*sData rate:      %d\n"
+		       "%-*.*sData rate:     %s\n"
 		       "%-*.*sRecord mode:  %s\n"
 		       "%-*.*sR/W gap:     0x%02x\n"
 		       "%-*.*sFormat gap:  0x%02x\n",
-			indent, indent, "", dg.dg_sidedness, 
+			indent, indent, "", show_sidedness(dg.dg_sidedness), 
 			indent, indent, "", dg.dg_cylinders,
 			indent, indent, "", dg.dg_heads, 
 			indent, indent, "", dg.dg_sectors, 
 			indent, indent, "", dg.dg_secbase,
 			indent, indent, "", (long)dg.dg_secsize, 
-			indent, indent, "", dg.dg_datarate,
+			indent, indent, "", show_rate(dg.dg_datarate),
 			indent, indent, "", (dg.dg_fm ? " FM" : "MFM"), 
 			indent, indent, "", dg.dg_rwgap,   
 			indent, indent, "", dg.dg_fmtgap);
@@ -174,6 +213,30 @@ int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead
 			}
 		}	
 		putchar('\n');
+/* Dump filesystem options -- ie, any options beginning "FS." */
+		opt = 0;
+		any = 0;
+		while (dsk_option_enum(outdr, opt, &comment) == DSK_ERR_OK &&
+				comment != NULL)
+		{
+			int value;
+			char buf[30];
+
+			if (!strncmp(comment, "FS:", 3) &&
+		            dsk_get_option(outdr, comment, &value) == DSK_ERR_OK)
+			{
+				if (!any) 
+				{
+					printf("%-*.*sFilesystem parameters:\n",
+						indent, indent, "");
+					any = 1;
+				}
+				sprintf(buf, "%s:", comment + 3);
+				printf("%-*.*s%-15.15s0x%02x\n",
+					indent, indent, "", buf, value);
+			}			
+			++opt;
+		}
 	}
 	if (outdr) dsk_close(&outdr);
 	if (e)

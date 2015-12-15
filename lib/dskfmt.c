@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2001  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -80,8 +80,8 @@ static DSK_FORMAT * dsk_formauto(const DSK_GEOMETRY *dg,
 	for (ns = 0; ns < dg->dg_sectors; ns++)
 	{
 		fmt[ns].fmt_cylinder = cylinder;
-		fmt[ns].fmt_head     = head;
-		fmt[ns].fmt_sector   = dg->dg_secbase + ns;
+		fmt[ns].fmt_head     = dg_x_head(dg, head);
+		fmt[ns].fmt_sector   = dg_x_sector(dg,head,dg->dg_secbase + ns);
 		fmt[ns].fmt_secsize  = dg->dg_secsize;
 	}
 	return fmt;

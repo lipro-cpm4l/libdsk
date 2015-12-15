@@ -1,7 +1,7 @@
 # Microsoft Visual C++ generated build script - Do not modify
 
 PROJ = LIBDSK16
-DEBUG = 1
+DEBUG = 0
 PROGTYPE = 1
 CALLER = 
 ARGS = 
@@ -93,7 +93,12 @@ SBRS = COMPBZ2.SBR \
 		DRVNTWDM.SBR \
 		REMOTE.SBR \
 		DRVTELE.SBR \
-		DRVLOGI.SBR
+		DRVLOGI.SBR \
+		COMPTLZH.SBR \
+		DRVJV3.SBR \
+		DRVIMD.SBR \
+		DRVSIMH.SBR \
+		DRVYDSK.SBR
 
 
 COMPBZ2_DEP = j:\c\libdsk\lib\compi.h \
@@ -116,6 +121,8 @@ COMPRESS_DEP = j:\c\libdsk\lib\drvi.h \
 	j:\c\libdsk\lib\compsq.h \
 	j:\c\libdsk\lib\compgz.h \
 	j:\c\libdsk\lib\compbz2.h \
+	j:\c\libdsk\lib\compdskf.h \
+	j:\c\libdsk\lib\comptlzh.h \
 	j:\c\libdsk\lib\compress.inc
 
 
@@ -402,6 +409,39 @@ DRVLOGI_DEP = j:\c\libdsk\lib\drvi.h \
 	j:\c\libdsk\lib\drvlogi.h
 
 
+COMPTLZH_DEP = j:\c\libdsk\lib\compi.h \
+	j:\c\libdsk\lib\compress.h \
+	j:\c\libdsk\lib\comptlzh.h
+
+
+DRVJV3_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h \
+	j:\c\libdsk\lib\drvjv3.h
+
+
+DRVIMD_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h \
+	j:\c\libdsk\lib\drvimd.h
+
+
+DRVSIMH_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h \
+	j:\c\libdsk\lib\drvsimh.h
+
+
+DRVYDSK_DEP = j:\c\libdsk\lib\drvi.h \
+	j:\c\libdsk\lib\drv.h \
+	linux/fd.h \
+	linux/fdreg.h \
+	j:\c\libdsk\lib\drvydsk.h
+
+
 all:	$(PROJ).DLL $(PROJ).BSC
 
 COMPBZ2.OBJ:	..\LIB\COMPBZ2.C $(COMPBZ2_DEP)
@@ -539,6 +579,21 @@ DRVTELE.OBJ:	..\LIB\DRVTELE.C $(DRVTELE_DEP)
 DRVLOGI.OBJ:	..\LIB\DRVLOGI.C $(DRVLOGI_DEP)
 	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DRVLOGI.C
 
+COMPTLZH.OBJ:	..\LIB\COMPTLZH.C $(COMPTLZH_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\COMPTLZH.C
+
+DRVJV3.OBJ:	..\LIB\DRVJV3.C $(DRVJV3_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DRVJV3.C
+
+DRVIMD.OBJ:	..\LIB\DRVIMD.C $(DRVIMD_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DRVIMD.C
+
+DRVSIMH.OBJ:	..\LIB\DRVSIMH.C $(DRVSIMH_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DRVSIMH.C
+
+DRVYDSK.OBJ:	..\LIB\DRVYDSK.C $(DRVYDSK_DEP)
+	$(CC) $(CFLAGS) $(CUSEPCHFLAG) /c ..\LIB\DRVYDSK.C
+
 
 $(PROJ).DLL::	COMPBZ2.OBJ COMPGZ.OBJ COMPRESS.OBJ COMPSQ.OBJ DRVCFI.OBJ DRVCPCEM.OBJ \
 	DRVLINUX.OBJ DRVMYZ80.OBJ DRVPOSIX.OBJ DRVWIN32.OBJ DSKCHECK.OBJ DSKERROR.OBJ DSKFMT.OBJ \
@@ -546,7 +601,8 @@ $(PROJ).DLL::	COMPBZ2.OBJ COMPGZ.OBJ COMPRESS.OBJ COMPSQ.OBJ DRVCFI.OBJ DRVCPCEM
 	DSKSEEK.OBJ DSKSGEOM.OBJ DSKSTAT.OBJ DSKTREAD.OBJ DSKWRITE.OBJ DRVWIN16.OBJ DRVNWASP.OBJ \
 	RPCCLI.OBJ RPCMAP.OBJ RPCPACK.OBJ RPCSERV.OBJ DRVRCPM.OBJ DRVQM.OBJ DSKREPRT.OBJ \
 	CRCTABLE.OBJ DRVADISK.OBJ DSKCMT.OBJ DSKRETRY.OBJ DSKDIRTY.OBJ DSKRTRD.OBJ DSKTRKID.OBJ \
-	DRVNTWDM.OBJ REMOTE.OBJ DRVTELE.OBJ DRVLOGI.OBJ $(OBJS_EXT) $(DEFFILE)
+	DRVNTWDM.OBJ REMOTE.OBJ DRVTELE.OBJ DRVLOGI.OBJ COMPTLZH.OBJ DRVJV3.OBJ DRVIMD.OBJ \
+	DRVSIMH.OBJ DRVYDSK.OBJ $(OBJS_EXT) $(DEFFILE)
 	echo >NUL @<<$(PROJ).CRF
 COMPBZ2.OBJ +
 COMPGZ.OBJ +
@@ -593,6 +649,11 @@ DRVNTWDM.OBJ +
 REMOTE.OBJ +
 DRVTELE.OBJ +
 DRVLOGI.OBJ +
+COMPTLZH.OBJ +
+DRVJV3.OBJ +
+DRVIMD.OBJ +
+DRVSIMH.OBJ +
+DRVYDSK.OBJ +
 $(OBJS_EXT)
 $(PROJ).DLL
 $(MAPFILE)

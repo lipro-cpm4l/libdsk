@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2005  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2005  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -31,6 +31,10 @@
 #include "libdsk.h"
 #include "crc16.h"
 
+#ifdef HAVE_LIBGEN_H
+#include <libgen.h>
+#endif
+
 #ifdef HAVE_WINDOWS_H
 # include <windows.h>
 #endif
@@ -38,6 +42,17 @@
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
 #endif
+
+#ifdef __PACIFIC__
+# define AV0 "SERSLAVE"
+#else
+# ifdef HAVE_BASENAME
+#  define AV0 (basename(argv[0]))
+# else
+#  define AV0 argv[0]
+# endif
+#endif
+
 
 unsigned char okay[2] = {0, 0};
 unsigned char pkt_in[20000];
@@ -220,11 +235,11 @@ static dsk_err_t wrbyte(unsigned char c)
 
 static dsk_err_t read_bytes(int count, unsigned char *c)
 {
-	int tries, err, count0;
-	unsigned char *c0 ;
+	int tries, err; /*, count0; */
+/*	unsigned char *c0 ; */
 
-	c0 = c;
-	count0 = count;
+/*	c0 = c; */
+/*	count0 = count; */
 /*	printf("Reading %d bytes\n", count); fflush(stdout); */
 /* Wait for 5 minutes for something to happen */
 	for (tries = 0; tries < 300;)
@@ -759,7 +774,7 @@ int main(int argc, char **argv)
 
 	if (argc < 2)
 	{
-		fprintf(stderr, "Syntax: %s port,speed\n", argv[0]);
+		fprintf(stderr, "Syntax: %s port,speed\n", AV0);
 		return 1;
 	}
 

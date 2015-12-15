@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2002  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2002  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -23,6 +23,7 @@
 /* Compression engines supported by LibDsk */
 
 	&cc_sq,		/* SQueeze */
+/*	&cc_dskf,	 * IBM LoadDskF */
 
 #ifdef HAVE_LIBZ
 	&cc_gz,		/* GZip */
@@ -30,4 +31,4 @@
 #ifdef HAVE_LIBBZ2
 	&cc_bz2,	/* BZip2 */
 #endif
-
+	&cc_tlzh,	/* TeleDisk LZH */

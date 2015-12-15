@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2001  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -31,6 +31,10 @@
 
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
+#endif
+
+#ifdef HAVE_ASSERT_H
+# include <assert.h>
 #endif
 
 #ifndef DISABLE_FLOPPY
@@ -85,6 +89,19 @@ dsk_err_t dg_parse(FILE *fp, DSK_GEOMETRY *dg, char *description);
 dsk_err_t dg_store(FILE *fp, DSK_GEOMETRY *dg, char *description);
 /* The default geometry probe; driver geometry probes can call it */
 dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom);
+/* The default system for storing optional integer properties */
+dsk_err_t dsk_isetoption(DSK_DRIVER *self, const char *name, int value, 
+		int add_if_not_present);
+
+
+/* "Extended surface" discs have sector IDs that don't match the sectors' 
+ * location on disc. This means, anywhere we reflect dsk_read() to dsk_xread(),
+ * we have to translate the physical location to the sector ID field rather 
+ * than assuming a 1:1 mapping. */
+
+dsk_phead_t dg_x_head  (const DSK_GEOMETRY *dg, dsk_phead_t h);
+dsk_psect_t dg_x_sector(const DSK_GEOMETRY *dg, dsk_phead_t h, dsk_psect_t s);
+
 
 #ifdef AUTOSHARE
 # define Q2(x) Q1(x)

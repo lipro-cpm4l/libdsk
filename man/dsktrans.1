@@ -19,7 +19,7 @@
 .\" Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA
 .\"
 .\" Author contact information:
-.\" John Elliott: email: jce@seasip.demon.co.uk
+.\" John Elliott: email: seasip.webmaster@gmail.com
 .\"
 .TH dsktrans 1 "27 December, 2007" "Version 1.2.1" "Emulators"
 .\"
@@ -45,6 +45,8 @@ dsktrans - Copy from one floppy or image file to another
 .RI [ "-format FMT" ]
 .RI [ "-first CYLINDER" ]
 .RI [ "-last CYLINDER" ]
+.RI [ "-comment TEXT" ]
+.RI [ "-comment @FILE" ]
 .RI [ -md3 ]
 .RI [ -logical ]
 .RI [ -apricot ]
@@ -114,7 +116,7 @@ not match the way it's done on the PC.
 .B qm
 Sydex's CopyQM format (can only be read, not written).
 .TP
-.B teledisk 
+.B tele
 Sydex's Teledisk format (can only be read, not written).
 .RE
 
@@ -183,6 +185,19 @@ formatted or written.
 Copy up to and including the specified cylinder.
 
 .TP
+.B -comment TEXT
+Set the comment field in the disc image to the specified text (if supported
+by the image file format).
+
+.TP
+.B -comment @FILE
+Set the comment field in the disc image to the contents of the specified disc
+file (if supported by the image file format). If the filename is "-" (i.e.
+.B -comment @-
+) then you will be asked to type the comment, terminated with a "." on a line
+by itself.
+
+.TP
 .B -odstep
 Double-step the destination drive (used to write 360k discs in 1.2Mb drives).
 Only supported by the Linux floppy driver.
@@ -233,6 +248,6 @@ dskdump(1)
 .\" `AUTHOR' here is deliberate...
 .\"
 .SH AUTHOR
-John Elliott <jce@seasip.demon.co.uk>.
+John Elliott <seasip.webmaster@gmail.com>.
 .PP
 Darren Salt wrote the man pages.

@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2001  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -193,6 +193,9 @@ dsk_err_t linux_open(DSK_DRIVER *self, const char *filename)
 		lxself->lx_fd = open(filename, O_NONBLOCK | O_RDONLY);
 	}
 	if (lxself->lx_fd < 0) return DSK_ERR_SYSERR;
+/* [v1.3.1] This appears to be necessary, otherwise an aborted dskscan will
+ * not necessarily seek back to cylinder 0 */
+	ioctl(lxself->lx_fd, FDCLRPRM);
 
 	return DSK_ERR_OK;
 }
@@ -232,8 +235,9 @@ dsk_err_t linux_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                              void *buf, dsk_pcyl_t cylinder,
                               dsk_phead_t head, dsk_psect_t sector)
 {
-	return linux_xread(self, geom, buf, cylinder, head, 
-			   cylinder, head, sector, geom->dg_secsize, 0);
+	return linux_xread(self, geom, buf, cylinder, head, cylinder, 
+			dg_x_head(geom, head), 
+			dg_x_sector(geom, head, sector), geom->dg_secsize, 0);
 }
 
 dsk_err_t linux_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
@@ -294,8 +298,10 @@ dsk_err_t linux_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                              const void *buf, dsk_pcyl_t cylinder,
                               dsk_phead_t head, dsk_psect_t sector)
 {
-	return linux_xwrite(self, geom, buf, cylinder, head, cylinder, head,
-				sector, geom->dg_secsize, 0);
+	return linux_xwrite(self, geom, buf, cylinder, head, cylinder, 
+			dg_x_head(geom, head),
+			dg_x_sector(geom, head, sector), 
+			geom->dg_secsize, 0);
 }
 
 

@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2002  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2002  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -283,7 +283,7 @@ static dsk_err_t flipbits(SQ_COMPRESS_DATA *self)
 /* Add a bit to the output bitstream */
 static void pushbit(SQ_COMPRESS_DATA *self, int bit)
 {
-	int offs = self->huf_nbits / 8;
+	unsigned offs = self->huf_nbits / 8;
 	unsigned char mask = st_masks[self->huf_nbits % 8];
 
 	if (offs >= sizeof(self->huf_bits)) return;

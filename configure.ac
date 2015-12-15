@@ -1,12 +1,13 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT(lib/dskopen.c)
+UPDATED='December 15, 2015'
+AC_INIT(LibDsk, 1.4.0)
+AC_CONFIG_SRCDIR(lib/dskopen.c)
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(m4)
 AC_CANONICAL_SYSTEM
-VERSION=1.2.2
-UPDATED='December 28, 2013'
-AM_INIT_AUTOMAKE(libdsk, $VERSION)
+LT_INIT
 AM_CONFIG_HEADER(config.h)
+AM_INIT_AUTOMAKE
 
 dnl Support for the Java Native Interface bindings
 AC_ARG_WITH(jni,
@@ -49,13 +50,19 @@ fi
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(errno.h limits.h sys/ioctl.h stat.h sys/stat.h sys/types.h)
-AC_CHECK_HEADERS(unistd.h termios.h)
+AC_CHECK_HEADERS(unistd.h termios.h libgen.h assert.h)
 AC_CHECK_HEADERS(dirent.h fcntl.h utime.h pwd.h time.h dir.h direct.h)
-AC_CHECK_HEADERS(linux/fd.h linux/fdreg.h windows.h winioctl.h shlobj.h)
+AC_CHECK_HEADERS(linux/fd.h linux/fdreg.h shlobj.h)
+AC_CHECK_HEADERS([windows.h winioctl.h], [], [], 
+[[#ifdef HAVE_WINDOWS_H
+#include <windows.h>
+#endif
+]])
 
 dnl Checks for functions
 AC_CHECK_FUNCS(strcmpi stricmp strcasecmp, break)
 AC_CHECK_FUNCS(mkstemp)
+AC_CHECK_FUNCS(basename)
 AC_CHECK_FUNCS(fork)
 AC_CHECK_FUNCS(GetTempFileName)
 AC_CHECK_FUNCS(sleep)

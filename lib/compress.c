@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2002  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2002  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -68,9 +68,9 @@ static dsk_err_t comp_iopen(COMPRESS_DATA **cd, const char *filename, int nc)
 
         (*cd) = dsk_malloc(cc->cc_selfsize);
         if (!*cd) return DSK_ERR_NOMEM;
-    memset((*cd), 0, cc->cc_selfsize);
+	memset((*cd), 0, cc->cc_selfsize);
         err = comp_construct(*cd, filename);
-    (*cd)->cd_class = cc;
+	(*cd)->cd_class = cc;
     if (err == DSK_ERR_OK) 
     {
         char *s = dsk_malloc(strlen(cc->cc_description) + 50);
@@ -95,20 +95,20 @@ static dsk_err_t comp_icreat(COMPRESS_DATA **cd, const char *filename, int nc)
 {
         COMPRESS_CLASS *cc = classes[nc];
         dsk_err_t err;
-    FILE *fp;
+	FILE *fp = NULL;
 
         if (!cc) return DSK_ERR_BADPTR;
 
         (*cd) = dsk_malloc(cc->cc_selfsize);
         if (!*cd) return DSK_ERR_NOMEM;
-    memset((*cd), 0, cc->cc_selfsize);
+	memset((*cd), 0, cc->cc_selfsize);
         err = comp_construct(*cd, filename);
-    (*cd)->cd_class = cc;
-    if (err == DSK_ERR_OK) err = (cc->cc_creat)(*cd);
+	(*cd)->cd_class = cc;
+	if (err == DSK_ERR_OK) err = (cc->cc_creat)(*cd);
 /* Stake out our claim to the temporary file. */
-        if (err == DSK_ERR_OK) err = comp_mktemp(*cd, &fp);
-    if (fp) fclose(fp);
-    if (err == DSK_ERR_OK) return err;
+	if (err == DSK_ERR_OK) err = comp_mktemp(*cd, &fp);
+	if (fp) fclose(fp);
+	if (err == DSK_ERR_OK) return err;
     
         comp_free (*cd);
         *cd = NULL;
@@ -127,7 +127,12 @@ dsk_err_t comp_open(COMPRESS_DATA **cd, const char *filename, const char *type)
     *cd = NULL;
 
 /* Do not attempt to decompress directories */  
+#ifdef __PACIFIC__
+    /* Pacific doesn't declare the first parameter to stat() as const */
+    if (stat((char *)filename, &st)) return DSK_ERR_NOTME;
+#else
     if (stat(filename, &st)) return DSK_ERR_NOTME;
+#endif
     if (S_ISDIR(st.st_mode)) return DSK_ERR_NOTME;
 
 #ifdef LINUXFLOPPY 

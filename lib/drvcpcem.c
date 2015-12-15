@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001,2005  John Elliott <jce@seasip.demon.co.uk>       *
+ *    Copyright (C) 2001,2005  John Elliott <seasip.webmaster@gmail.com>       *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -445,10 +445,10 @@ static long sector_offset(CPCEMU_DSK_DRIVER *self, dsk_psect_t sector,
 	{
 /* v1.1.11: Start by looking at the current sector to see if it's the one
  * requested. */ 
-		if (self->cpc_sector >= 0 && (int)self->cpc_sector < maxsec)
+		if (self->cpc_sector >= 0 && self->cpc_sector < maxsec)
 		{
 /* Calculate the offset of the current sector */
-			for (n = 0; n < (int)self->cpc_sector; n++)
+			for (n = 0; n < self->cpc_sector; n++)
 			{
 				*seclen = (*secid)[6] + 256 * (*secid)[7]; /* [v0.9.0] */
 				offset   += (*seclen);
@@ -470,7 +470,7 @@ static long sector_offset(CPCEMU_DSK_DRIVER *self, dsk_psect_t sector,
 	}
 	else	/* Non-extended, all sector sizes are the same */
 	{
-		if (self->cpc_sector >= 0 && (int)self->cpc_sector < maxsec)
+		if (self->cpc_sector >= 0 && self->cpc_sector < maxsec)
 		{
 /* v1.1.11: As above, check the current sector first */
 			offset += (*seclen) * self->cpc_sector;
@@ -573,7 +573,9 @@ dsk_err_t cpcemu_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 		      dsk_phead_t head, dsk_psect_t sector)
 {
 	return cpcemu_xread(self, geom, buf, cylinder, head, cylinder,
-				head, sector, geom->dg_secsize, 0);
+				dg_x_head(geom, head), 
+				dg_x_sector(geom, head, sector), 
+				geom->dg_secsize, 0);
 }
 
 dsk_err_t cpcemu_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf, 
@@ -678,8 +680,10 @@ dsk_err_t cpcemu_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 			const void *buf, dsk_pcyl_t cylinder,
 			dsk_phead_t head, dsk_psect_t sector)
 {
-	return cpcemu_xwrite(self, geom, buf, cylinder, head, cylinder,head,
-				sector, geom->dg_secsize, 0);
+	return cpcemu_xwrite(self, geom, buf, cylinder, head, cylinder,
+				dg_x_head(geom, head),
+				dg_x_sector(geom, head, sector), 
+				geom->dg_secsize, 0);
 }
 
 dsk_err_t cpcemu_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, 
@@ -950,7 +954,7 @@ dsk_err_t cpcemu_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 
 /* Seek to a cylinder. */
 dsk_err_t cpcemu_xseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
-								dsk_pcyl_t cyl, dsk_phead_t head)
+					dsk_pcyl_t cyl, dsk_phead_t head)
 {
 	CPCEMU_DSK_DRIVER *cpc_self;
 

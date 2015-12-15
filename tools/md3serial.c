@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2001  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -26,13 +26,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "config.h"
+#ifdef HAVE_LIBGEN_H
+# include <libgen.h>
+#endif
 #include "libdsk.h"
 #include "utilopts.h"
 
-#ifdef CPM
-#define AV0 "MD3SERIA"
+#ifdef __PACIFIC__
+# define AV0 "MD3SERIA"
 #else
-#define AV0 argv[0]
+# ifdef HAVE_BASENAME
+#  define AV0 (basename(argv[0]))
+# else
+#  define AV0 argv[0]
+# endif
 #endif
 
 int do_md3(char *outfile, char *outtyp, char *outcomp, int forcehead, char *newserial);
@@ -78,7 +86,9 @@ int main(int argc, char **argv)
 	char *outcomp;
 	char *newser;
 	int forcehead;
+        int stdret;
 
+        stdret = standard_args(argc, argv); if (!stdret) return 0;
 	if (argc < 2) return help(argc, argv);
 
         ignore_arg("-itype", 2, &argc, argv);
@@ -93,7 +103,6 @@ int main(int argc, char **argv)
 	newser    = check_serial("-serial", &argc, argv);
 	forcehead = check_forcehead("-side", &argc, argv);	
         if (find_arg("--help",    argc, argv) > 0) return help(argc, argv);
-        if (find_arg("--version", argc, argv) > 0) return version();
 
 	return do_md3(argv[1], outtyp, outcomp, forcehead, newser);
 }
@@ -101,7 +110,7 @@ int main(int argc, char **argv)
 
 char *unscramble(unsigned char *s)
 {
-	static char buf[8];
+	static unsigned char buf[8];
 	unsigned char b, *t;
 
 	t = buf;	
@@ -111,16 +120,16 @@ char *unscramble(unsigned char *s)
 		++s;
 		++t;	
 	}
-	return buf;
+	return (char *)buf;
 }
 
 char *scramble(unsigned char *s)
 {
-	static char buf[8];
-	char sbuf[8];
+	static unsigned char buf[8];
+	unsigned char sbuf[8];
 	unsigned char b, *t;
 
-	sprintf(sbuf, "%-7.7s", s);
+	sprintf((char *)sbuf, "%-7.7s", s);
 	s = sbuf;
 	t = buf;	
 	for (b = 7; b > 0; b--)
@@ -129,7 +138,7 @@ char *scramble(unsigned char *s)
 		++s;
 		++t;	
 	}
-	return buf;
+	return (char *)buf;
 }
 
 
@@ -158,7 +167,7 @@ int do_md3(char *outfile, char *outtyp, char *outcomp, int forcehead, char *news
 		 * validity */
 		if (newser)
 		{
-			memcpy(buf+17, scramble(newser), 7);
+			memcpy(buf+17, scramble((unsigned char *)newser), 7);
 			e = dsk_pwrite(outdr, &dg, buf, 1, 1, 1);	/* C1H1S1 */
                 	if (!e) printf("New serial no: %s\n", unscramble(buf+17));
 		}

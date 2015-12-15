@@ -6,7 +6,7 @@ ACLOCAL_AMFLAGS=-I m4
 EXTRA_DIST= $(srcdir)/config/* \
 	    $(srcdir)/m4/* \
 	    $(srcdir)/dskwrite/* \
-	    $(srcdir)/dos16ppd/Makefile      \
+	    $(srcdir)/dos16ppd/mk.bat        \
 	    $(srcdir)/dos16ppd/errno.h       \
 	    $(srcdir)/dos16ppd/int25l.as     \
 	    $(srcdir)/dos16ppd/config.h	     \

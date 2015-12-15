@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2005,6  John Elliott <jce@seasip.demon.co.uk>          *
+ *    Copyright (C) 2005,6  John Elliott <seasip.webmaster@gmail.com>          *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -36,6 +36,9 @@
 #include <string.h>
 #include <errno.h>
 #include "config.h"
+#ifdef HAVE_LIBGEN_H
+# include <libgen.h>
+#endif
 #ifdef HAVE_TIME_H
 #include <time.h>
 #endif
@@ -49,10 +52,14 @@
 #include "utilopts.h"
 #include "formname.h"
 
-#ifdef CPM
-#define AV0 "DSKUTIL"
+#ifdef __PACIFIC__
+# define AV0 "DSKUTIL"
 #else
-#define AV0 argv[0]
+# ifdef HAVE_BASENAME
+#  define AV0 (basename(argv[0]))
+# else
+#  define AV0 argv[0]
+# endif
 #endif
 
 static dsk_format_t format = -1;	/* Format for disc image */
@@ -367,24 +374,26 @@ int help(int argc, char **argv)
 			AV0);
 	fprintf(stderr,"\nOptions are:\n"
 		       "-type <type>   type of input disc image\n"
+                       "               '%s -types' lists valid types.\n"
                        "-side <side>   Force side 0 or side 1 of input\n"
 		       "-retry <count> Set number of retries on error\n"
 		       "-dstep         Double-step\n"
-		       "-format        Force a specified format name\n");
+		       "-format        Force a specified format name\n"
+                       "               '%s -formats' lists valid formats.\n",
+			AV0, AV0);
 	fprintf(stderr,"\nDefault type is autodetect.\n\n");
 		
 	fprintf(stderr, "eg: %s /dev/fd0\n"
                         "    %s -format pcw720 /dev/fd1\n",
 			AV0, AV0);
-	valid_formats();
 	return 1;
 }
 
 
 int main(int argc, char **argv)
 {
+        int stdret = standard_args(argc, argv); if (!stdret) return 0;
 
-	if (find_arg("--version", argc, argv) > 0) return version(); 
 	if (argc < 2) return help(argc, argv);
 	if (find_arg("--help",    argc, argv) > 0) return help(argc, argv);
 
@@ -532,8 +541,8 @@ static void dump(char *cmd, int showhex, int showascii)
 		if (from == -1) from = 0;
 		upto = 1 + get_hex(t);
 	}
-	if (from < 0  || from >= dg.dg_secsize) from = 0;
-	if (upto <= 0 || upto >  dg.dg_secsize) upto = dg.dg_secsize;
+	if (from < 0  || (unsigned)from >= dg.dg_secsize) from = 0;
+	if (upto <= 0 || (unsigned)upto >  dg.dg_secsize) upto = dg.dg_secsize;
 	if (from > upto) { n = from; from = upto-1; upto = n+1; }
 	for (n = from; n < upto; n = ((n / 16)+1)*16)
 	{
@@ -784,7 +793,7 @@ dsk_err_t save_yank(const char *s)
 	for (b0 = yank_chain; b0 != NULL; b0 = b0->next)
 	{
 		int res = fwrite(b0->data, 1, b0->length, fp);
-		if (res < b0->length)
+		if (res < (int)b0->length)
 		{
 			printf("Write error on file: %s\n", s);
 			fclose(fp);
@@ -891,7 +900,7 @@ dsk_err_t obey(char *cmd)
 		case 'N':
 			return new_geometry(cmd+1);
 		case 'O':
-			for (value = 0; value < dg.dg_secsize; value++)
+			for (value = 0; value < (int)dg.dg_secsize; value++)
 			{
 				secbuf[value] ^= 0xFF;
 			}
@@ -1121,7 +1130,7 @@ dsk_err_t search(const char *arg)
 			showts();
 			return err;
 		}
-		for (n = 0; n < dg.dg_secsize - buflen; n++)
+		for (n = 0; n < (int)(dg.dg_secsize - buflen); n++)
 		{
 			if (!memcmp(secbuf + n, buf, buflen))
 			{
@@ -1168,8 +1177,8 @@ int get_range(const char *arg, int *from, int *upto)
 		printf("Cannot parse as xx or xx-xx: %s\n", arg);
 		return 0;
 	}
-	if (*from >= dg.dg_secsize) *from = dg.dg_secsize - 1;
-	if (*upto >= dg.dg_secsize) *upto = dg.dg_secsize - 1;
+	if (*from >= (int)dg.dg_secsize) *from = (int)dg.dg_secsize - 1;
+	if (*upto >= (int)dg.dg_secsize) *upto = (int)dg.dg_secsize - 1;
 	if (*from > *upto)
 	{
 		int tmp = *from; *from = *upto; *upto = tmp;
@@ -1208,13 +1217,13 @@ dsk_err_t change(const char *arg, int ascii)
 	{
 		for (n = 0; n < buflen; n++)
 		{
-			if (n + from >= dg.dg_secsize) break;
+			if ((unsigned)(n + from) >= dg.dg_secsize) break;
 			secbuf[n+from] = buf[n];
 		}
 	}
 	else for (n = from; n <= upto; n++)
 	{
-		if (n >= dg.dg_secsize) break;
+		if ((unsigned)n >= dg.dg_secsize) break;
 		secbuf[n] = buf[ (n-from) % buflen ];
 	}
 	dsk_free(buf);
@@ -1265,7 +1274,7 @@ void duhelp(void)
 	       "Tnn\tTrack nn\n"
 /*              U was set user number - a CP/M specific function */
 	       "V\tVerify current sector against buffer\n"
-	       "W\tRead current sector\n"
+	       "W\tWrite current sector\n"
 	       "X\tExit program\n"
 	       "Y\tYank sector into sequential memory\n" 
 	       "$\tPrint geometry variables\n"

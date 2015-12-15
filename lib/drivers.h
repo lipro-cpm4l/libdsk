@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001-2  John Elliott <jce@seasip.demon.co.uk>          *
+ *    Copyright (C) 2001-2  John Elliott <seasip.webmaster@gmail.com>          *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -31,8 +31,13 @@ extern DRV_CLASS dc_nwasp;	/* NanoWasp driver */
 extern DRV_CLASS dc_myz80;	/* MYZ80 driver */
 extern DRV_CLASS dc_cfi;	/* CFI driver */
 extern DRV_CLASS dc_adisk;	/* APRIDISK driver */
+extern DRV_CLASS dc_imd;	/* IMAGEDISK driver */
+extern DRV_CLASS dc_jv3;	/* JV3 TRS-80 driver */
 extern DRV_CLASS dc_qm;		/* CopyQM driver */
 extern DRV_CLASS dc_tele;	/* Teledisk driver */
+extern DRV_CLASS dc_dskf;	/* LoadDskF driver */
+extern DRV_CLASS dc_ydsk;	/* YAZE YDSK driver */
+extern DRV_CLASS dc_simh;	/* SIMH Altair driver */
 extern DRV_CLASS dc_logical;	/* Raw, in logical sector order */
 extern DRV_CLASS dc_rcpmfs;	/* Reverse-CP/MFS driver */
 extern DRV_CLASS dc_remote;	/* All remote drivers */

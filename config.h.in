@@ -1,4 +1,10 @@
-/* config.h.in.  Generated from configure.in by autoheader.  */
+/* config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* Define to 1 if you have the <assert.h> header file. */
+#undef HAVE_ASSERT_H
+
+/* Define to 1 if you have the `basename' function. */
+#undef HAVE_BASENAME
 
 /* Define to 1 if you have the <bzlib.h> header file. */
 #undef HAVE_BZLIB_H
@@ -35,6 +41,9 @@
 
 /* Define to 1 if you have the `bz2' library (-lbz2). */
 #undef HAVE_LIBBZ2
+
+/* Define to 1 if you have the <libgen.h> header file. */
+#undef HAVE_LIBGEN_H
 
 /* Define to 1 if you have the `z' library (-lz). */
 #undef HAVE_LIBZ

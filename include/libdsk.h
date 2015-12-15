@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001-7 John Elliott <jce@seasip.demon.co.uk>           *
+ *    Copyright (C) 2001-2015 John Elliott <seasip.webmaster@gmail.com>    *
  *                                                                         *
  *    Modifications to add dsk_dirty()                                     *
  *    (c) 2005 Philip Kendall <pak21-spectrum@srcf.ucam.org>               *
@@ -58,7 +58,7 @@
 extern "C" {
 #endif
 
-#define LIBDSK_VERSION "1.2.1"
+#define LIBDSK_VERSION "1.4.0"
 
 /************************* TYPES ********************************/
 
@@ -112,8 +112,11 @@ typedef enum
 	SIDES_ALT, 	/* Track n is cylinder (n/heads) head (n%heads) */
 	SIDES_OUTBACK, 	/* Tracks go (head 0) 0,1,2,3,...37,38,39, then
 			             (head 1) 39,38,37,...,2,1,0 */
-	SIDES_OUTOUT	/* Tracks go (head 0) 0,1,2,3,...37,38,39, then
+	SIDES_OUTOUT,	/* Tracks go (head 0) 0,1,2,3,...37,38,39, then
 			             (head 1) 0,1,2,3,...37,38,39 */
+	SIDES_EXTSURFACE/* As SIDES_ALT, but sectors on head 1 identify
+			 * as head 0, with numbers in sequence 
+			 * eg: Head 0 has sectors 1-9, head 1 has 10-18 */
 } dsk_sides_t;
 
 typedef enum
@@ -149,6 +152,10 @@ typedef enum
 	FMT_MBEE400,	/* 10 sectors, 80 tracks, 1 side */
 	FMT_MGT800,     /* 10 sectors, 80 tracks, 2 sides out and out */
 	FMT_TRDOS640,	/* 16 sectors,  256 bytes/sector, 2 sides */
+	FMT_AMPRO200,	/* 10 sectors, 512 bytes/sector, 1 side */
+	FMT_AMPRO400D,	/* 10 sectors, 512 bytes/sector, 2 sides */
+	FMT_AMPRO400S,	/* 5 sectors, 1024 bytes/sector, 1 side */
+	FMT_AMPRO800,	/* 5 sectors, 1024 bytes/sector, 2 sides */
 	FMT_UNKNOWN = -1
 } dsk_format_t;
 
@@ -233,7 +240,7 @@ LDPUBLIC32 void LDPUBLIC16 dsk_reportfunc_get(DSK_REPORTFUNC *report,
  * operation such as decompression */
 LDPUBLIC32 void LDPUBLIC16 dsk_report(const char *s);
 /* Remove a work-in-progress message, if appropriate */
-LDPUBLIC32 void LDPUBLIC16 dsk_report_end();
+LDPUBLIC32 void LDPUBLIC16 dsk_report_end(void);
 
 /*****************************************************************************/
 
@@ -378,6 +385,7 @@ LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_dosgeom(DSK_GEOMETRY *self, const unsigned c
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_pcwgeom(DSK_GEOMETRY *self, const unsigned char *bootsect);
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_cpm86geom(DSK_GEOMETRY *self, const unsigned char *bootsect);
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_aprigeom(DSK_GEOMETRY *self, const unsigned char *bootsect);
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_opusgeom(DSK_GEOMETRY *self, const unsigned char *bootsect);
 
 /* Read a random sector header from current track */
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_psecid(DSK_PDRIVER self, const DSK_GEOMETRY *geom,
@@ -412,6 +420,10 @@ LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_pseek(DSK_PDRIVER self, const DSK_GEOMETRY 
 /* If "index" is in range, returns the n'th driver name in (*drvname).
  * Else sets (*drvname) to null. */
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_type_enum(int idx, char **drvname);
+
+/* If "index" is in range, returns the human-readable description of the 
+ * n'th driver name in (*drvdesc).  Else sets (*drvdesc) to null. */
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dsk_typedesc_enum(int idx, char **drvdesc);
 
 /* If "index" is in range, returns the n'th compressor name in (*compname).
  * Else sets (*drvname) to null. */

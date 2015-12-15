@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2002  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2002  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -58,7 +58,7 @@ dsk_err_t dsk_unpack_i32(unsigned char **input, int *inp_len, int32 *function)
 
 dsk_err_t dsk_unpack_err(unsigned char **input, int *inp_len, dsk_err_t *value)
 	{
-	signed short val;
+	signed short val = DSK_ERR_OK;
 	dsk_err_t err;
 
 	err = dsk_unpack_i16(input, inp_len, (int16 *)&val);
@@ -101,7 +101,7 @@ dsk_err_t dsk_unpack_string(unsigned char **input, int *inp_len, char **buf)
 dsk_err_t dsk_unpack_geom  (unsigned char **input, int *inp_len, DSK_GEOMETRY *g)
 	{
 	dsk_err_t err;
-	int16 i;
+	int16 i = 0;
 
 	err = dsk_unpack_i16(input, inp_len, &i); g->dg_sidedness = i; if (err) return err;
 	err = dsk_unpack_i16(input, inp_len, &i); g->dg_cylinders = i; if (err) return err;
@@ -122,7 +122,7 @@ dsk_err_t dsk_unpack_geom  (unsigned char **input, int *inp_len, DSK_GEOMETRY *g
 dsk_err_t dsk_unpack_format(unsigned char **input, int *inp_len, DSK_FORMAT *f)
 	{
 	dsk_err_t err;
-	int16 i;
+	int16 i = 0;
 
 	err = dsk_unpack_i16(input, inp_len, &i); f->fmt_cylinder = i; if (err) return err;
 	err = dsk_unpack_i16(input, inp_len, &i); f->fmt_head     = i; if (err) return err;

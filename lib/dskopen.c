@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2001  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -60,7 +60,8 @@ static dsk_err_t dsk_icreat(DSK_DRIVER **self, const char *filename, int ndrv, C
 	if (!*self) return DSK_ERR_NOMEM;
 	dr_construct(*self, dc);
 
-	err = (dc->dc_creat)(*self, filename);
+	if (dc->dc_creat) err = (dc->dc_creat)(*self, filename);
+	else err = DSK_ERR_NOTIMPL;
 	if (err == DSK_ERR_OK) 
 	{
 		(*self)->dr_compress = cd;
@@ -180,6 +181,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_close(DSK_DRIVER **self)
 {
 	dsk_err_t e, e2;
 	COMPRESS_DATA *dc;
+	DSK_OPTION *opt, *opt2;
 
 	if (!self || (!(*self)) || (!(*self)->dr_class))    return DSK_ERR_BADPTR;
 
@@ -192,6 +194,14 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_close(DSK_DRIVER **self)
 		else		       e2 = comp_abort (&dc);
 
 		if (!e) e = e2;
+	}
+	/* Free any option blocks the driver has accumulated */
+	opt = (*self)->dr_options;
+	while (opt)
+	{
+		opt2 = opt->do_next;
+		dsk_free(opt);
+		opt = opt2;
 	}
 	dsk_free (*self);
 	*self = NULL;
@@ -217,6 +227,28 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_type_enum(int index, char **drvname)
 	*drvname = NULL;
 	return DSK_ERR_NODRVR;
 }
+
+
+/* If "index" is in range, returns the n'th driver description in (*drvdesc).
+ * Else sets (*drvdesc) to null. */
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_typedesc_enum(int index, char **drvdesc)
+{
+	int ndrv;
+
+	if (!drvdesc) return DSK_ERR_BADPTR;
+
+	for (ndrv = 0; classes[ndrv]; ndrv++)
+	{
+		if (index == ndrv)
+		{
+			*drvdesc = classes[ndrv]->dc_description;
+			return DSK_ERR_OK;
+		}
+	}
+	*drvdesc = NULL;
+	return DSK_ERR_NODRVR;
+}
+
 
 LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_comp_enum(int index, char **compname)
 {

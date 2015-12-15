@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001-2  John Elliott <jce@seasip.demon.co.uk>          *
+ *    Copyright (C) 2001-2  John Elliott <seasip.webmaster@gmail.com>          *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -328,15 +328,18 @@ dsk_err_t cfi_open(DSK_DRIVER *self, const char *filename)
 	{
 		err = cfi_load_track(cfiself, nt++, fp);
 		/* DSK_ERR_OVERRUN: End of file */
-		if (err == DSK_ERR_OVERRUN) return DSK_ERR_OK;
+		if (err == DSK_ERR_OVERRUN) break;
 		if (err) 
 		{
 			dsk_free(cfiself->cfi_filename);
 			dsk_free(cfiself->cfi_tracks);
+			dsk_report_end();
+			fclose(fp);
 			return err;
 		}
 	} 
 	dsk_report_end();
+	fclose(fp);
 	return DSK_ERR_OK;
 }
 

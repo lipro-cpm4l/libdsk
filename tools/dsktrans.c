@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001-2,2005  John Elliott <jce@seasip.demon.co.uk>     *
+ *    Copyright (C) 2001-2,2005  John Elliott <seasip.webmaster@gmail.com>     *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -27,15 +27,23 @@
 #include <string.h>
 #include <errno.h>
 #include <ctype.h>
+#include "config.h"
+#ifdef HAVE_LIBGEN_H
+# include <libgen.h>
+#endif
 #include "libdsk.h"
 #include "utilopts.h"
 #include "formname.h"
 #include "apriboot.h"
 
-#ifdef CPM
-#define AV0 "DSKTRANS"
+#ifdef __PACIFIC__
+# define AV0 "DSKTRANS"
 #else
-#define AV0 argv[0]
+# ifdef HAVE_BASENAME
+#  define AV0 (basename(argv[0]))
+# else
+#  define AV0 argv[0]
+# endif
 #endif
 
 #define DSKTRANS_DEBUG 0
@@ -53,6 +61,7 @@ static int inside = -1, outside = -1;
 static int idstep =  0, odstep  =  0;
 static int retries = 1;
 static int first = -1, last = -1;
+static char *st_comment = NULL;
 
 int do_copy(char *infile, char *outfile);
 
@@ -96,6 +105,7 @@ int help(int argc, char **argv)
 	fprintf(stderr,"\nOptions are:\n"
 		       "-itype <type>   type of input disc image\n"
                        "-otype <type>   type of output disc image\n"
+                       "                '%s -types' lists valid types.\n"
                        "-iside <side>   Force side 0 or side 1 of input\n"
                        "-oside <side>   Force side 0 or side 1 of output\n"
                        "-first <cyl>    Copy starting from specified cylinder\n"
@@ -111,7 +121,12 @@ int help(int argc, char **argv)
 		       "-logical        Rearrange tracks in logical order\n"
                        "                (Only useful when out-image type is 'raw' and reading discs\n"
 		       "                with non-IBM track layout (eg: 144FEAT 1.4Mb or ADFS 640k)\n"
-		       "-format         Force a specified format name\n");
+		       "-comment <text> Use the supplied text as a comment\n"
+		       "-comment @-	Ask for a comment to be keyed\n"
+		       "-comment @file  Use the supplied file as a comment\n"
+		       "-format         Force a specified format name\n"
+                       "                '%s -formats' lists valid formats.\n",
+			AV0, AV0);
 	fprintf(stderr,"\nDefault in-image type is autodetect."
 		               "\nDefault out-image type is DSK.\n\n");
 		
@@ -120,7 +135,6 @@ int help(int argc, char **argv)
                         "    %s -md3 /dev/fd0 md3boot.dsk\n" 
                         "    %s -otype floppy myfile.DSK /dev/fd0\n", 
 			AV0, AV0, AV0, AV0);
-	valid_formats();
 	return 1;
 }
 
@@ -147,8 +161,9 @@ int pcdos_bootsect(const char *filename, byte *bootsect)
 
 int main(int argc, char **argv)
 {
+	int stdret;
 
-	if (find_arg("--version", argc, argv) > 0) return version(); 
+        stdret = standard_args(argc, argv); if (!stdret) return 0;
 	if (argc < 3) return help(argc, argv);
 	if (find_arg("--help",    argc, argv) > 0) return help(argc, argv);
 
@@ -166,6 +181,7 @@ int main(int argc, char **argv)
 	retries   = check_retry("-retry", &argc, argv);
 	first     = check_numeric("-first", &argc, argv);
 	last      = check_numeric("-last", &argc, argv);
+	st_comment= check_comment("-comment", &argc, argv);
 	if (present_arg("-idstep", &argc, argv)) idstep = 1;
 	if (present_arg("-odstep", &argc, argv)) odstep = 1;
 	if (present_arg("-md3", &argc, argv)) md3 = 1;
@@ -221,14 +237,30 @@ int do_copy(char *infile, char *outfile)
 	}
 	if (!e)
 	{
+		int opt, value;
+
 		/* Copy comment, if any */
 		dsk_get_comment(indr, &cmt);
+		if (st_comment) cmt = st_comment;
 		dsk_set_comment(outdr, cmt);
 		printf("Input driver: %s\nOutput driver:%s\n%s",
 			dsk_drvdesc(indr), dsk_drvdesc(outdr),
 			logical ? "[tracks rearranged]\n" : "");
 		if (first < 0) first = 0;
 		if (last < 0) last = dg.dg_cylinders - 1;
+
+		/* Copy filesystem parameters, if any */
+		opt = 0;
+		while (dsk_option_enum(indr, opt, &cmt) == DSK_ERR_OK &&
+				cmt != NULL)
+		{
+			if (!strncmp(cmt, "FS:", 3) &&
+			    dsk_get_option(indr, cmt, &value) == DSK_ERR_OK)
+			{
+				dsk_set_option(outdr, cmt, value);
+			}
+			++opt;
+		}
 
 		for (cyl = first; cyl <= (dsk_pcyl_t)last; ++cyl)
 		{

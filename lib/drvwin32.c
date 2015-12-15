@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001  John Elliott <jce@seasip.demon.co.uk>            *
+ *    Copyright (C) 2001  John Elliott <seasip.webmaster@gmail.com>            *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -643,7 +643,7 @@ dsk_err_t win32_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 dsk_err_t win32c_open(DSK_DRIVER *s, const char *filename)
 {
 	int driveno, res;
-	unsigned short drive_flags;
+	unsigned short drive_flags = 0;
 	MID media;
 	char vname[20];
 	WIN32_DSK_DRIVER *self = (WIN32_DSK_DRIVER *)s;
@@ -1041,7 +1041,7 @@ dsk_err_t win32_mailslot(DSK_DRIVER *self, unsigned char *input,  int inp_len,
 
 	buf[0] = (buflen >> 8) & 0xFF;
 	buf[1] = (buflen & 0xFF);
-	strcpy(buf+2, w32self->w32_slotname);
+	strcpy((char *)(buf+2), w32self->w32_slotname);
 /* Put the packet body into the buffer */
 	memcpy(buf+2+buflen, input, inp_len);
 

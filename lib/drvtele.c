@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001-2,2007  John Elliott <jce@seasip.demon.co.uk>     *
+ *    Copyright (C) 2001-2,2007  John Elliott <seasip.webmaster@gmail.com>     *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -23,7 +23,10 @@
 /* This driver provides limited read-only support for Teledisk files. It is
  * based entirely on the file format documentation at
  * <http://www.fpns.net/willy/wteledsk.htm>. No code from wteledsk has been
- * used, since it is under GPL and LibDsk is under LGPL.
+ * used in this file, since it is under GPL and LibDsk is under LGPL.
+ *
+ * (GPL code from wteledsk was incorporated into comptlzh.c / comptlzh.h;
+ *  in that case, it was relicensed as LGPL with permission).
  *
  * Current bugs / limitations:
  * - No write support. The Teledisk format isn't really adapted to 
@@ -33,24 +36,21 @@
  *
  * - No support for images split into multiple files (.TD0, .TD1, .TD2...)
  *   
- * - No support for advanced compression. There are two ways to get round
- *   this. One is to hack compression into this driver, and the other is to
- *   write a new compression method that checks for the 'td' signature and
- *   does an LZSS decompress when the image is opened and an LZSS compress 
- *   when it's closed. I prefer the second. Note that the source referred
- *   to by wteledsk.htm (lz_comp2.zip) cannot be used by LibDsk as its 
- *   licence disallows commercial use.
+ * - No support for advanced compression. Rather than having it built-in to 
+ *   this driver, we use a compression module to convert advanced-compression 
+ *   TD0 files to normal, using code from wteledsk.
  *
  *   There's also an "old advanced" compression, which uses 12-bit LZ 
  *   compression in 6k blocks, so another 'comp' driver would be needed for 
  *   that.
- *
  *
  */
 
 
 #include "drvi.h"
 #include "drvtele.h"
+
+extern unsigned short teledisk_crc(unsigned char *buf, unsigned short len);
 
 DRV_CLASS dc_tele = 
 {
@@ -78,7 +78,7 @@ DRV_CLASS dc_tele =
 	NULL			/* tele_rtread */
 };
 
-/* #define MONITOR(x) printf x   */
+/* #define MONITOR(x) printf x     */
 
 #define MONITOR(x) 
 
@@ -116,13 +116,17 @@ static dsk_err_t tele_fread(TELE_DSK_DRIVER *self, tele_byte *buf, int count)
 {
 	if (!buf) 
 	{
-		if (fseek(self->tele_fp, count, SEEK_CUR)) 
+		if (fseek(self->tele_fp, count, SEEK_CUR))
+		{
 			return DSK_ERR_SYSERR;
+		}
 	}
 	else
 	{
 		if (fread(buf, 1, count, self->tele_fp) < (size_t)count)
+		{
 			return DSK_ERR_SYSERR;
+		}
 	}
 	return DSK_ERR_OK;
 }
@@ -325,6 +329,9 @@ dsk_err_t tele_seeksec(TELE_DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	int s;
 	long pos;
 
+	MONITOR(("tele_seeksec: Searching for c=%d h=%d s=%d on c=%d h=%d\n",
+				cyl_expected, head_expected, sector,
+				cylinder, head));
 	err = tele_seektrack(self, cylinder, head);
 
 	for (s = 0; s < self->tele_trackhead.sectors; s++)
@@ -338,8 +345,8 @@ dsk_err_t tele_seeksec(TELE_DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 				self->tele_sechead.sector_id, pos,
 				s, self->tele_trackhead.sectors));
 		if (self->tele_sechead.sector_id   == sector   &&
-		    self->tele_sechead.cylinder_id == cylinder &&
-		    self->tele_sechead.head_id     == head)
+		    self->tele_sechead.cylinder_id == cyl_expected &&
+		    self->tele_sechead.head_id     == head_expected)
 		{
 			*sseclen = self->tele_sechead.sector_len;
 /* Sector shorter than expected. Report a data error, and set
@@ -390,7 +397,15 @@ dsk_err_t tele_open(DSK_DRIVER *s, const char *filename)
 	self->tele_head.dosmode     = header[8];
 	self->tele_head.sides       = header[9];
 	self->tele_head.crc       = ((tele_word)header[11]) << 8 | header[10];
-	/* XXX Advanced compression not supported */
+
+	/* Check header CRC. */
+	if (teledisk_crc(header, 10) != self->tele_head.crc)
+	{
+		fclose(self->tele_fp);
+		return DSK_ERR_NOTME;
+	}
+
+	/* Advanced compression not supported -- see separate comptele */
 	if (!strcmp((char *)header, "td"))
 	{
 #ifndef WIN16
@@ -421,7 +436,7 @@ dsk_err_t tele_open(DSK_DRIVER *s, const char *filename)
 		self->tele_comment->hour = header[7];
 		self->tele_comment->min = header[8];
 		self->tele_comment->sec = header[9];
-		if (tele_fread(self, self->tele_comment->text, comment_len))
+		if (tele_fread(self, (tele_byte *)self->tele_comment->text, comment_len))
 		{
 			fclose(self->tele_fp);
 			return DSK_ERR_SYSERR;
@@ -522,8 +537,9 @@ dsk_err_t tele_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
                               void *buf, dsk_pcyl_t cylinder,
                               dsk_phead_t head, dsk_psect_t sector)
 {
-	return tele_xread(self, geom, buf, cylinder, head, cylinder, head,
-		sector, geom->dg_secsize, NULL);
+	return tele_xread(self, geom, buf, cylinder, head, cylinder, 
+		dg_x_head(geom, head),
+		dg_x_sector(geom, head, sector), geom->dg_secsize, NULL);
 }
 
 
