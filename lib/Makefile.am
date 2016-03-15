@@ -28,9 +28,9 @@ EXTRA_DIST=$(CLASSDPRE)/Drive.java \
 # first number and set the middle one to 0.
 # If interfaces have been added increment the right-hand number.
 # If interfaces have been removed set the right-hand number to 0.
-# 
 #
-libdsk_la_LDFLAGS = -version-info 6:12:3
+#
+libdsk_la_LDFLAGS = -no-undefined -version-info 6:12:3
 libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   dsklphys.c dskfmt.c   dskopen.c  dskpars.c \
 		   dskerror.c dskseek.c  dsksecid.c dskgeom.c \
@@ -73,7 +73,7 @@ libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   drvmyz80.h drvmyz80.c \
 		   drvydsk.h  drvydsk.c \
 		   drvcfi.h   drvcfi.c \
-		   drvqm.h    drvqm.c 
+		   drvqm.h    drvqm.c
 
 JARCLASSES=$(CLASSDPRE)/Drive.class \
 	   $(CLASSDPRE)/DskException.class \
@@ -108,4 +108,3 @@ $(srcdir)/dskjni.c:	$(JARHEADERS)
 install-exec-local:
 	$(mkinstalldirs) $(libdir)
 	if test x@LIBDSKJAR@ = x; then true; else $(INSTALL_DATA) @LIBDSKJAR@ $(DESTDIR)/$(libdir); fi
-

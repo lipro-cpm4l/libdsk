@@ -39,9 +39,10 @@ EXTRA_DIST= $(srcdir)/config/* \
 	    $(srcdir)/win32vc6/*.rgs         \
 	    $(srcdir)/win32vc6/*.cpp         \
 	    $(srcdir)/win32vc6/vbclient/*    \
-	    $(srcdir)/win32vc6/*.dsw         
+	    $(srcdir)/win32vc6/*.dsw
 
 install-man:
 	cd man && make install-man
 
-
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = $(PACKAGE).pc
