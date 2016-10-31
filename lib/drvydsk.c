@@ -349,7 +349,7 @@ dsk_err_t ydsk_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 					 * floppy to this format! */
 	geom->dg_rwgap     = 0x2A;
 	geom->dg_fmtgap    = 0x52;
-	geom->dg_fm        = 0;
+	geom->dg_fm        = RECMODE_MFM;
 	geom->dg_nomulti   = 0;
 	return DSK_ERR_OK;
 }

@@ -58,7 +58,7 @@
 extern "C" {
 #endif
 
-#define LIBDSK_VERSION "1.4.0"
+#define LIBDSK_VERSION "1.4.2"
 
 /************************* TYPES ********************************/
 
@@ -159,6 +159,18 @@ typedef enum
 	FMT_UNKNOWN = -1
 } dsk_format_t;
 
+typedef enum
+{
+	/* Low byte of dg_fm: Recording mode */
+	RECMODE_MASK     = 0x00FF,
+	RECMODE_MFM      = 0x0000,	
+	RECMODE_FM       = 0x0001,
+	/* High byte of dg_fm: Other data recording flags */
+	RECMODE_FLAGMASK = 0xFF00,
+	RECMODE_COMPLEMENT = 0x0100	
+	
+} dsk_recmode_t;
+
 /* DSK_GEOMETRY holds information used to convert physical to/from logical
  * sectors and to access the disc */
 typedef struct
@@ -172,8 +184,8 @@ typedef struct
 	dsk_rate_t	dg_datarate;	/* Data rate */
 	dsk_gap_t	dg_rwgap;	/* Read/write gap length */
 	dsk_gap_t	dg_fmtgap;	/* Format gap length */
-	int		dg_fm;		/* FM mode? The only thing I know that uses FM mode
-					 * is the BBC Micro DFS format. */
+	int		dg_fm;		/* Really a dsk_recmode_t, kept as
+					 * int for backward compatibility  */
 	int		dg_nomulti;	/* Disable multitrack? */
 	int		dg_noskip;	/* Set to 0 to skip deleted data */
 } DSK_GEOMETRY;

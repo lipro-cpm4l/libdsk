@@ -506,7 +506,7 @@ dsk_err_t jv3_format(DSK_DRIVER *s, DSK_GEOMETRY *geom,
 		rsd.cylinder    = cylinder;
 		rsd.head        = head;
 		rsd.sector      = format[sec].fmt_sector;
-		rsd.fm          = geom->dg_fm;
+		rsd.fm          = (geom->dg_fm & RECMODE_MASK) == RECMODE_FM;
 		rsd.sector_size = format[sec].fmt_secsize;
 		rsd.deleted     = filler;
 		blanksize       = JV3_FREEF | encode_size(1, rsd.sector_size);
@@ -675,7 +675,7 @@ dsk_err_t jv3_xread(DSK_DRIVER *s, const DSK_GEOMETRY *geom, void *buf,
 	rsd.sector   = sector;
 	if (deleted && *deleted) rsd.deleted = 1;
 	else			 rsd.deleted = 0;
-	rsd.fm       = geom->dg_fm;
+	rsd.fm       = (geom->dg_fm & RECMODE_MASK) == RECMODE_FM;
 	rsd.sector_size = sector_size;
 	rsd.buf         = buf;
 	rsd.result      = DSK_ERR_NOADDR;
@@ -707,7 +707,7 @@ dsk_err_t jv3_xwrite(DSK_DRIVER *s, const DSK_GEOMETRY *geom, const void *buf,
 	rsd.head     = head;
 	rsd.sector   = sector;
 	rsd.deleted  = deleted;
-	rsd.fm       = geom->dg_fm;
+	rsd.fm       = (geom->dg_fm & RECMODE_MASK) == RECMODE_FM;
 	rsd.sector_size = sector_size;
 	rsd.buf         = (void *)buf;
 	rsd.result      = DSK_ERR_NOADDR;
@@ -773,7 +773,7 @@ dsk_err_t jv3_trackids(DSK_DRIVER *s, const DSK_GEOMETRY *geom,
 
 	DC_CHECK(s);
 
-	param.fm   = geom->dg_fm;
+	param.fm   = (geom->dg_fm & RECMODE_MASK) == RECMODE_FM;
 	param.cylinder = cylinder;
 	param.head     = head;
 	param.count = 0;
@@ -839,7 +839,7 @@ static dsk_err_t geom_callback(JV3_DSK_DRIVER *self,
 	if (state->head >= gr->testgeom.dg_heads)
 		gr->testgeom.dg_heads = state->head + 1;
 	gr->testgeom.dg_datarate = RATE_SD;
-	gr->testgeom.dg_fm = (state->flags & JV3_DENSITY) ? 0 : 1;
+	gr->testgeom.dg_fm = (state->flags & JV3_DENSITY) ? RECMODE_MFM : RECMODE_FM;
 	if (state->head == 1)
 	{
 		if (state->sector < gr->minsec1) gr->minsec1 = state->sector;

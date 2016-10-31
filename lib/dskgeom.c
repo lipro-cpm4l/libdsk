@@ -270,7 +270,8 @@ dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 		/* [v0.6.0] Handle discs with non-512 byte sectors */
 		if (secid.fmt_secsize == 256)
 		{
-			if (geom->dg_fm)	/* BBC Micro FM floppy */
+			/* BBC Micro FM floppy? */
+			if ((geom->dg_fm & RECMODE_MASK) == RECMODE_FM)
 			{
 				unsigned int tot_sectors;
 				e = dsk_lread(self, geom, secbuf, 1);
@@ -491,7 +492,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_dosgeom(DSK_GEOMETRY *self, const unsigned ch
 		case 18: self->dg_rwgap = 0x1B; self->dg_fmtgap = 0x50; break;
 		default: self->dg_rwgap = 0x2A; self->dg_fmtgap = 0x52; break;
 	}
-	self->dg_fm      = 0;
+	self->dg_fm = RECMODE_MFM;
 	self->dg_nomulti = 0;
 
 	return DSK_ERR_OK;
@@ -532,7 +533,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_pcwgeom(DSK_GEOMETRY *dg, const unsigned char
 	dg->dg_secsize   = 128;
 	/* My PCW16 extension to the PCW superblock encodes data rate. Fancy that. */
 	dg->dg_datarate  = (bootsec[1] & 0x40) ? RATE_HD : RATE_SD;
-	dg->dg_fm      = 0;
+	dg->dg_fm      = RECMODE_MFM;
 	dg->dg_nomulti = 0;
 	dg->dg_rwgap   = bootsec[8];
 	dg->dg_fmtgap  = bootsec[9];
@@ -574,6 +575,11 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_aprigeom(DSK_GEOMETRY *self, const unsigned c
 
 	/* Sector size */
 	self->dg_secsize   = bootsect[0x0E] + 256 * bootsect[0x0F];
+	/* [1.4.2] If sector size is not a reasonable value, this
+	 *         could be a non-Apricot disk that happens to have
+	 *         ASCII at the start of the boot sector */
+	if ((self->dg_secsize % 128) || (self->dg_secsize == 0)) 
+		return DSK_ERR_BADFMT;
 	self->dg_secbase   = 1;
 	self->dg_heads     = bootsect[0x16];
 	self->dg_sectors   = bootsect[0x10] + 256 * bootsect[0x11];
@@ -592,7 +598,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_aprigeom(DSK_GEOMETRY *self, const unsigned c
 		case 18: self->dg_rwgap = 0x1B; self->dg_fmtgap = 0x50; break;
 		default: self->dg_rwgap = 0x2A; self->dg_fmtgap = 0x52; break;
 	}
-	self->dg_fm      = 0;
+	self->dg_fm      = RECMODE_MFM;
 	self->dg_nomulti = 0;
 
 	return DSK_ERR_OK;
@@ -612,7 +618,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16  dg_opusgeom(DSK_GEOMETRY *dg,
 	dg->dg_secbase   = 1;
 	dg->dg_secsize   = 512;
 	dg->dg_datarate  = RATE_SD;
-	dg->dg_fm        = 0;
+	dg->dg_fm        = RECMODE_MFM;
 	dg->dg_nomulti   = 0;
 	dg->dg_rwgap     = 0x2A;		/* XXX Provisional */
 	dg->dg_fmtgap    = 0x52;		/* XXX Provisional */

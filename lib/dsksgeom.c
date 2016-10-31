@@ -340,8 +340,30 @@ dsk_err_t dg_parseline(char *linebuf, DSK_GEOMETRY *dg, char *description)
     if (!strcmp(linebuf, "fm"))
     {
         for (s = value; s[0]; s++) *s = tolower(*s);
-        if (!strcmp(value, "y")) dg->dg_fm = 1;
-        if (!strcmp(value, "n")) dg->dg_fm = 0;
+        if (!strcmp(value, "y")) 
+	    dg->dg_fm = (dg->dg_fm & RECMODE_FLAGMASK) | RECMODE_FM;
+        if (!strcmp(value, "n")) 
+	    dg->dg_fm = (dg->dg_fm & RECMODE_FLAGMASK) | RECMODE_MFM;
+    }
+    /* [1.4.1] Allow 'recmode=mfm' / 'recmode=fm' as a synonym for 'fm=y / fm=n'
+     *         Obviously this syntax would allow additional recording modes in
+     *         future. */
+    if (!strcmp(linebuf, "recmode"))
+    {
+        for (s = value; s[0]; s++) *s = tolower(*s);
+        if (!strcmp(value, "fm")) 
+	    dg->dg_fm = (dg->dg_fm & RECMODE_FLAGMASK) | RECMODE_FM;
+        if (!strcmp(value, "mfm")) 
+	    dg->dg_fm = (dg->dg_fm & RECMODE_FLAGMASK) | RECMODE_MFM;
+    }
+    /* [1.4.1] 'Complement' flag */
+    if (!strcmp(linebuf, "complement"))
+    {
+        for (s = value; s[0]; s++) *s = tolower(*s);
+        if (!strcmp(value, "y")) 
+	    dg->dg_fm |= RECMODE_COMPLEMENT;
+        if (!strcmp(value, "n")) 
+	    dg->dg_fm &= ~RECMODE_COMPLEMENT;
     }
     if (!strcmp(linebuf, "multitrack"))
     {
@@ -384,7 +406,13 @@ dsk_err_t dg_store(FILE *fp, DSK_GEOMETRY *dg, char *description)
     }
     fprintf(fp, "rwgap=%d\n", dg->dg_rwgap);
     fprintf(fp, "fmtgap=%d\n", dg->dg_fmtgap);
-    fprintf(fp, "fm=%c\n", dg->dg_fm ? 'Y' : 'N');
+  
+    switch (dg->dg_fm & RECMODE_MASK)
+    {
+        case RECMODE_MFM: fprintf(fp, "recmode=MFM\n"); break;
+        case RECMODE_FM:  fprintf(fp, "recmode=FM\n"); break;
+    }
+    fprintf(fp, "complement=%c\n", (dg->dg_fm & RECMODE_COMPLEMENT) ? 'Y' : 'N');
     fprintf(fp, "multitrack=%c\n", dg->dg_nomulti ? 'N' : 'Y');
     fprintf(fp, "skipdeleted=%c\n", dg->dg_noskip ? 'N' : 'Y');
     return DSK_ERR_OK;
