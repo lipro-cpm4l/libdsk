@@ -208,7 +208,7 @@ dsk_err_t dsk_pack_geom  (unsigned char **output, int *out_len, const DSK_GEOMET
 	err = dsk_pack_i16(output, out_len, (int16)g->dg_datarate);  if (err) return err;
 	err = dsk_pack_i16(output, out_len, g->dg_rwgap);     if (err) return err;
 	err = dsk_pack_i16(output, out_len, g->dg_fmtgap);    if (err) return err;
-	err = dsk_pack_i16(output, out_len, (int16)g->dg_fm);        if (err) return err;
+	err = dsk_pack_i16(output, out_len, (int16)g->dg_fm);   if (err) return err;
 	err = dsk_pack_i16(output, out_len, (int16)g->dg_nomulti);   if (err) return err;
 	err = dsk_pack_i16(output, out_len, (int16)g->dg_noskip);    if (err) return err;
 	return DSK_ERR_OK;

@@ -894,7 +894,7 @@ dsk_err_t drv_qm_getgeom(DSK_DRIVER * self, DSK_GEOMETRY * geom)
 
     /* FIXME: What to do with interleave and skew? */
 
-    geom->dg_fm = 0;
+    geom->dg_fm = RECMODE_MFM;
     geom->dg_nomulti = 0;
     return DSK_ERR_OK;
 }

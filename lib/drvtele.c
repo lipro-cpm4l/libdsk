@@ -104,7 +104,7 @@ static dsk_err_t check_rate(TELE_DSK_DRIVER *self, const DSK_GEOMETRY *geom)
 		case 2: if (geom->dg_datarate != RATE_HD) return DSK_ERR_NOADDR;
 			break;
 	}
-	fm = (geom->dg_fm) ? 0x80 : 0;
+	fm = ((geom->dg_fm & RECMODE_MASK) == RECMODE_FM) ? 0x80 : 0;
 	if (fm != (self->tele_head.datarate & 0x80))
 	{
 		return DSK_ERR_NOADDR;

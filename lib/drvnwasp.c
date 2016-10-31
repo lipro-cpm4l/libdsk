@@ -278,7 +278,7 @@ dsk_err_t nwasp_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
                                          * mbee floppies) are untested. */
         geom->dg_rwgap     = 0x0C;
         geom->dg_fmtgap    = 0x17;
-        geom->dg_fm        = 0;
+        geom->dg_fm        = RECMODE_MFM;
         geom->dg_nomulti   = 0;
         return DSK_ERR_OK;
 }

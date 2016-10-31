@@ -235,7 +235,8 @@ int dump_cyl(DSK_PDRIVER indr, DSK_GEOMETRY *dg,
 	/* Guess data rate and recording mode */
 	for (dg->dg_datarate = RATE_HD; dg->dg_datarate <= RATE_ED; ++dg->dg_datarate)
 	{
-		for (dg->dg_fm = 0; dg->dg_fm < 2; ++dg->dg_fm)
+		for (dg->dg_fm = RECMODE_MFM; 
+			dg->dg_fm <= RECMODE_FM; ++dg->dg_fm)
 		{
 			err = dsk_psecid(indr, dg, cyl, head, &sector_id);
 			if (!err) break;	

@@ -1,5 +1,5 @@
-#LyX 2.0 created this file. For more info see http://www.lyx.org/
-\lyxformat 413
+#LyX 2.1 created this file. For more info see http://www.lyx.org/
+\lyxformat 474
 \begin_document
 \begin_header
 \textclass article
@@ -7,18 +7,18 @@
 \maintain_unincluded_children false
 \language english
 \language_package default
-\inputencoding latin1
+\inputencoding iso8859-1
 \fontencoding global
 \font_roman times
 \font_sans default
 \font_typewriter default
+\font_math auto
 \font_default_family default
 \use_non_tex_fonts false
 \font_sc false
 \font_osf false
 \font_sf_scale 100
 \font_tt_scale 100
-
 \graphics default
 \default_output_format default
 \output_sync 0
@@ -29,15 +29,24 @@
 \use_hyperref false
 \papersize a4paper
 \use_geometry false
-\use_amsmath 1
-\use_esint 0
-\use_mhchem 1
-\use_mathdots 1
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 0
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
 \cite_engine basic
+\cite_engine_type default
+\biblio_style plain
 \use_bibtopic false
 \use_indices false
 \paperorientation portrait
 \suppress_date false
+\justification true
 \use_refstyle 0
 \index Index
 \shortcut idx
@@ -61,7 +70,7 @@
 \begin_body
 
 \begin_layout Title
-LibDsk v1.4.0 
+LibDsk v1.4.2 
 \end_layout
 
 \begin_layout Author
@@ -229,6 +238,15 @@ What's new?
 
 \begin_layout Standard
 For full details, see the file ChangeLog.
+\end_layout
+
+\begin_layout Itemize
+Bugfixes when accessing IMD-format disc images.
+\end_layout
+
+\begin_layout Itemize
+Added a new 'complement' option to the drive geometry, allowing for disc
+ image formats where the bytes are stored complemented.
 \end_layout
 
 \begin_layout Itemize
@@ -960,15 +978,48 @@ int
 
 dg_fm;
 \family default
- /* Set to nonzero to use FM (single density) recording mode.
+ /* This is really a dsk_recmode_t, but is declared as an int for backward
+ compatibility.
+ It contains the recording mode and additional flags.
+ To extract the recording mode, use (dg_fm & RECMODE_MASK):
+\end_layout
+
+\begin_deeper
+\begin_layout Description
+
+\family typewriter
+RECMODE_MFM
+\family default
+ MFM (double density) recording mode.
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+RECMODE_FM
+\family default
+ FM (single density) recording mode.
  Not all PC floppy controllers support this mode; the National Semiconductor
  PC87306 and the Future Domain TMC series SCSI controllers can at least
  read FM discs.
  The BBC Micro used FM recording for its 100k and 200k DFS formats.
  The Windows / DOS floppy drivers do not support FM recording.
+ 
+\end_layout
+
+\begin_layout Standard
+To extract the flags, use (dg_fm & RECMODE_FLAGMASK).
+ There is currently one additional flag: 
+\series bold
+RECMODE_COMPLEMENT
+\series default
+.
+ If this flag is set, bytes written on the disc are stored complemented
+ (ie, XORed with 0xFF).
  */
 \end_layout
 
+\end_deeper
 \begin_layout Description
 
 \family typewriter
@@ -1913,7 +1964,7 @@ geom->dg_noskip
 \align center
 \begin_inset Tabular
 <lyxtabular version="3" rows="8" columns="5">
-<features tabularvalignment="middle">
+<features rotate="0" tabularvalignment="middle">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
@@ -3760,7 +3811,7 @@ fmtgap=VALUE Sets the format gap.
 \end_layout
 
 \begin_layout Description
-fm=Y
+recmode=FM
 \begin_inset space ~
 \end_inset
 
@@ -3768,7 +3819,24 @@ or
 \begin_inset space ~
 \end_inset
 
-N Sets the recording mode - Y for FM, N for MFM.
+MFM Sets the recording mode - FM or MFM.
+ For backward compatibility, the alternate syntax 
+\series bold
+FM=Y or N
+\series default
+ is also supported.
+\end_layout
+
+\begin_layout Description
+complement=Y
+\begin_inset space ~
+\end_inset
+
+or
+\begin_inset space ~
+\end_inset
+
+N Sets the complement flag - Y if the format stores data complemented.
 \end_layout
 
 \begin_layout Description
@@ -3845,6 +3913,10 @@ RWGap = 12
 
 \begin_layout LyX-Code
 FmtGap = 23
+\end_layout
+
+\begin_layout LyX-Code
+RecMode = MFM
 \end_layout
 
 \begin_layout LyX-Code
@@ -4309,10 +4381,10 @@ The CopyQM files consist of a header, an optional comment (if indicated
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="22" columns="3">
-<features tabularvalignment="middle">
-<column alignment="center" valignment="top" width="0">
-<column alignment="center" valignment="top" width="0">
-<column alignment="left" valignment="top" width="0">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="left" valignment="top">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
@@ -5070,7 +5142,7 @@ Originally said by Microsoft with respect to Java.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="5" columns="3">
-<features tabularvalignment="middle">
+<features rotate="0" tabularvalignment="middle">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
@@ -5545,10 +5617,10 @@ This contains LibDsk functions not associated with a particular disk image.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="13" columns="3">
-<features tabularvalignment="middle">
-<column alignment="center" valignment="top" width="0">
-<column alignment="center" valignment="top" width="0">
-<column alignment="center" valignment="top" width="0">
+<features rotate="0" tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
 <row>
 <cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
 \begin_inset Text
@@ -6841,8 +6913,22 @@ dsk_err_t (*dc_read)(DSK_PDRIVER self, const DSK_GEOMETRY *geom, void *buf,
 
 \begin_layout Standard
 Read a sector.
- Note that sector addresses passed to drivers are _always_ in C/H/S format.
+ Note that sector addresses passed to drivers are 
+\emph on
+always
+\emph default
+ in C/H/S format.
  This function has the same parameters and return values as dsk_pread().
+ 
+\end_layout
+
+\begin_layout Standard
+You don't need to check the RECMODE_COMPLEMENT flag in the geometry structure
+ (this applies to all read and write functions).
+ If the flag is set, the LibDsk core will complement the results from the
+ driver before returning them to the caller.
+ Similarly, any buffer passed for a write will already be complemented if
+ appropriate.
 \end_layout
 
 \begin_layout Subsubsection

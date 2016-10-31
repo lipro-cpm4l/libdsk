@@ -365,9 +365,13 @@ static dsk_err_t load_track_header(CPCEMU_DSK_DRIVER *self,
 	/* Check data rate */
 	switch(recording)
 	{
-		case 1: if (!geom->dg_fm) return DSK_ERR_NOADDR;
+		/* Recording mode: 1 for FM */
+		case 1: if ((geom->dg_fm & RECMODE_MASK) != RECMODE_FM) 
+				return DSK_ERR_NOADDR;
 			break;
-		case 2: if (geom->dg_fm) return DSK_ERR_NOADDR;
+		/* Recording mode: 2 for MFM */
+		case 2: if ((geom->dg_fm & RECMODE_MASK) != RECMODE_MFM) 
+				return DSK_ERR_NOADDR;
 			break;
 		default:	/* GCR??? */
 			return DSK_ERR_NOADDR;
@@ -878,7 +882,11 @@ dsk_err_t cpcemu_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 		case RATE_HD: cpc_self->cpc_trkhead[0x12] = 2; break;
 		case RATE_ED: cpc_self->cpc_trkhead[0x12] = 3; break;
 	}
-	cpc_self->cpc_trkhead[0x13] = (geom->dg_fm) ? 1 : 2;
+	switch (geom->dg_fm & RECMODE_MASK)
+	{
+		case RECMODE_FM:  cpc_self->cpc_trkhead[0x13] = 1; break;
+		case RECMODE_MFM: cpc_self->cpc_trkhead[0x13] = 2; break;
+	}
 	cpc_self->cpc_trkhead[0x14] = dsk_get_psh(format[0].fmt_secsize);
 	cpc_self->cpc_trkhead[0x15] = (unsigned char)geom->dg_sectors;
 	cpc_self->cpc_trkhead[0x16] = geom->dg_fmtgap;
