@@ -93,7 +93,7 @@ JARHEADERS=$(HEADERPRE)_Drive.h \
 CLEANFILES=$(JARCLASSES) $(JARHEADERS)
 
 libdsk.jar:	$(JARCLASSES)
-	$(JAR) c0f $@ uk/*
+	$(JAR) c0f $@ uk/co/demon/seasip/libdsk/*.class
 	$(JAVADOC) -d $(top_srcdir)/doc/jni $(CLASSCPRE)
 
 $(CLASSDPRE)/%.class:   $(srcdir)/$(CLASSDPRE)/%.java
@@ -109,7 +109,8 @@ $(HEADERPRE)_%.h:         $(CLASSDPRE)/%.class
 
 $(srcdir)/dskjni.c:	$(JARHEADERS)
 
-install-exec-local:
-	$(mkinstalldirs) $(libdir)
-	if test x@LIBDSKJAR@ = x; then true; else $(INSTALL_DATA) @LIBDSKJAR@ $(DESTDIR)/$(libdir); fi
+javadir = /usr/share/java
 
+install-exec-local:
+	$(mkinstalldirs) $(DESTDIR)$(javadir)
+	if test x@LIBDSKJAR@ = x; then true; else $(INSTALL_DATA) @LIBDSKJAR@ $(DESTDIR)$(javadir); fi
