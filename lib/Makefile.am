@@ -97,7 +97,7 @@ JARHEADERS=$(HEADERPRE)_Drive.h \
 CLEANFILES=$(JARCLASSES) $(JARHEADERS)
 
 libdsk.jar:	$(JARCLASSES)
-	$(JAR) c0f $@ uk/*
+	$(JAR) c0f $@ uk/co/demon/seasip/libdsk/*.class
 	$(JAVADOC) -d $(top_srcdir)/doc/jni $(CLASSCPRE)
 
 $(CLASSDPRE)/%.class:   $(srcdir)/$(CLASSDPRE)/%.java
