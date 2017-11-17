@@ -113,7 +113,9 @@ $(HEADERPRE)_%.h:         $(CLASSDPRE)/%.class
 
 $(srcdir)/dskjni.c:	$(JARHEADERS)
 
+javadir = /usr/share/java
+
 install-exec-local:
-	$(mkinstalldirs) $(libdir)
-	if test x@LIBDSKJAR@ = x; then true; else $(INSTALL_DATA) @LIBDSKJAR@ $(DESTDIR)/$(libdir); fi
+	$(mkinstalldirs) $(DESTDIR)$(javadir)
+	if test x@LIBDSKJAR@ = x; then true; else $(INSTALL_DATA) @LIBDSKJAR@ $(DESTDIR)$(javadir); fi
 
