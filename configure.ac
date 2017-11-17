@@ -5,7 +5,7 @@ AC_CONFIG_SRCDIR(lib/dskopen.c)
 AC_CONFIG_MACRO_DIR(m4)
 AC_CANONICAL_SYSTEM
 LT_INIT
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS(config.h)
 AM_INIT_AUTOMAKE([foreign])
 
 dnl Support for the Java Native Interface bindings
