@@ -120,7 +120,7 @@ public class Drive
   * @param cyl The physical cylinder containing the sector. 
   * @param head The physical head to use.
   * @param cylExpected The expected cylinder number in the sector header.
-  * @param cylExpected The expected head number in the sector header.
+  * @param headExpected The expected head number in the sector header.
   * @param sector The number of the sector.
   * @param sectorLen The number of bytes to transfer (may be less than a 
   *                 full sector).
@@ -165,7 +165,7 @@ public class Drive
   * @param cyl The physical cylinder containing the sector. 
   * @param head The physical head to use.
   * @param cylExpected The expected cylinder number in the sector header.
-  * @param cylExpected The expected head number in the sector header.
+  * @param headExpected The expected head number in the sector header.
   * @param sector The number of the sector.
   * @param sectorLen The number of bytes to transfer (may be less than a 
   *                 full sector).
@@ -209,7 +209,7 @@ public class Drive
   * @param cyl The physical cylinder containing the sector. 
   * @param head The physical head to use.
   * @param cylExpected The expected cylinder number in the sector header.
-  * @param cylExpected The expected head number in the sector header.
+  * @param headExpected The expected head number in the sector header.
   * @param sector The number of the sector.
   * @param sectorLen The number of bytes to transfer (may be less than a 
   *                 full sector).
@@ -228,7 +228,7 @@ public class Drive
 /** Format a track, using physical cylinder/sector.
  *
  * @param g The drive geometry to use.
- * @param c The physical cylinder to use. 
+ * @param cyl The physical cylinder to use.
  * @param h The physical head to use.
  * @param fd An array of FormatData objects containing sector headers.
  * @param filler The byte with which to fill the empty sectors. 
@@ -252,7 +252,7 @@ public class Drive
   * it will just do repeated sector reads.
   * @param g The drive geometry to use. 
   * @param buf The buffer to be filled with data. 
-  * @param cyl The physical cylinder to use. 
+  * @param cylinder The physical cylinder to use.
   * @param head The physical head to use.
   * @exception DskException If the read failed for any reason, or the driver cannot
   *                     read sectors.
@@ -280,10 +280,10 @@ public class Drive
   * use this call.
   * @param g The drive geometry to use. 
   * @param buf The buffer to be filled with data. 
-  * @param cyl The physical cylinder to use. 
+  * @param cylinder The physical cylinder to use.
   * @param head The physical head to use.
   * @param cylExpected The expected cylinder number in the sector header.
-  * @param cylExpected The expected head number in the sector header.
+  * @param headExpected The expected head number in the sector header.
   * @exception DskException If the read failed for any reason, or the driver cannot
   *                     read sectors.
   */
@@ -294,7 +294,7 @@ public class Drive
  * Linux floppies.
  *
  * @param g The drive geometry to use.
- * @param cyl The physical cylinder to use. 
+ * @param cylinder The physical cylinder to use.
  * @param head The physical head to use.
  * @param filler The byte with which to fill the empty sectors. 
  * @exception DskException If the format failed for any reason, or the driver cannot
@@ -402,7 +402,7 @@ public class Drive
 	public native void setComment(String c) throws DskException;
 
 /** Set the number of times an operation will be retried.
- * @param n The number of times to retry a read, write or format, 1 or more. 
+ * @param c The number of times to retry a read, write or format, 1 or more.
  * @exception DskException If the number passed is 0. */
 	public native void setRetry(int c) throws DskException;	
 
