@@ -78,7 +78,7 @@ int check_numeric(char *arg, int *argc, char **argv)
 
 static void report(const char *s)
 {
-        fprintf(stderr, "%s\r", s);
+        fprintf(stderr, "%-79.79s\r", s);
         fflush(stderr);
 }
 
@@ -212,7 +212,10 @@ int do_scan(char *infile)
 abort:
 		if (xml) printf("</disc>\n");
 	}
-	if (indr)  dsk_close(&indr);
+	if (indr) 
+	{
+		if (!e) e = dsk_close(&indr); else dsk_close(&indr);
+	}
 	if (e)
 	{
 		fprintf(stderr, "\n%s: %s\n", op, dsk_strerror(e));
@@ -239,7 +242,8 @@ int scan_cyl(DSK_PDRIVER indr, DSK_GEOMETRY *dg,
 	/* Guess data rate and recording mode */
 	for (dg->dg_datarate = RATE_HD; dg->dg_datarate <= RATE_ED; ++dg->dg_datarate)
 	{
-		for (dg->dg_fm = 0; dg->dg_fm < 2; ++dg->dg_fm)
+		for (dg->dg_fm = RECMODE_MFM; 	
+		     dg->dg_fm <= RECMODE_FM; ++dg->dg_fm)
 		{
 			err = dsk_psecid(indr, dg, cyl, head, &sector_id);
 			if (!err) break;	
@@ -263,7 +267,11 @@ int scan_cyl(DSK_PDRIVER indr, DSK_GEOMETRY *dg,
 	if (xml) printf("</datarate>\n"); else printf("\n");
 	if (xml) printf("    <encoding>"); 
 	else	 printf("    Encoding: ");
-	printf("%s", dg->dg_fm ? "fm" : "mfm");
+	switch (dg->dg_fm & RECMODE_MASK)
+	{
+		case RECMODE_MFM: printf("mfm"); break;
+		case RECMODE_FM:  printf("fm"); break;
+	}
 	if (xml) printf("</encoding\n");
 	else printf("\n");
 /* Now scour the track and print any sector headers we find */

@@ -66,6 +66,8 @@ static DSK_NAMEDGEOM stdg[] =
 {"ampro400d",{ SIDES_ALT,     40, 2,10,   17, 512, RATE_SD, 0x0C, 0x17,   0,  0 }, "Ampro 40 track double-sided" }, /* Ampro 400k (22DISK AMP2) */
 {"ampro400s",{ SIDES_ALT,     80, 1, 5,   1,1024, RATE_SD, 0x04, 0x05,   0,  0 }, "Ampro 80 track single-sided" }, /* Ampro 400k (22DISK AMP3) */
 {"ampro800",{ SIDES_ALT,     80, 2, 5,   17,1024, RATE_SD, 0x04, 0x05,   0,  0 }, "Ampro 80 track double-sided" }, /* Ampro 800k (22DISK AMP4) */
+{"pcw1200", { SIDES_ALT,     80, 2,15,    1, 512, RATE_HD, 0x1B, 0x54,   0,  0 }, "PcW16 / IBM 1200k "}, /* 1.2M */
+
 /* Geometries below this line don't appear in dsk_format_t and can be accessed
  * only by name. */
 
@@ -340,8 +342,30 @@ dsk_err_t dg_parseline(char *linebuf, DSK_GEOMETRY *dg, char *description)
     if (!strcmp(linebuf, "fm"))
     {
         for (s = value; s[0]; s++) *s = tolower(*s);
-        if (!strcmp(value, "y")) dg->dg_fm = 1;
-        if (!strcmp(value, "n")) dg->dg_fm = 0;
+        if (!strcmp(value, "y")) 
+	    dg->dg_fm = (dg->dg_fm & RECMODE_FLAGMASK) | RECMODE_FM;
+        if (!strcmp(value, "n")) 
+	    dg->dg_fm = (dg->dg_fm & RECMODE_FLAGMASK) | RECMODE_MFM;
+    }
+    /* [1.4.1] Allow 'recmode=mfm' / 'recmode=fm' as a synonym for 'fm=y / fm=n'
+     *         Obviously this syntax would allow additional recording modes in
+     *         future. */
+    if (!strcmp(linebuf, "recmode"))
+    {
+        for (s = value; s[0]; s++) *s = tolower(*s);
+        if (!strcmp(value, "fm")) 
+	    dg->dg_fm = (dg->dg_fm & RECMODE_FLAGMASK) | RECMODE_FM;
+        if (!strcmp(value, "mfm")) 
+	    dg->dg_fm = (dg->dg_fm & RECMODE_FLAGMASK) | RECMODE_MFM;
+    }
+    /* [1.4.1] 'Complement' flag */
+    if (!strcmp(linebuf, "complement"))
+    {
+        for (s = value; s[0]; s++) *s = tolower(*s);
+        if (!strcmp(value, "y")) 
+	    dg->dg_fm |= RECMODE_COMPLEMENT;
+        if (!strcmp(value, "n")) 
+	    dg->dg_fm &= ~RECMODE_COMPLEMENT;
     }
     if (!strcmp(linebuf, "multitrack"))
     {
@@ -384,7 +408,13 @@ dsk_err_t dg_store(FILE *fp, DSK_GEOMETRY *dg, char *description)
     }
     fprintf(fp, "rwgap=%d\n", dg->dg_rwgap);
     fprintf(fp, "fmtgap=%d\n", dg->dg_fmtgap);
-    fprintf(fp, "fm=%c\n", dg->dg_fm ? 'Y' : 'N');
+  
+    switch (dg->dg_fm & RECMODE_MASK)
+    {
+        case RECMODE_MFM: fprintf(fp, "recmode=MFM\n"); break;
+        case RECMODE_FM:  fprintf(fp, "recmode=FM\n"); break;
+    }
+    fprintf(fp, "complement=%c\n", (dg->dg_fm & RECMODE_COMPLEMENT) ? 'Y' : 'N');
     fprintf(fp, "multitrack=%c\n", dg->dg_nomulti ? 'N' : 'Y');
     fprintf(fp, "skipdeleted=%c\n", dg->dg_noskip ? 'N' : 'Y');
     return DSK_ERR_OK;

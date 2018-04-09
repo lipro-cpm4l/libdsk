@@ -124,7 +124,9 @@ typedef enum
 	VT_SIZE,
 	VT_RATE,
 	VT_GAP,
-	VT_BOOLEAN
+	VT_BOOLEAN,
+	VT_RECMODE,
+	VT_COMPLEMENT
 } TYPE;
 
 /* And this describes one variable */
@@ -147,7 +149,8 @@ static VARIABLE vars[] =
 	{ VT_RATE,    &dg.dg_datarate,  "datarate" },
 	{ VT_GAP,     &dg.dg_rwgap,     "rwgap" },
 	{ VT_GAP,     &dg.dg_fmtgap,    "fmtgap" },
-	{ VT_BOOLEAN, &dg.dg_fm,        "fm" },
+	{ VT_RECMODE, &dg.dg_fm,        "recmode" },
+	{ VT_COMPLEMENT,  &dg.dg_fm,        "complement" },
 	{ VT_BOOLEAN, &dg.dg_nomulti,   "nomulti" },
 	{ VT_BOOLEAN, &dg.dg_noskip,    "noskip" },
 };
@@ -216,6 +219,20 @@ void set_var(VARIABLE *var, const char *value)
 					  break;
 			}
 			break;
+		case VT_RECMODE:
+			switch(toupper(value[0]))
+			{
+				case 'M': *((int *)(var->data)) &= ~RECMODE_MASK;
+					  *((int *)(var->data)) |= RECMODE_MFM;
+					  break;
+				case 'F': *((int *)(var->data)) &= ~RECMODE_MASK;
+					  *((int *)(var->data)) |= RECMODE_FM;
+					  break;
+				default:  printf("Recording mode must be FM or MFM\n");
+					  break;
+			}
+			break;
+
 		case VT_GAP:
 			r = sscanf(value, "%x", &hexv);
 			if (!r)
@@ -233,6 +250,17 @@ void set_var(VARIABLE *var, const char *value)
 					break;
 				case '0': case 'N':
 					*((int *)(var->data)) = 0;
+					break;
+			}
+			break;
+		case VT_COMPLEMENT:
+			switch(toupper(value[0]))
+			{
+				case '1': case 'Y':
+					*((int *)(var->data)) |= RECMODE_COMPLEMENT;
+					break;
+				case '0': case 'N':
+					*((int *)(var->data)) &= ~RECMODE_COMPLEMENT;
 					break;
 			}
 			break;
@@ -268,10 +296,22 @@ void print_var(VARIABLE *var)
 					      break;
 			}
 			break;
+		case VT_RECMODE:
+			switch(*((int *)(var->data)) & RECMODE_MASK)
+			{
+				case RECMODE_MFM: printf("MFM"); break;
+				case RECMODE_FM:  printf("FM"); break;
+				default:      printf("Unknown %d",
+						*((int *)(var->data)) & RECMODE_MASK);
+					      break;
+			}
+			break;
 		case VT_GAP:
 			printf("%x", *((dsk_gap_t *)(var->data))); break;
 		case VT_BOOLEAN:
 			printf("%c", *((int *)(var->data)) ? 'Y' : 'N'); break;
+		case VT_COMPLEMENT:
+			printf("%c", (*((int *)(var->data)) & RECMODE_COMPLEMENT) ? 'Y' : 'N'); break;
 		default:
 			printf("Internal error: unsupported variable type %d\n",
 				var->type);
@@ -356,7 +396,7 @@ int check_numeric(char *arg, int *argc, char **argv)
 
 static void report(const char *s)
 {
-        fprintf(stderr, "%s\r", s);
+        fprintf(stderr, "%-79.79s\r", s);
         fflush(stderr);
 }
 
@@ -503,7 +543,11 @@ int do_util(void)
 			if (done) break;
 		}
 	} while (!done);
-	if (indr)  dsk_close(&indr);
+	if (indr)  
+	{
+		if (!e) e = dsk_close(&indr);
+		else	dsk_close(&indr);
+	}
 	if (clipbuf) dsk_free(clipbuf);
 	if (secbuf) dsk_free(secbuf);
 	yank_free();
@@ -993,12 +1037,18 @@ void show_geometry(void)
 	printf("Data rate:\t");
 	switch(dg.dg_datarate)
 	{
-		case RATE_SD: printf(" 250\n"); break;
-		case RATE_DD: printf(" 300\n"); break;
-		case RATE_HD: printf(" 500\n"); break;
-		case RATE_ED: printf("1000\n"); break;
+		case RATE_SD: printf(" 250"); break;
+		case RATE_DD: printf(" 300"); break;
+		case RATE_HD: printf(" 500"); break;
+		case RATE_ED: printf("1000"); break;
 	}
-	printf("Encoding:\t %s\n\n", dg.dg_fm ? " FM" :"MFM");
+	printf("\nEncoding:\t ");
+	switch(dg.dg_fm & RECMODE_MASK)
+	{
+		case RECMODE_MFM: printf("MFM"); break;	
+		case RECMODE_FM:  printf(" FM"); break;	
+	}
+	printf("\n\n");
 }
 
 

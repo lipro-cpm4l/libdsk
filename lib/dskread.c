@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001  John Elliott <seasip.webmaster@gmail.com>            *
+ *    Copyright (C) 2001, 2015  John Elliott <seasip.webmaster@gmail.com>  *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -28,17 +28,29 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_pread(DSK_DRIVER *self, const DSK_GEOMETRY *
 {
 	DRV_CLASS *dc;
 	dsk_err_t e = DSK_ERR_UNKNOWN;
-	unsigned n;
+	unsigned n, m;
 
 	if (!self || !geom || !buf || !self->dr_class) return DSK_ERR_BADPTR;
 
 	dc = self->dr_class;
 
 	/* LDTRACE(("dsk_pread (%d,%d,%d)\n", cylinder, head, sector)); */
-        if (!dc->dc_read) return DSK_ERR_NOTIMPL;
+	WALK_VTABLE(dc, dc_read)
+        if (!dc->dc_read) 
+	{
+		return DSK_ERR_NOTIMPL;
+	}
 	for (n = 0; n < self->dr_retry_count; n++)
 	{
-		e = (dc->dc_read)(self,geom,buf,cylinder,head,sector);	
+		e = (dc->dc_read)(self,geom,buf,cylinder,head,sector);
+		/* If flagged to complement bytes, complement them */
+		if (geom->dg_fm & RECMODE_COMPLEMENT)
+		{
+			for (m = 0; m < geom->dg_secsize; m++)
+			{
+				((char *)buf)[m] = ~((char *)buf)[m];
+			}
+		}	
 /* 		LDTRACE(("  err=%d\n", e)); */
 		if (!DSK_TRANSIENT_ERROR(e)) return e; 
 	}
@@ -67,13 +79,14 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_xread(DSK_DRIVER *self, const DSK_GEOMETRY *
 {
 	DRV_CLASS *dc;
 	dsk_err_t e = DSK_ERR_UNKNOWN;
-	unsigned n;
+	unsigned n, m;
 	if (!self || !geom || !buf || !self->dr_class) return DSK_ERR_BADPTR;
 
 	dc = self->dr_class;
 
 /*	LDTRACE(("dsk_xread (%d,%d,%d) (%d,%d)\n", cylinder, head, sector,
 				cyl_expect, head_expect)); */
+	WALK_VTABLE(dc, dc_xread)
         if (!dc->dc_xread) 
 	{
 		return DSK_ERR_NOTIMPL;
@@ -82,6 +95,14 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_xread(DSK_DRIVER *self, const DSK_GEOMETRY *
 	{
 		e = (dc->dc_xread)(self,geom,buf,cylinder,head,
 			cyl_expect, head_expect, sector, sector_len, deleted);	
+			/* If flagged to complement bytes, complement them */
+		if (geom->dg_fm & RECMODE_COMPLEMENT)
+		{
+			for (m = 0; m < sector_len; m++)
+			{
+				((char *)buf)[m] = ~((char *)buf)[m];
+			}
+		}
 		/* LDTRACE(("  err=%d\n", e)); */
 		if (!DSK_TRANSIENT_ERROR(e)) return e;
 	}

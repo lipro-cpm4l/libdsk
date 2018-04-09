@@ -81,7 +81,7 @@ int help(int argc, char **argv)
 
 static void report(const char *s)
 {
-	printf("%s\r", s);
+	printf("%-79.79s\r", s);
 	fflush(stdout);
 }
 
@@ -122,7 +122,12 @@ static int dump_libdskrc(void)
 		}
 		printf("RWGap=%d\n", geom.dg_rwgap);
 		printf("FmtGap=%d\n", geom.dg_fmtgap);
-		printf("FM=%c\n", geom.dg_fm ? 'Y' : 'N');
+		switch (geom.dg_fm & RECMODE_MASK)
+		{
+			case RECMODE_MFM: printf("RecMode=MFM\n"); break;
+			case RECMODE_FM:  printf("RecMode=FM\n"); break;
+		}
+		printf("Complement=%c\n", (geom.dg_fm & RECMODE_COMPLEMENT) ? 'Y' : 'N');
 		printf("Multitrack=%c\n", geom.dg_nomulti ? 'N' : 'Y');
 		printf("SkipDeleted=%c\n", geom.dg_noskip ? 'N' : 'Y');
 		putchar('\n');
@@ -304,7 +309,7 @@ int do_test(char *outfile, char *outtyp, char *outcomp, int forcehead)
 	}	
 	if (outdr) 
 	{
-		dsk_close(&outdr);
+		e = dsk_close(&outdr);
 		CHECKERR("dsk_close")
 	}
 	printf("Checking dsk_open\n");
@@ -402,7 +407,7 @@ int do_test(char *outfile, char *outtyp, char *outcomp, int forcehead)
 	}
 	if (outdr) 
 	{
-		dsk_close(&outdr);
+		e = dsk_close(&outdr);
 		CHECKERR("dsk_close")
 	}
 	printf("\n");

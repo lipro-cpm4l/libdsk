@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001  John Elliott <seasip.webmaster@gmail.com>            *
+ *    Copyright (C) 2001, 2017  John Elliott <seasip.webmaster@gmail.com>  *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -186,6 +186,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dsk_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom
 	dc = self->dr_class; 
 	memset(geom, 0, sizeof(*geom));
 
+	WALK_VTABLE(dc, dc_getgeom)
 	if (dc->dc_getgeom)
 	{
 		e = (dc->dc_getgeom)(self, geom);
@@ -270,7 +271,8 @@ dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 		/* [v0.6.0] Handle discs with non-512 byte sectors */
 		if (secid.fmt_secsize == 256)
 		{
-			if (geom->dg_fm)	/* BBC Micro FM floppy */
+			/* BBC Micro FM floppy? */
+			if ((geom->dg_fm & RECMODE_MASK) == RECMODE_FM)
 			{
 				unsigned int tot_sectors;
 				e = dsk_lread(self, geom, secbuf, 1);
@@ -391,9 +393,6 @@ dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 		dsk_free(secbuf);
 		return e; 
 	}
-
-	/* Save the data rate, because what we have is right, and what's
-	 * in the sector might not be. */
 	oldrate = geom->dg_datarate;	
 	/* We have the sector. Let's try to guess what it is */
 	e = dg_dosgeom(geom, secbuf);	
@@ -422,17 +421,103 @@ dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 		if (e == DSK_ERR_OK)
 			set_cpm86_fs(self, geom, secbuf);
 	}
-/* Check for Oups Discovery 1 */
+/* Check for Opus Discovery 1 */
 	if (e == DSK_ERR_BADFMT) 
 	{
 		e = dg_opusgeom(geom, secbuf);
 /*		if (e == DSK_ERR_OK)
 			set_opus_fs(self, geom, secbuf); */
 	}
-	geom->dg_datarate = oldrate;
-	
+	/* [1.5.6] If we are reading a floppy, LDBS file, DSK file or 
+	 * anything with metadata, then the data rate used to read the
+	 * boot sector will be the correct one. If, however, we are reading 
+	 * something like a POSIX file with no metadata, then the read will
+	 * have succeeded with the default RATE_SD and the rate specified by
+	 * the boot sector is a better indication of the proper value.
+	 *
+	 * So, try rereading the boot sector using the rate determined from
+	 * the boot sector. If that succeeds, all well and good. If not, 
+	 * revert to the rate when the boot sector was initially read */
+	if (oldrate != geom->dg_datarate)
+	{
+		dsk_err_t err2;
+
+		/* Try to reread the sector. */
+		err2 = dsk_lread(self, geom, secbuf, 0);
+		/* If that failed, revert. */
+		if (err2 == DSK_ERR_NOADDR)
+		{
+			geom->dg_datarate = oldrate;
+		}
+	}	
 	dsk_free(secbuf);
 	return e;
+}
+
+
+/* This is a cut-down geometry probe for when all the probe has is the 
+ * boot sector, no metadata whatsoever.
+ *
+ * Since we have no metadata, we don't know what the size of the boot 
+ * sector is (reading 512 bytes from the file could net you one 512-byte 
+ * sector, two 256-byte sectors or half a 1k sector). All we have to go on
+ * is the content.
+ *
+ * Boot sectors are listed in approximate order of detectability. 
+ * */
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_bootsecgeom(DSK_GEOMETRY *geom, 
+				const unsigned char *secbuf)
+{
+	unsigned long dsksize;
+
+	/* Try for a DOS BPB */
+	dsk_err_t err = dg_dosgeom(geom, secbuf);	
+	
+	if (err != DSK_ERR_BADFMT) return err;
+
+	/* Try for PCW CP/M */
+	err = dg_pcwgeom(geom, secbuf);
+	if (err != DSK_ERR_BADFMT) return err;
+
+	/* Try for Apricot DOS */
+	err = dg_aprigeom(geom, secbuf);
+	if (err != DSK_ERR_BADFMT) return err;
+
+	/* Try for ADFS. With no metadata, a file is as likely to be an ADFS
+	* disc with 256-byte sectors as a DOS disc with 512-byte sectors, 
+	* after all. Use the disk size at offset 0xFC. */
+	dsksize = secbuf[0xFC] + 256 * secbuf[0xFD] + 65536L * secbuf[0xFE];
+	switch (dsksize)
+	{
+		case  640: return dg_stdformat(geom, FMT_ACORN160, NULL, NULL);
+		case 1280: return dg_stdformat(geom, FMT_ACORN320, NULL, NULL);
+		/* The DOS Plus boot floppy has 2720 here for some reason */
+		case 2720:
+		case 2560: return dg_stdformat(geom, FMT_ACORN640, NULL, NULL);
+		case 3200: return dg_stdformat(geom, FMT_ACORN800, NULL, NULL);
+	}
+	/* ADFS E has a different signature */
+	if (secbuf[4] == 10 && secbuf[5] == 5 &&
+	    secbuf[6] == 2  && secbuf[7] == 2)
+	{
+		return dg_stdformat(geom, FMT_ACORN800, NULL, NULL);
+	}
+	err = dg_cpm86geom(geom, secbuf);
+	if (err != DSK_ERR_BADFMT) return err;
+
+	/* Check for Oups Discovery 1 */
+	err = dg_opusgeom(geom, secbuf);
+	if (err != DSK_ERR_BADFMT) return err;
+
+	/* The check for DFS is pretty weak, so put it last */
+	dsksize = secbuf[7] + 256 * (secbuf[6] & 3);
+	switch (dsksize)
+	{
+		case 400: return dg_stdformat(geom, FMT_BBC100, NULL, NULL);
+		case 800: return dg_stdformat(geom, FMT_BBC200, NULL, NULL);
+	}
+	/* OK, I give up */
+	return DSK_ERR_BADFMT;	
 }
 
 
@@ -491,7 +576,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_dosgeom(DSK_GEOMETRY *self, const unsigned ch
 		case 18: self->dg_rwgap = 0x1B; self->dg_fmtgap = 0x50; break;
 		default: self->dg_rwgap = 0x2A; self->dg_fmtgap = 0x52; break;
 	}
-	self->dg_fm      = 0;
+	self->dg_fm = RECMODE_MFM;
 	self->dg_nomulti = 0;
 
 	return DSK_ERR_OK;
@@ -532,7 +617,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_pcwgeom(DSK_GEOMETRY *dg, const unsigned char
 	dg->dg_secsize   = 128;
 	/* My PCW16 extension to the PCW superblock encodes data rate. Fancy that. */
 	dg->dg_datarate  = (bootsec[1] & 0x40) ? RATE_HD : RATE_SD;
-	dg->dg_fm      = 0;
+	dg->dg_fm      = RECMODE_MFM;
 	dg->dg_nomulti = 0;
 	dg->dg_rwgap   = bootsec[8];
 	dg->dg_fmtgap  = bootsec[9];
@@ -574,6 +659,11 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_aprigeom(DSK_GEOMETRY *self, const unsigned c
 
 	/* Sector size */
 	self->dg_secsize   = bootsect[0x0E] + 256 * bootsect[0x0F];
+	/* [1.4.1] If sector size is not a reasonable value, this
+	 *         could be a non-Apricot disk that happens to have
+	 *         ASCII at the start of the boot sector */
+	if ((self->dg_secsize % 128) || (self->dg_secsize == 0)) 
+		return DSK_ERR_BADFMT;
 	self->dg_secbase   = 1;
 	self->dg_heads     = bootsect[0x16];
 	self->dg_sectors   = bootsect[0x10] + 256 * bootsect[0x11];
@@ -592,7 +682,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_aprigeom(DSK_GEOMETRY *self, const unsigned c
 		case 18: self->dg_rwgap = 0x1B; self->dg_fmtgap = 0x50; break;
 		default: self->dg_rwgap = 0x2A; self->dg_fmtgap = 0x52; break;
 	}
-	self->dg_fm      = 0;
+	self->dg_fm      = RECMODE_MFM;
 	self->dg_nomulti = 0;
 
 	return DSK_ERR_OK;
@@ -612,7 +702,7 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16  dg_opusgeom(DSK_GEOMETRY *dg,
 	dg->dg_secbase   = 1;
 	dg->dg_secsize   = 512;
 	dg->dg_datarate  = RATE_SD;
-	dg->dg_fm        = 0;
+	dg->dg_fm        = RECMODE_MFM;
 	dg->dg_nomulti   = 0;
 	dg->dg_rwgap     = 0x2A;		/* XXX Provisional */
 	dg->dg_fmtgap    = 0x52;		/* XXX Provisional */

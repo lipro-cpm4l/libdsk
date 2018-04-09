@@ -79,7 +79,7 @@ int check_numeric(char *arg, int *argc, char **argv)
 
 static void report(const char *s)
 {
-        fprintf(stderr, "%s\r", s);
+        fprintf(stderr, "%-79.79s\r", s);
         fflush(stderr);
 }
 
@@ -207,8 +207,14 @@ int do_copy(char *infile, char *outfile)
 		}
 abort:		;
 	}
-	if (indr)  dsk_close(&indr);
-	if (outdr) dsk_close(&outdr);
+	if (outdr) 
+	{
+		if (!e) e = dsk_close(&outdr); else dsk_close(&outdr);
+	}
+	if (indr) 
+	{
+		if (!e) e = dsk_close(&indr); else dsk_close(&indr);
+	}
 	printf("\r%-70.70s\n", "");
 	if (e)
 	{
@@ -235,7 +241,8 @@ int dump_cyl(DSK_PDRIVER indr, DSK_GEOMETRY *dg,
 	/* Guess data rate and recording mode */
 	for (dg->dg_datarate = RATE_HD; dg->dg_datarate <= RATE_ED; ++dg->dg_datarate)
 	{
-		for (dg->dg_fm = 0; dg->dg_fm < 2; ++dg->dg_fm)
+		for (dg->dg_fm = RECMODE_MFM; 
+			dg->dg_fm <= RECMODE_FM; ++dg->dg_fm)
 		{
 			err = dsk_psecid(indr, dg, cyl, head, &sector_id);
 			if (!err) break;	

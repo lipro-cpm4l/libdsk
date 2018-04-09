@@ -65,7 +65,7 @@ int help(int argc, char **argv)
 
 static void report(const char *s)
 {
-	fprintf(stderr,"%s\r", s);
+	fprintf(stderr,"%-79.79s\r", s);
 	fflush(stderr);
 }
 
@@ -134,6 +134,17 @@ const char *show_rate(dsk_rate_t r)
 	return "??";
 }
 
+const char *show_recmode(int recmode)
+{
+	switch (recmode & RECMODE_MASK)
+	{
+		case RECMODE_MFM: return "MFM";
+		case RECMODE_FM:  return "FM";
+	}
+	return "???";
+}
+
+
 int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead)
 {
 	DSK_PDRIVER outdr = NULL;
@@ -180,6 +191,7 @@ int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead
                        "%-*.*sSector size: %4ld\n"
 		       "%-*.*sData rate:     %s\n"
 		       "%-*.*sRecord mode:  %s\n"
+		       "%-*.*sComplement:   %s\n"
 		       "%-*.*sR/W gap:     0x%02x\n"
 		       "%-*.*sFormat gap:  0x%02x\n",
 			indent, indent, "", show_sidedness(dg.dg_sidedness), 
@@ -189,7 +201,8 @@ int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead
 			indent, indent, "", dg.dg_secbase,
 			indent, indent, "", (long)dg.dg_secsize, 
 			indent, indent, "", show_rate(dg.dg_datarate),
-			indent, indent, "", (dg.dg_fm ? " FM" : "MFM"), 
+			indent, indent, "", show_recmode(dg.dg_fm),
+			indent, indent, "", (dg.dg_fm & RECMODE_COMPLEMENT) ? "Yes" : "No",
 			indent, indent, "", dg.dg_rwgap,   
 			indent, indent, "", dg.dg_fmtgap);
 		e = dsk_drive_status(outdr, &dg, 0, &drv_status);
@@ -238,7 +251,10 @@ int do_login(int argc, char *outfile, char *outtyp, char *outcomp, int forcehead
 			++opt;
 		}
 	}
-	if (outdr) dsk_close(&outdr);
+	if (outdr) 
+	{
+		if (!e) e = dsk_close(&outdr); else dsk_close(&outdr);
+	}
 	if (e)
 	{
 		fprintf(stderr, "%s: %s\n", outfile, dsk_strerror(e));

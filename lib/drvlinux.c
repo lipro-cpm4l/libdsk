@@ -53,7 +53,8 @@
 DRV_CLASS dc_linux = 
 {
 	sizeof(LINUX_DSK_DRIVER),
-	"floppy",
+	NULL,		/* superclass */
+	"floppy\0",
 	"Linux floppy driver",
 	&linux_open,	/* open */
 	&linux_creat,	/* create new */
@@ -259,7 +260,7 @@ dsk_err_t linux_xread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 	if (err) return err;
 
 	if (geom->dg_noskip)  mask &= ~0x20;	/* Don't skip deleted data */
-	if (geom->dg_fm)      mask &= ~0x40;	/* FM recording mode */
+	if (geom->dg_fm & RECMODE_MASK) mask &= ~0x40;	/* FM recording mode */
 	if (geom->dg_nomulti) mask &= ~0x80;	/* Disable multitrack */
 
 	init_raw_cmd(&raw_cmd);
@@ -324,7 +325,7 @@ dsk_err_t linux_xwrite(DSK_DRIVER *self, const DSK_GEOMETRY *geom, const void *b
 	if (err) return err;
 
 	if (geom->dg_noskip)  mask &= ~0x20;	/* Don't skip deleted data */
-	if (geom->dg_fm)      mask &= ~0x40;
+	if (geom->dg_fm & RECMODE_MASK)      mask &= ~0x40;
 	if (geom->dg_nomulti) mask &= ~0x80;
 
 	init_raw_cmd(&raw_cmd);
@@ -376,7 +377,7 @@ dsk_err_t linux_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 
 	err = check_geom(lxself, geom);
 	if (err) return err;
-	if (geom->dg_fm)      mask &= ~0x40;
+	if (geom->dg_fm & RECMODE_MASK)      mask &= ~0x40;
 	if (geom->dg_nomulti) mask &= ~0x80;
 
 	buf = dsk_malloc(geom->dg_sectors * 4);
@@ -433,7 +434,7 @@ dsk_err_t linux_secid(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	lxself = (LINUX_DSK_DRIVER *)self;
 	if (lxself->lx_fd < 0) return DSK_ERR_NOTRDY;
 
-	if (geom->dg_fm)      mask &= ~0x40;
+	if (geom->dg_fm & RECMODE_MASK)      mask &= ~0x40;
 	if (geom->dg_nomulti) mask &= ~0x80;
 
 /* [v0.8.3] It was necessary to add this check correctly to detect 100k 
@@ -541,7 +542,7 @@ dsk_err_t linux_xtread(DSK_DRIVER *self, const DSK_GEOMETRY *geom, void *buf,
 	err = check_geom(lxself, geom);
 	if (err) return err;
 
-	if (geom->dg_fm)      mask &= ~0x40;
+	if (geom->dg_fm & RECMODE_MASK)      mask &= ~0x40;
 	if (geom->dg_nomulti) mask &= ~0x80;
 
 	init_raw_cmd(&raw_cmd);
