@@ -143,7 +143,7 @@ dskdump_OBJECTS = $(am_dskdump_OBJECTS)
 dskdump_LDADD = $(LDADD)
 dskdump_DEPENDENCIES = ../lib/libdsk.la
 am_dskform_OBJECTS = dskform.$(OBJEXT) utilopts.$(OBJEXT) \
-	formname.$(OBJEXT)
+	formname.$(OBJEXT) bootsec.$(OBJEXT)
 dskform_OBJECTS = $(am_dskform_OBJECTS)
 dskform_LDADD = $(LDADD)
 dskform_DEPENDENCIES = ../lib/libdsk.la
@@ -394,7 +394,9 @@ dsktrans_SOURCES = dsktrans.c utilopts.c utilopts.h formname.c formname.h \
 apriboot_SOURCES = apriboot.c bootsec.c apriboot.h formname.c formname.h \
 		 utilopts.c utilopts.h
 
-dskform_SOURCES = dskform.c utilopts.c utilopts.h formname.c formname.h
+dskform_SOURCES = dskform.c utilopts.c utilopts.h formname.c formname.h \
+		 apriboot.h bootsec.c
+
 dskid_SOURCES = dskid.c utilopts.c utilopts.h
 md3serial_SOURCES = md3serial.c utilopts.c utilopts.h
 dskscan_SOURCES = dskscan.c utilopts.c utilopts.h formname.c formname.h

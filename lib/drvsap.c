@@ -105,7 +105,7 @@ dsk_err_t sap_open(DSK_DRIVER *self, const char *filename)
 	if (!fp) return DSK_ERR_NOTME;
 
 	/* Load the header */
-	if (fread(header, 1, sizeof(header), fp) < sizeof(header))
+	if (fread(header, 1, sizeof(header), fp) < (int)sizeof(header))
 	{
 		fclose(fp);
 		return DSK_ERR_NOTME;
@@ -366,7 +366,7 @@ static dsk_err_t sap_save_track
 	int maxsec = 0;
 	unsigned char secbuf[1030];
 	dsk_err_t err;
-	LDBS_SECTOR_ENTRY *se;
+	LDBS_SECTOR_ENTRY *se = NULL;
 	dsk_pcyl_t lastcyl = 0;
 	SAP_DSK_DRIVER *sapself = (SAP_DSK_DRIVER *)param;
 	unsigned short crc;
@@ -422,7 +422,7 @@ static dsk_err_t sap_save_track
 		/* Calculate CRC before obfuscating */
 		crc = sap_crc(secbuf, 4 + seclen);
 		for (n = 0; n < seclen; n++) secbuf[n + 4] ^= 0xB3;
-		if ((se->st2 & 0x20) && (se->trail >= 2))
+		if (se && (se->st2 & 0x20) && (se->trail >= 2))
 		{
 			/* Sector had 'bad CRC' and an actual CRC is present.
 			 * Just write the 'bad' CRC rather than recalculating

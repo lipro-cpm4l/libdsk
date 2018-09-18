@@ -243,6 +243,9 @@ commit them until dsk_close() is called.
 
 For full details, see the file ChangeLog.
 
+• dskform can now format disc images with a blank PCDOS or 
+  Apricot MSDOS filesystem.
+
 • Added a new 'sap' driver for SAP-format disc images (thanks to 
   Emulix75 for information).
 

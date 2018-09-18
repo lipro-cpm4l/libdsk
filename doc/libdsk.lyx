@@ -270,6 +270,11 @@ For full details, see the file ChangeLog.
 \end_layout
 
 \begin_layout Itemize
+dskform can now format disc images with a blank PCDOS or Apricot MSDOS filesyste
+m.
+\end_layout
+
+\begin_layout Itemize
 Added a new 'sap' driver for SAP-format disc images (thanks to Emulix75
  for information).
 \end_layout

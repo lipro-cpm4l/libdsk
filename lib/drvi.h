@@ -42,6 +42,9 @@
 #endif
 
 #ifndef DISABLE_FLOPPY
+# ifdef HAVE_SYS_SYSMACROS_H
+#  include <sys/sysmacros.h>
+# endif
 # ifdef HAVE_LINUX_FD_H
 #  include "linux/fd.h"
 #  ifdef HAVE_LINUX_FDREG_H

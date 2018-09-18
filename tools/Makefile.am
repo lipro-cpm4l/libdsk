@@ -13,7 +13,8 @@ dsktrans_SOURCES=dsktrans.c utilopts.c utilopts.h formname.c formname.h \
 		 apriboot.h bootsec.c
 apriboot_SOURCES=apriboot.c bootsec.c apriboot.h formname.c formname.h \
 		 utilopts.c utilopts.h
-dskform_SOURCES=dskform.c utilopts.c utilopts.h formname.c formname.h
+dskform_SOURCES=dskform.c utilopts.c utilopts.h formname.c formname.h \
+		 apriboot.h bootsec.c
 dskid_SOURCES=dskid.c utilopts.c utilopts.h
 md3serial_SOURCES=md3serial.c utilopts.c utilopts.h
 dskscan_SOURCES=dskscan.c utilopts.c utilopts.h formname.c formname.h
