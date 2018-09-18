@@ -29,6 +29,10 @@
 #include "libdsk.h"
 #include "drv.h"
 
+#ifdef HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+
 #ifdef HAVE_LIMITS_H
 # include <limits.h>
 #endif
@@ -38,6 +42,9 @@
 #endif
 
 #ifndef DISABLE_FLOPPY
+# ifdef HAVE_SYS_SYSMACROS_H
+#  include <sys/sysmacros.h>
+# endif
 # ifdef HAVE_LINUX_FD_H
 #  include "linux/fd.h"
 #  ifdef HAVE_LINUX_FDREG_H
@@ -93,6 +100,11 @@ dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom);
 dsk_err_t dsk_isetoption(DSK_DRIVER *self, const char *name, int value, 
 		int add_if_not_present);
 
+/* A mini-geometry probe, intended for disc images that don't have 
+ * built-in metadata. It looks at the first sector and tries to guess 
+ * what the geometry of the image might be. */
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_bootsecgeom(DSK_GEOMETRY *self, const unsigned char *bootsect);
+
 
 /* "Extended surface" discs have sector IDs that don't match the sectors' 
  * location on disc. This means, anywhere we reflect dsk_read() to dsk_xread(),
@@ -101,6 +113,26 @@ dsk_err_t dsk_isetoption(DSK_DRIVER *self, const char *name, int value,
 
 dsk_phead_t dg_x_head  (const DSK_GEOMETRY *dg, dsk_phead_t h);
 dsk_psect_t dg_x_sector(const DSK_GEOMETRY *dg, dsk_phead_t h, dsk_psect_t s);
+
+/* Translation between UTF-8 (as used by LibDsk in LDBS) and codepage 437
+ * (as used by QRST, ApriDisk etc.) 
+ */
+
+/* Convert a CP437 string to UTF-8. Returns the number of UTF-8 bytes 
+ * generated. If 'dst' is not null, the string is written to 'dst'. 
+ * 
+ * If 'limit' is >= 0, it is the maximum size of the output buffer 
+ * (including the terminating null) */
+int cp437_to_utf8(const char *src, char *dst, int limit);
+
+/* Convert a UTF-8 string to CP437. Returns the number of CP437 bytes
+ * generated. Characters outside the CP437 range get replaced with 0xFF. 
+ * If 'dst' is not null, the string is written to 'dst'.
+ * 
+ * If 'limit' is >= 0, it is the maximum size of the output buffer 
+ * (including the terminating null) */
+int utf8_to_cp437(const char *src, char *dst, int limit);
+
 
 
 #ifdef AUTOSHARE

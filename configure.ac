@@ -1,6 +1,6 @@
 dnl Process this file with autoconf to produce a configure script.
-UPDATED='November 1, 2016'
-AC_INIT(LibDsk, 1.4.2)
+UPDATED='September 18, 2018'
+AC_INIT(LibDsk, 1.5.9)
 AC_CONFIG_SRCDIR(lib/dskopen.c)
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(m4)
@@ -52,7 +52,7 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(errno.h limits.h sys/ioctl.h stat.h sys/stat.h sys/types.h)
 AC_CHECK_HEADERS(unistd.h termios.h libgen.h assert.h)
 AC_CHECK_HEADERS(dirent.h fcntl.h utime.h pwd.h time.h dir.h direct.h)
-AC_CHECK_HEADERS(linux/fd.h linux/fdreg.h shlobj.h)
+AC_CHECK_HEADERS(linux/fd.h linux/fdreg.h sys/sysmacros.h shlobj.h)
 AC_CHECK_HEADERS([windows.h winioctl.h], [], [], 
 [[#ifdef HAVE_WINDOWS_H
 #include <windows.h>
@@ -66,6 +66,8 @@ AC_CHECK_FUNCS(basename)
 AC_CHECK_FUNCS(fork)
 AC_CHECK_FUNCS(GetTempFileName)
 AC_CHECK_FUNCS(sleep)
+AC_CHECK_FUNCS(ftruncate)
+AC_CHECK_FUNCS(chsize)
 
 dnl Checks for zlib
 if test x$with_zlib = xyes; then
