@@ -2,12 +2,11 @@ dnl Process this file with autoconf to produce a configure script.
 UPDATED='September 18, 2018'
 AC_INIT(LibDsk, 1.5.9)
 AC_CONFIG_SRCDIR(lib/dskopen.c)
-AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(m4)
 AC_CANONICAL_SYSTEM
 LT_INIT
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign])
 
 dnl Support for the Java Native Interface bindings
 AC_ARG_WITH(jni,
