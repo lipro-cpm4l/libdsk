@@ -7,7 +7,7 @@ AC_CONFIG_MACRO_DIR(m4)
 AC_CANONICAL_SYSTEM
 LT_INIT
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([foreign])
 
 dnl Support for the Java Native Interface bindings
 AC_ARG_WITH(jni,
