@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS= . include lib tools man doc
+SUBDIRS= . include lib tools man
 ACLOCAL_AMFLAGS=-I m4
 
 EXTRA_DIST= $(srcdir)/config/* \
