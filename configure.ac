@@ -53,11 +53,13 @@ AC_CHECK_HEADERS(errno.h limits.h sys/ioctl.h stat.h sys/stat.h sys/types.h)
 AC_CHECK_HEADERS(unistd.h termios.h libgen.h assert.h)
 AC_CHECK_HEADERS(dirent.h fcntl.h utime.h pwd.h time.h dir.h direct.h)
 AC_CHECK_HEADERS(linux/fd.h linux/fdreg.h sys/sysmacros.h shlobj.h)
+if test "$host_os" != "cygwin"; then
 AC_CHECK_HEADERS([windows.h winioctl.h], [], [], 
 [[#ifdef HAVE_WINDOWS_H
 #include <windows.h>
 #endif
 ]])
+fi
 
 dnl Checks for functions
 AC_CHECK_FUNCS(strcmpi stricmp strcasecmp, break)
@@ -126,4 +128,4 @@ AC_CHECK_FUNCS(strerror)
 AC_SUBST(LIBDSKJAR)
 AC_SUBST(TOOLCLASSES)
 AC_SUBST(CLASSPATH)
-AC_OUTPUT(Makefile doc/Makefile include/Makefile lib/Makefile tools/Makefile man/Makefile)
+AC_OUTPUT(libdsk.pc Makefile doc/Makefile include/Makefile lib/Makefile tools/Makefile man/Makefile)
