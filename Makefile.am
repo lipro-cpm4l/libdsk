@@ -23,4 +23,5 @@ EXTRA_DIST= $(srcdir)/m4/* \
 install-man:
 	cd man && make install-man
 
-
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = $(PACKAGE).pc
