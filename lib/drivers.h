@@ -46,6 +46,7 @@ extern DRV_CLASS dc_ldbsdisk;	/* LibDsk block store */
 extern DRV_CLASS dc_sap;	/* Thomson SAP */
 extern DRV_CLASS dc_rcpmfs;	/* Reverse-CP/MFS driver */
 extern DRV_CLASS dc_remote;	/* All remote drivers */
+extern DRV_CLASS dc_gotek;	/* Gotek USB device */
 #ifdef LINUXFLOPPY
 extern DRV_CLASS dc_linux;	/* Linux driver */
 #endif

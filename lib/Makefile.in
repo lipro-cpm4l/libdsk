@@ -144,9 +144,10 @@ am_libdsk_la_OBJECTS = dskread.lo dskwrite.lo dskcheck.lo dskstat.lo \
 	remote.lo rpctios.lo rpcfork.lo rpcfossl.lo rpcwin32.lo \
 	drvjv3.lo drvlinux.lo drvntwdm.lo drvwin32.lo drvwin16.lo \
 	drvint25.lo drvdos16.lo drvdos32.lo drvcpcem.lo drvdskf.lo \
-	drvimd.lo drvlogi.lo drvsimh.lo drvposix.lo drvnwasp.lo \
-	drvadisk.lo drvrcpm.lo drvsap.lo drvtele.lo drvmyz80.lo \
-	drvydsk.lo drvcfi.lo drvqm.lo drvqrst.lo drvldbs.lo ldbs.lo
+	drvimd.lo drvlogi.lo drvsimh.lo drvgotek.lo drvposix.lo \
+	drvnwasp.lo drvadisk.lo drvrcpm.lo drvsap.lo drvtele.lo \
+	drvmyz80.lo drvydsk.lo drvcfi.lo drvqm.lo drvqrst.lo \
+	drvldbs.lo ldbs.lo
 libdsk_la_OBJECTS = $(am_libdsk_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -410,6 +411,7 @@ libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   drvimd.h   drvimd.c \
 		   drvlogi.h  drvlogi.c \
 		   drvsimh.h  drvsimh.c \
+		   drvgotek.h drvgotek.c \
 		   drvposix.h drvposix.c \
 		   drvnwasp.h drvnwasp.c \
 		   drvadisk.h drvadisk.c \
@@ -538,6 +540,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvdos16.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvdos32.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvdskf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvgotek.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvimd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvint25.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/drvjv3.Plo@am__quote@

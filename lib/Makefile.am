@@ -66,6 +66,7 @@ libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   drvimd.h   drvimd.c \
 		   drvlogi.h  drvlogi.c \
 		   drvsimh.h  drvsimh.c \
+		   drvgotek.h drvgotek.c \
 		   drvposix.h drvposix.c \
 		   drvnwasp.h drvnwasp.c \
 		   drvadisk.h drvadisk.c \

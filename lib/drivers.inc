@@ -43,6 +43,7 @@
     &dc_dos32,
     &dc_dosint25,
 #endif
+    &dc_gotek,
     &dc_remote,
 /* 2. Directory-based backends */
 #ifdef HAVE_RCPMFS
@@ -80,7 +81,11 @@
  *   explicitly specified. */
     &dc_myz80,
     &dc_simh,
+/* For some reason building the nwasp driver crashes the Pacific C 
+ * compiler. Exclude it from DOS builds for now. */
+#ifndef __PACIFIC__
     &dc_nwasp,
+#endif
     &dc_logical,
     &dc_jv3,
     &dc_cfi,    /* RLE-compressed raw. The reasons that this isn't 
