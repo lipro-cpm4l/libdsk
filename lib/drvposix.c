@@ -481,6 +481,7 @@ dsk_err_t posix_to_ldbs(DSK_DRIVER *self, struct ldbs **result, DSK_GEOMETRY *ge
 			th->sector[sec].id_head = head;
 			th->sector[sec].id_sec  = sec + geom->dg_secbase;
 			th->sector[sec].id_psh  = dsk_get_psh(geom->dg_secsize);
+			th->sector[sec].datalen = geom->dg_secsize;
 			th->sector[sec].copies = 0;
 			for (n = 1; n < (int)(geom->dg_secsize); n++)
 			{
@@ -597,7 +598,8 @@ static dsk_err_t posix_from_ldbs_callback(PLDBS ldbs, dsk_pcyl_t cyl,
 	else
 	{
 		/* Otherwise just regurgitate the whole track in one hit */
-		err = ldbs_load_track(ldbs, th, (void *)&secbuf, &len, 0);
+		err = ldbs_load_track(ldbs, th, (void *)&secbuf, &len, 0,
+				LLTO_DATA_ONLY);
 		if (err) return err;
 		if (fwrite(secbuf, 1, len, pxself->px_fp) < len)
 		{

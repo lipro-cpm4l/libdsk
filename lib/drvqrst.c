@@ -333,6 +333,7 @@ dsk_err_t qrst_open(DSK_DRIVER *self, const char *filename)
 				secent->id_head = head;
 				secent->id_sec = sector + geom.dg_secbase;
 				secent->id_psh = dsk_get_psh(geom.dg_secsize);
+				secent->datalen = geom.dg_secsize;
 				secent->copies = 0;
 				/* See if the sector is blank */
 				for (c = 1; c < (int)geom.dg_secsize; c++)
@@ -493,7 +494,8 @@ static dsk_err_t checksum_track(PLDBS self, dsk_pcyl_t cyl, dsk_phead_t head,
 	}
 	else
 	{
-		err = ldbs_load_track(self, th, (void **)&buf, &buflen, 0);
+		err = ldbs_load_track(self, th, (void **)&buf, &buflen, 0,
+				LLTO_DATA_ONLY);
 		if (err) return err;
 
 	}
@@ -556,7 +558,8 @@ static dsk_err_t save_callback(PLDBS self, dsk_pcyl_t cyl, dsk_phead_t head,
 		else	return DSK_ERR_OK;
 	}
 	/* OK, there's actually data here. Load the sectors */
-	err = ldbs_load_track(self, th, (void **)&buffer, &buflen, 0);
+	err = ldbs_load_track(self, th, (void **)&buffer, &buflen, 0,
+			LLTO_DATA_ONLY);
 	if (err) return err;
 	
 	/* Attempt compression */

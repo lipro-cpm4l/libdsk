@@ -1,27 +1,27 @@
 <html>
 	<head>
-		<title>LDBS disk image format v0.3</title>
+		<title>LDBS disc image format v0.4</title>
 	</head>
 	<body>
-		<h1>LDBS disk image format v0.3</h1>
-		<h2>John Elliott, 14 March 2017</h2>
+		<h1>LDBS disc image format v0.4</h1>
+		<h2>John Elliott, 9 July 2019</h2>
 
 <h2>Introduction</h2>
 
-<p>LDBS is a disk image format originally designed for internal use in LibDsk,
-with the intended use case being for archiving FM / MFM floppy disks.  
+<p>LDBS is a disc image format originally designed for internal use in LibDsk,
+with the intended use case being for archiving FM / MFM floppy discs.  
 This specification is provided for comment and suggestions, in case the 
 format proves useful in other situations.</p>
 
 <p>The suggested file extension is .ldbs.</p>
 
 <p>The reference implementation for this version of LDBS is 
-ldbs.c / ldbs.h, supplied with LibDsk v1.5.4.</p>
+ldbs.c / ldbs.h, supplied with LibDsk v1.5.11.</p>
 
 <p>The file structure is defined at two levels: a generic block store, and 
-the specific block types used to specify a disk image.</p>
+the specific block types used to specify a disc image.</p>
 
-<p><b>Rationale:</b> Why a new disk image format? As mentioned above, it
+<p><b>Rationale:</b> Why a new disc image format? As mentioned above, it
 was designed for use as an intermediate format in LibDsk. The aim is to 
 have feature parity with CPCEMU extended .DSK, but in a more extensible 
 format with greater support for in-place rewrites. It is not, for example,
@@ -31,6 +31,13 @@ without rewriting all subsequent tracks.</p>
 <h2>Change history</h2>
 
 <dl>
+<dt>0.4 (9 July 2019)</dt>
+<dd><ul>
+<li>Added support for sectors whose size is not a power of 2.</li>
+<li>Added support for Macintosh GCR encoding.</li>
+<li>Added support for 'MBIN' and 'RSRC' blocks (MacBinary header and Apple resource fork).</li>
+</ul>
+</dd>
 <dt>0.3 (8 March 2017)</dt>
 <dd><ul>
 <li>Altered the definition of the track and sector headers to support some 
@@ -41,7 +48,7 @@ in the header.</li>
 <dt>0.2 (3 March 2017)</dt>
 <dd><ul>
 <li>Added a warning against storing file offsets in custom blocks.</li>
-<li>Implemented a few more helper methods. The disk image format itself
+<li>Implemented a few more helper methods. The disc image format itself
 remains unchanged.</li>
 </ul>
 </dd>
@@ -62,7 +69,7 @@ avoid signed / unsigned issues, they should not exceed 2^31.</p>
 <table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
 	<tr><td>0x0000</td><td>4 bytes</td><td>LDBS magic number:
 			<tt>0x4C 0x42 0x53 0x01</tt> ('<tt>LBS\01</tt>')</td></tr>
-	<tr><td>0x0004</td><td>4 bytes</td><td>File type. For a disk image
+	<tr><td>0x0004</td><td>4 bytes</td><td>File type. For a disc image
 			this is <tt>0x44 0x53 0x4B 0x02</tt>
 			('<tt>DSK\02</tt>'). If it is 
 			<tt>0x44 0x53 0x4B 0x01</tt> ('<tt>DSK\01</tt>') then
@@ -86,10 +93,10 @@ file offsets of valid data blocks. It is an error for them to point to any
 other location in the file.</p>
 
 <p>Within the block store layer the track directory is optional, 
-but a valid LDBS disk image must have a track directory.</p>
+but a valid LDBS disc image must have a track directory.</p>
 
 <p>Although the block store layer is currently only defined as containing a 
-disk image, it would be usable as a container for other file formats; 
+disc image, it would be usable as a container for other file formats; 
 this would be indicated by a different value at offset 0x0004. The use of
 the block store for other file formats is not covered further by this 
 document.</p>
@@ -114,10 +121,10 @@ exceed 64k in size.</p>
 			as defined below. <tt>0x00 0x00 0x00 0x00</tt>
 			indicates a free block, other values indicate a 
 			used block.</td></tr>
-	<tr><td>0x0008</td><td>length</td><td>Length of block on disk (not 
+	<tr><td>0x0008</td><td>length</td><td>Length of block on disc (not 
 			including this 20-byte header)</td></tr>
 	<tr><td>0x000C</td><td>length</td><td>Length of block contents,  
-			less than or equal to length of block on disk.
+			less than or equal to length of block on disc.
 			Should be set to zero for a free block.	
 			</td></tr>
 	<tr><td>0x0010</td><td>offset</td><td>Offset of next block in
@@ -134,7 +141,7 @@ type is not required to be unique for blocks not recorded in the directory.
 <p>If the offset at 0x0010 is non-zero, it must point to another valid 
 data block.</p>
 
-<p>If the length of the block on disk is greater than the length of the 
+<p>If the length of the block on disc is greater than the length of the 
 block contents, an implementation is encouraged to fill the remainder with 
 zero bytes, but is not obliged to. Similarly a free block should be filled 
 with zeroes, but is not required to be.</p>
@@ -161,16 +168,16 @@ or a 'used' block on the 'free' linked list.</p>
 	<li>Delete a block. Remove the block from the used list, add it to
 	the free list, and zero its block type.</li>
 	<li>Update a block. If the new size is less than or equal to the 
-	block's current size on disk, write the data into the block at its
+	block's current size on disc, write the data into the block at its
 	current location. Otherwise, treat as delete followed by add.</li>
 </ul>
 <p>Note that there is no requirement to coalesce adjacent free blocks, or to
-split a block if the size requested is less than its current size on disk.</p>
+split a block if the size requested is less than its current size on disc.</p>
 
 <h2>Data storage: Disc image</h2>
 
 <h3>Track directory</h3>
-<p>A disk image must contain a track directory block. The intention is 
+<p>A disc image must contain a track directory block. The intention is 
 that an implementation will use the track directory to locate data rather 
 than performing linear searches of the file or walking its linked lists.</p>
 
@@ -186,9 +193,10 @@ than performing linear searches of the file or walking its linked lists.</p>
 	</tr>
 </table>
 <p>The format of a directory entry is one of <tt>T<var>xxx</var></tt>,
-<tt>INFO</tt>, <tt>CREA</tt>, <tt>DPB</tt> or <tt>GEOM</tt>, or a 
-custom block type (beginning with a lowercase 'a'-'z'). In each case, this 
-is the block type of the corresponding block in the store.</p>
+<tt>INFO</tt>, <tt>CREA</tt>, <tt>DPB</tt>, <tt>GEOM</tt>, <tt>MBIN</tt>,
+<tt>RSRC</tt>, or a custom block type (beginning with a lowercase 'a'-'z'). 
+In each case, this is the block type of the corresponding block in the 
+store.</p>
 
 
 <table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
@@ -198,27 +206,27 @@ is the block type of the corresponding block in the store.</p>
 	<tr><td>0x0004</td><td>offset</td><td>Offset of track header block</td>
 </tr></table>
 <p>Reference to a track header. There is one of these for each track in the
-disk image.</p>
+disc image.</p>
 
 <table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
 	<tr><td>0x0000</td><td>4 bytes</td><td>'INFO'</td></tr>
 	<tr><td>0x0004</td><td>offset</td><td>Offset of comment block</td>
 </tr></table>
-<p>Reference to a comment block. There is at most one of these in the disk
+<p>Reference to a comment block. There is at most one of these in the disc
 image file.</p>
 
 <table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
 	<tr><td>0x0000</td><td>4 bytes</td><td>'CREA'</td></tr>
 	<tr><td>0x0004</td><td>offset</td><td>Offset of creator block</td>
 </tr></table>
-<p>Reference to a creator block. There is at most one of these in the disk
+<p>Reference to a creator block. There is at most one of these in the disc
 image file.</p>
 
 <table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
 	<tr><td>0x0000</td><td>4 bytes</td><td>'GEOM'</td></tr>
 	<tr><td>0x0004</td><td>offset</td><td>Offset of geometry block</td>
 </tr></table>
-<p>Reference to a geometry block. There is at most one of these in the disk
+<p>Reference to a geometry block. There is at most one of these in the disc
 image file.</p>
 
 <table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
@@ -226,16 +234,31 @@ image file.</p>
 	<tr><td>0x0004</td><td>offset</td><td>Offset of DPB block</td>
 </tr></table>
 <p>Reference to a CP/M Disk Parameter Block block. There is at most one of 
-these in the disk image file. It will only be present on disks containing
+these in the disc image file. It will only be present on discs containing
 a CP/M filesystem.</p>
+
+<table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
+	<tr><td>0x0000</td><td>4 bytes</td><td>'MBIN'</td></tr>
+	<tr><td>0x0004</td><td>offset</td><td>Offset of MacBinary header block</td>
+</tr></table>
+<p>Reference to a MacBinary header block. There is at most one of these in the 
+disc image file.</p>
+
+<table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
+	<tr><td>0x0000</td><td>4 bytes</td><td>'RSRC'</td></tr>
+	<tr><td>0x0004</td><td>offset</td><td>Offset of Macintosh resource 
+block</td>
+</tr></table>
+<p>Reference to a Macintosh resource fork. There is at most one of these in 
+the disc image file.</p>
 
 <h3>Custom block types</h3>
 
 <p>Other block types than the ones listed here may be defined in later 
 versions of this spec; implementations should ignore unknown block types. 
 It may, for example, be useful at some point to create a 'BOOT' block type 
-containing the keystrokes necessary to boot a disk, or a 'PICT' block 
-containing a picture of the disk.</p>
+containing the keystrokes necessary to boot a disc, or a 'PICT' block 
+containing a picture of the disc.</p>
 
 <p>All future block types defined by this spec will start with a capital 
 letter, 'A'-'Z'. Block types beginning with a lowercase letter 'a'-'z' 
@@ -251,71 +274,83 @@ blocks, and so won't update them. This isn't just a theoretical danger:
 LDBS file.</p>
 
 <p>The LibDsk TeleDisk, CopyQM and QRST drivers use custom blocks to hold
-details from the original file headers which aren't used by other disk
+details from the original file headers which aren't used by other disc
 image formats. These are, respectively, 'utd0', 'ucqm', and 'uqrs'.
 
 <h3>Track header</h3>
 
-<table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
+<table border="1"><tr><th>Offset</th><th>Type</th><th>Name</th><th>Meaning</th></tr>
 
-	<tr><td>0x0000</td><td>20 bytes</td><td>LDBS block header. Type 
+	<tr><td>0x0000</td><td>20 bytes</td><td></td><td>LDBS block header. Type 
 			field contains <tt>0x54 <var>cyl cyl head</var> 
 			</tt>, corresponding to directory entry. </td></tr>
-	<tr><td>0x0014</td><td>2 bytes</td><td><b>[LDBS 0.3]</b> Length of 
+	<tr><td>0x0014</td><td>2 bytes</td><td></td><td><b>[LDBS 0.3+]</b> Length of 
 			fixed track header in bytes (= offset of first sector 
 			header less 0x0014).  Currently 0x000C, but you should 
 			not rely on this; future extensions may require extra 
 			bytes to be added to the track header.</td></tr>
-	<tr><td>0x0016</td><td>2 bytes</td><td><b>[LDBS 0.3]</b> Length of 
-			each sector entry in bytes. Currently 0x0010, but 
+	<tr><td>0x0016</td><td>2 bytes</td><td></td><td><b>[LDBS 0.3+]</b> Length of 
+			each sector descriptor in bytes. Currently 0x0012, but 
 			you should not rely on this; future extensions 
 			may require extra bytes to be added to the sector
 			header.</td></tr>
-	<tr><td>0x0018</td><td>2 bytes</td><td>Number of sector entries
+	<tr><td>0x0018</td><td>2 bytes</td><td><code>count</code></td><td>Number of sector entries
 				in the track header.</td></tr>
-	<tr><td>0x001A</td><td>1 byte</td><td>Data rate when track was 
+	<tr><td>0x001A</td><td>1 byte</td><td><code>datarate</code></td><td>Data rate when track was 
 			recorded:
 <pre>0 =&gt; unknown
 1 =&gt; Single density (125 kbit/s or 150 kbit/s FM) or double density (250 kbit/s or 300 kbit/s MFM)
+        Also used for Macintosh GCR.
 2 =&gt; High density (500 kbit/s MFM, or [unlikely] 250 kbit/s FM)
 3 =&gt; Extended density (1000 kbit/s MFM, or [unlikely] 500 kbit/s FM)</pre>
 <p>Note: The 250 kbit/s and 300 kbit/s rates (and their FM equivalents) are 
 	combined because the same disc may appear to use either rate, 
 	depending whether it is read in a 360k drive or a 1.2Mb drive.</td>
 	</tr>
-	<tr><td>0x001B</td><td>1 byte</td><td>Recording mode used for the 
+	<tr><td>0x001B</td><td>1 byte</td><td><code>recmode</code></td><td>Recording mode used for the 
 			track:
-<pre>0 =&gt; unknown
-1 =&gt; FM
-2 =&gt; MFM</pre></td>
+<table border="1">
+<tr><th>Value</th><th>Meaning</th></tr>
+<tr><td>0x00</td><td>unknown</td></tr>
+<tr><td>0x01</td><td>FM</td></tr>
+<tr><td>0x02</td><td>MFM</td></tr>
+<tr><td>0x10-0x2F</td><td><b>[LDBS 0.4+]</b> Macintosh GCR. The value is defined as the GCR 
+		format byte (byte 0x51 of a <a href="https://wiki.68kmla.org/DiskCopy_4.2_format_specification">Disk Copy 4.2 file</a>) masked with 0x1F, plus 0x10. This leads to the values:
+<pre>
+0x12 =&gt; Macintosh 
+0x14 =&gt; Apple II ProDos 
+0x22 =&gt; Lisa 
+</pre></td></tr></table>
 	</tr>
-	<tr><td>0x001C</td><td>1 byte</td><td>Format gap length</td></tr>
-	<tr><td>0x001D</td><td>1 byte</td><td>Default filler byte</td></tr>
-	<tr><td>0x001E</td><td>2 bytes</td><td><b>[LDBS 0.3]</b> Approximate 
+	<tr><td>0x001C</td><td>1 byte</td><td><code>gap3</code></td><td>Format gap length</td></tr>
+	<tr><td>0x001D</td><td>1 byte</td><td><code>filler</code></td><td>Default filler byte</td></tr>
+	<tr><td>0x001E</td><td>2 bytes</td><td><code>total_len</code></td><td><b>[LDBS 0.3+]</b> Approximate 
 	length of track (including address marks and gaps) in bytes. For some 
 	timing-based copy protection schemes. Zero if this value was not
 	captured when the disc was imaged.</td></tr>
-	<tr><td>0x0020</td><td></td><td><b>[LDBS 0.3]</b> Future versions may
+	<tr><td>0x0020</td><td></td><td></td><td><b>[LDBS 0.3+]</b> Future versions may
 		add extra bytes here. See offset 0x0014</td></tr>
 	<tr><td>See offset 0x0014</td><td>See offset 0x0016</td>
-		<td><b>[LDBS 0.3]</b> Sector headers</td></tr>
+		<td><code>sector</code></td><td><b>[LDBS 0.3+]</b> Sector headers</td></tr>
 </table>
 <p>Each sector descriptor is formed:</p>
-<table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
-	<tr><td>0x0000</td><td>1 byte</td><td>Sector ID: Cylinder</td></tr>
-	<tr><td>0x0001</td><td>1 byte</td><td>Sector ID: Head</td></tr>
-	<tr><td>0x0002</td><td>1 byte</td><td>Sector ID: Sector</td></tr>
-	<tr><td>0x0003</td><td>1 byte</td><td>Sector ID: Size
-		(0 =&gt; 128, 1 =&gt; 256, 2 =&gt; 512 ... 7 =&gt; 8192)
+<table border="1"><tr><th>Offset</th><th>Type</th><th>Name</th><th>Meaning</th></tr>
+	<tr><td>0x0000</td><td>1 byte</td><td><code>id_cyl</code</td><td>Sector ID: Cylinder</td></tr>
+	<tr><td>0x0001</td><td>1 byte</td><td><code>id_head</code</td><td>Sector ID: Head</td></tr>
+	<tr><td>0x0002</td><td>1 byte</td><td><code>id_sec</code</td><td>Sector ID: Sector</td></tr>
+	<tr><td>0x0003</td><td>1 byte</td><td><code>id_psh</code</td><td>Sector ID: Size
+		(0 =&gt; 128, 1 =&gt; 256, 2 =&gt; 512 ... 7 =&gt; 8192)<br />
+	Note that the actual sector size may not be a power of 2; see 
+	<code>datalen</code> at offset 0x0010 for more details.	
 	</td></tr>
-	<tr><td>0x0004</td><td>1 byte</td><td>8272 status 1. The following 
+	<tr><td>0x0004</td><td>1 byte</td><td><code>st1</code</td><td>8272 status 1. The following 
 			bits may be set if the archiver encountered errors
 			reading this sector:
 <pre>Bit 7: End of cylinder
 Bit 5: Data error in ID or data field
 Bit 2: No data
 Bit 0: Missing address mark in ID or data field</pre></td></tr>
-	<tr><td>0x0005</td><td>1 byte</td><td>8272 status 2.  The following
+	<tr><td>0x0005</td><td>1 byte</td><td><code>st2</code</td><td>8272 status 2.  The following
 			bits may be set if the archiver encountered errors
 			reading this sector, or if the sector has a
 			deleted data control mark:
@@ -324,27 +359,41 @@ Bit 5: Data error in data field
 Bit 0: Missing address mark in data field</pre>
 
 </pre>			</td></tr>
-	<tr><td>0x0006</td><td>1 byte</td><td>Number of copies held. Some
+	<tr><td>0x0006</td><td>1 byte</td><td><code>copies</code</td><td>Number of copies held. Some
 		copy-protection systems use a 'weak' sector which returns
 		different values each time it is read. This is simulated by
 		holding multiple copies of the sector, and returning a 
 		random one each time it is read. If this is zero, the
 		sector is treated as blank (ie, entirely filled with the
-		byte at 0x0007).</td></tr>
-<tr><td>0x0007</td><td>1 byte</td><td>Filler byte if sector is
+		<code>filler</code> byte at 0x0007).</td></tr>
+<tr><td>0x0007</td><td>1 byte</td><td><code>filler</code</td><td>Filler byte if sector is
 		blank</td></tr>
-	<tr><td>0x0008</td><td>offset</td><td>Offset of sector data block
+	<tr><td>0x0008</td><td>offset</td><td><code>blockid</code</td><td>Offset of sector data block
 			for this sector. If number of copies is zero, this
 			must be zero too.</td></tr>
-	<tr><td>0x000C</td><td>2 bytes</td><td>Number of trailing bytes. If
+	<tr><td>0x000C</td><td>2 bytes</td><td><code>trail</code</td><td><p>Number of trailing bytes. If
 			nonzero, then the specified number of CRC and gap 
-			bytes follow each copy of the sector itself.</td></tr>
-	<tr><td>0x000E</td><td>2 bytes</td><td>Approximate offset of sector 
+			bytes follow each copy of the sector itself.</p>
+			<p>If no copies of the sector are held, the number
+			of trailing bytes must be 0.</p>
+			<p>For Macintosh GCR discs, each sector is expected to
+			have 12 trailing bytes containing sector metadata.</p></td></tr>
+	<tr><td>0x000E</td><td>2 bytes</td><td><code>offset</code</td><td>Approximate offset of sector 
 			within track. This is used for some timing-based
 			copy protection schemes. If this value was not 
 			captured it will be zero for all sectors on the track.
 			</td></tr>
-	<tr><td>0x0010</td><td></td><td><b>[LDBS 0.3]</b> Future versions may
+	<tr><td>0x0010</td><td>2 bytes</td><td><code>datalen</code</td><td><p><b>[LDBS 0.4+]</b> Length of
+			sector data in bytes (not including any trailing
+			bytes).</p>
+			<p>Files written by LDBS 0.3 omit this field; this
+			can be determined from the sector descriptor length
+			at offset 0x0016 of the track header. If this field 
+			is not present (or is present and zero), sector data 
+			length must be deduced from the <code>id_psh</code>
+			field, and thus can only be a power of two.</p>
+			</td></tr>
+	<tr><td>0x0012</td><td></td><td><code>id_cyl</code</td><td><b>[LDBS 0.3+]</b> Future versions may
 		add extra bytes here. See offset 0x0016 of track header.</td></tr>
 </table>
 
@@ -356,18 +405,19 @@ Bit 0: Missing address mark in data field</pre>
 			field contains <tt>0x53 <var>cylinder head 
 					sector</var></tt>. Note that 
 			<var>cylinder</var> and <var>head</var> are the 
-			sector's actual physical location on the disk, which
+			sector's actual physical location on the disc, which
 			may not be the same as the values in its ID header.
 	</td></tr>
 	<tr><td>0x0014</td><td>As specified in descriptor</td>
 		<td><p>The sector data. In normal circumstances the length 
 			should match the descriptor in the track header: 
-			((128 &lt;&lt; id_psh) + trailing bytes) * number of 
+			(data bytes + trailing bytes) * number of 
 			copies. However implementations should be prepared to 
 			handle the data being either shorter or longer than 
 			the expected size; this may arise if the LDBS file
 			was converted from a disc image file with the same
-			anomaly.</p>
+			anomaly, or an LDBS 0.3 file containing sectors whose
+			size is not a power of two.</p>
 			</td></tr>
 </table>
 
@@ -381,7 +431,7 @@ the same block type.</p>
 <h3>Comment block</h3>
 
 <p>The comment block is optional, and contains a human-readable comment
-describing the disk image.</p>
+describing the disc image.</p>
 
 <table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
 
@@ -396,7 +446,7 @@ describing the disk image.</p>
 
 <h3>Creator block</h3>
 <p>The creator block is optional, and contains human-readable text 
-naming the utility that created the disk image.</p>
+naming the utility that created the disc image.</p>
 
 <table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
 
@@ -421,7 +471,7 @@ describing the filesystem.</p>
 </table>
 
 <p><b>Rationale:</b> CP/M filesystems are not self-describing. If the 
-disk image was generated by an emulator or utility that is aware of the 
+disc image was generated by an emulator or utility that is aware of the 
 CP/M filesystem, it may be helpful to record the filesystem parameters used.
 This is also necessary for round-trip compatibility with the YAZE YDSK 
 format.</p>
@@ -429,9 +479,10 @@ format.</p>
 <h3>Geometry block</h3>
 
 <p>The geometry block is optional. It contains the drive geometry used by 
-LibDsk when it last formatted a track in the disk image. On a 'straightforward'
-disk image where all tracks have the same format, this will give the geometry 
-of the entire file. 
+LibDsk when it last formatted a track in the disc image. On a 'straightforward'
+disc image where all tracks have the same format, this will give the geometry 
+of the entire file. On discs with varying numbers of sectors per track (such
+as Macintosh GCR) it will inevitably fall short.
 </p>
 
 <table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
@@ -475,7 +526,8 @@ of the entire file.
 	<tr><td>0x001E</td><td>Byte</td>
 		<td>Format gap</td></tr>
 	<tr><td>0x001F</td><td>Byte</td>
-		<td>Recording mode: 0 =&gt; MFM, 1=&gt; FM</td></tr>
+		<td>Recording mode: 0 =&gt; MFM, 1=&gt; FM, 
+			0x10-0x2F =&gt; Macintosh GCR</td></tr>
 	<tr><td>0x0020</td><td>Byte</td>
 		<td>Complement flag, 1 if bytes are stored complemented</td></tr>
 	<tr><td>0x0021</td><td>Byte</td>
@@ -483,29 +535,67 @@ of the entire file.
 	<tr><td>0x0022</td><td>Byte</td>
 		<td>Do not skip deleted data</td></tr>
 </table>
-<p>Note that the representation of the data rate and recording mode isn't
-the same as in a track header.</p>
+<p>Note that the representation of the data rate and MFM recording mode 
+isn't the same as in a track header. This is for binary compatibility with
+LibDsk. FM and GCR recording modes have the same values in both 
+structures.</p>
 
-<p><b>Rationale:</b> If the imaged disk contains no superblock or other means 
+<p><b>Rationale:</b> If the imaged disc contains no superblock or other means 
 to specify its own format, this can be used to suggest a geometry for 
 accessing it.
 </p>
+
+<h3>Macintosh data</h3>
+
+<p>To preserve data from files created under classic MacOS (for example by 
+DiskCopy 4.2), two blocks are defined to hold the Finder information and 
+resource fork of a file:</p>
+
+<h4>MBIN block</h4>
+<table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
+	<tr><td>0x0000</td><td>20 bytes</td><td>LDBS block header. Type 
+			field contains <tt>0x4D 0x42 0x49 0x4E</tt> ('MBIN')
+	</td></tr>
+	<tr><td>0x0014</td><td>128 bytes</td>
+		<td>Finder information, in the form of a MacBinary file 
+		header. Some fields (such as the length of the data fork)
+		will be irrelevant; the type and creator code may be more
+		to the purpose.</td></tr>
+</table>
+
+<h4>RSRC block</h4>
+<table border="1"><tr><th>Offset</th><th>Type</th><th>Meaning</th></tr>
+	<tr><td>0x0000</td><td>20 bytes</td><td>LDBS block header. Type 
+			field contains <tt>0x52 0x53 0x52 0x43</tt> ('RSRC')
+	</td></tr>
+	<tr><td>0x0014</td><td>Arbitrary length</td>
+		<td>Macintosh resource fork</td></tr>
+</table>
+
+<p>When converting from an LDBS disc image to a Macintosh file, caution is
+advised when using the MBIN / RSRC blocks. It's entirely possible that since
+the file was originally created, it's been changed sufficiently that the 
+blocks are out of sync. For example, Disk Copy 4.2 stores copies of the 
+disc checksums in the resource fork of disc images it creates; if the 
+contents of the disc image have changed, the checksums will need to be 
+recalculated when the new resource fork is written out.</p>
 
 <h2>Compression</h2>
 
 <p>The only form of compression is omitting sectors that are blank or 
 unreadable (by setting the 'copies' field in the sector header to 0). Should 
-it prove necessary to compress LDBS disk images further, this should 
+it prove necessary to compress LDBS disc images further, this should 
 be done using an external utility such as gzip (LibDsk can transparently 
-decompress gzipped disk images).</p>
+decompress gzipped disc images).</p>
 
 <h2>Reference Implementation</h2>
 
-<p>ldbs.h / ldbs.c in LibDsk 1.5.4 contain an X11-licensed reference 
+<p>ldbs.h / ldbs.c in LibDsk 1.5.11 contain an X11-licensed reference 
 implementation of LDBS. A few sample utilities are also supplied: </p>
 <ul>
-	<li>dsk2ldbs: Converts DSK / EDSK disk images to LDBS.</li>
-	<li>ldbs2dsk: Converts LDBS disk images to DSK / EDSK.</li>
+	<li>dsk2ldbs: Converts DSK / EDSK disc images to LDBS.</li>
+	<li>ldbs2dsk: Converts LDBS disc images to DSK / EDSK.</li>
+	<li>ldbs2raw: Converts LDBS disc images to a raw data dump.</li>
 	<li>ldbstest: Sanity test of block layer functions.</li>
 	<li>ldbsdump: Displays the contents of an LDBS file.</li>
 	<li>ldbscopy: Copies one LDBS file to another using the ldbs_clone()

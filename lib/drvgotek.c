@@ -20,8 +20,11 @@
  *                                                                         *
  ***************************************************************************/
 
-/* Access a Gotek-formatted USB key. This stores flat 1.4Mb disk images at 
- * 0x1800000-byte intervals.  */
+/* Access a Gotek-formatted USB key. 
+ * The 1.4Mb firmware (SFR1M44-U100) stores flat 1.4Mb disk images at 
+ *                     0x180000-byte intervals; 
+ * The 720k firmware  (SFRM72-TU100K) stores flat 720k disk images at 
+ *                     0x100000-byte intervals. */
 
 #include <stdio.h>
 #include <assert.h>
@@ -35,12 +38,12 @@
 #include <winioctl.h>
 #endif
 
-DRV_CLASS dc_gotek = 
+DRV_CLASS dc_gotek1440 = 
 {
 	sizeof(GOTEK_DSK_DRIVER),
 	NULL,		/* superclass */
-	"gotek\0gotek1440\0",
-	"Gotek disc image collection ",
+	"gotek\0gotek144\0gotek1440\0",
+	"Gotek 1440k disc image collection ",
 	gotek_open,	/* open */
 	gotek_creat,	/* create new */
 	gotek_close,	/* close */
@@ -55,9 +58,9 @@ DRV_CLASS dc_gotek =
 	NULL, 		/* xwrite */
 	NULL, 		/* tread */
 	NULL, 		/* xtread */
-	NULL,		/* option_enum */
-	NULL,		/* option_set */
-	NULL,		/* option_get */
+	gotek_option_enum, /* option_enum */
+	gotek_option_set,  /* option_set */
+	gotek_option_get,  /* option_get */
 	NULL,		/* trackids */
 	NULL,		/* rtread */
 	gotek_to_ldbs,	/* export as LDBS */
@@ -65,8 +68,41 @@ DRV_CLASS dc_gotek =
 };
 
 
+DRV_CLASS dc_gotek720 = 
+{
+	sizeof(GOTEK_DSK_DRIVER),
+	NULL,		/* superclass */
+	"gotek72\0gotek720\0",
+	"Gotek 720k disc image collection ",
+	gotek_open,	/* open */
+	gotek_creat,	/* create new */
+	gotek_close,	/* close */
+	gotek_read,	/* read sector, working from physical address */
+	gotek_write,	/* write sector, working from physical address */
+	gotek_format,	/* format track, physical */
+	NULL,		/* get geometry */
+	NULL,		/* sector ID */
+	gotek_xseek,	/* seek to track */
+	gotek_status,	/* drive status */
+	NULL, 		/* xread */
+	NULL, 		/* xwrite */
+	NULL, 		/* tread */
+	NULL, 		/* xtread */
+	gotek_option_enum, /* option_enum */
+	gotek_option_set,  /* option_set */
+	gotek_option_get,  /* option_get */
+	NULL,		/* trackids */
+	NULL,		/* rtread */
+	gotek_to_ldbs,	/* export as LDBS */
+	gotek_from_ldbs	/* import as LDBS */
+};
+
+
+
+
 #define CHECK_CLASS(s) \
-	if (s->dr_class != &dc_gotek)  return DSK_ERR_BADPTR; \
+	if (s->dr_class != &dc_gotek1440 && \
+	    s->dr_class != &dc_gotek720)  return DSK_ERR_BADPTR; \
 						\
 	gxself = (GOTEK_DSK_DRIVER *)s;
 
@@ -83,9 +119,19 @@ static dsk_err_t gotek_open_create(DSK_DRIVER *self, const char *filename, int c
 	/* Filename passed is of the format: gotek:device,number
  	 * where device is the file (expected to be a device special) 
 	 * containing the images, and number is 0-999 */
-	if (strncmp(filename, "gotek:", 6) && strncmp(filename, "gotek144:", 9))
-		return DSK_ERR_NOTME;
-
+	if (self->dr_class == &dc_gotek720)
+	{
+		if (strncmp(filename, "gotek72:", 8) &&
+		    strncmp(filename, "gotek720:", 9))
+			return DSK_ERR_NOTME;
+	}
+	else
+	{
+		if (strncmp(filename, "gotek:", 6) && 
+		    strncmp(filename, "gotek144:", 9) &&
+		    strncmp(filename, "gotek1440:", 10))
+			return DSK_ERR_NOTME;
+	}
 	/* Filename begins "gotek:", so try to parse it */
 	gxself->gotek_filename = dsk_malloc(30 + strlen(filename));
 	if (!gxself->gotek_filename) return DSK_ERR_NOMEM;
@@ -93,10 +139,32 @@ static dsk_err_t gotek_open_create(DSK_DRIVER *self, const char *filename, int c
 	if (!strncmp(filename, "gotek:", 6))
 	{
 		strcpy(gxself->gotek_filename, filename + 6);
+		gxself->gotek_gap  = 0x180000L;	/* Gap between each disk image */
+		gxself->gotek_spt = 18;
+	}
+	else if (!strncmp(filename, "gotek72:", 8))
+	{
+		strcpy(gxself->gotek_filename, filename + 8);
+		gxself->gotek_gap  = 0x100000L;	/* Gap between each disk image */
+		gxself->gotek_spt = 9;
+	}
+	else if (!strncmp(filename, "gotek720:", 9))
+	{
+		strcpy(gxself->gotek_filename, filename + 9);
+		gxself->gotek_gap  = 0x100000L;	/* Gap between each disk image */
+		gxself->gotek_spt = 9;
 	}
 	else if (!strncmp(filename, "gotek144:", 9))
 	{
 		strcpy(gxself->gotek_filename, filename + 9);
+		gxself->gotek_gap  = 0x180000L;	/* Gap between each disk image */
+		gxself->gotek_spt = 18;
+	}
+	else if (!strncmp(filename, "gotek1440:", 10))
+	{
+		strcpy(gxself->gotek_filename, filename + 10);
+		gxself->gotek_gap  = 0x180000L;	/* Gap between each disk image */
+		gxself->gotek_spt = 18;
 	}
 	else	strcpy(gxself->gotek_filename, filename); /* Shouldn't happen */
 	p = strchr(gxself->gotek_filename, ',');
@@ -107,9 +175,9 @@ static dsk_err_t gotek_open_create(DSK_DRIVER *self, const char *filename, int c
 	}
 	*p = 0;
 	++p;
-	gxself->gotek_gap  = 0x180000L;	/* Gap between each disk image */
 	gxself->gotek_base = gxself->gotek_gap * atoi(p);
 	gxself->gotek_fp   = NULL;
+	gxself->gotek_image = atoi(p);
 
 #ifdef WIN32FLOPPY
 	gxself->gotek_hVolume = INVALID_HANDLE_VALUE;
@@ -191,7 +259,7 @@ static dsk_err_t gotek_open_create(DSK_DRIVER *self, const char *filename, int c
 	if (!gxself->gotek_fp) 
 	{
 		gxself->gotek_readonly = 1;
-		gxself->gotek_fp = fopen(filename, "rb");
+		gxself->gotek_fp = fopen(gxself->gotek_filename, "rb");
 	}
 	if (create && !gxself->gotek_fp)
 	{
@@ -219,6 +287,52 @@ dsk_err_t gotek_creat(DSK_DRIVER *self, const char *filename)
 }
 
 
+dsk_err_t gotek_option_enum(DSK_DRIVER *self, int idx, char **optname)
+{
+	if (!self) return DSK_ERR_BADPTR;
+	if (self->dr_class != &dc_gotek1440 && self->dr_class != &dc_gotek720)
+		return DSK_ERR_BADPTR;
+
+        if (idx == 0)
+        {
+		if (optname) *optname = "GOTEK:PARTITION";
+                return DSK_ERR_OK;
+        }
+        return DSK_ERR_BADOPT;
+}
+
+dsk_err_t gotek_option_get(DSK_DRIVER *self, const char *optname, int *value)
+{
+	GOTEK_DSK_DRIVER *gxself;
+	
+	CHECK_CLASS(self);
+
+	if (!optname) return DSK_ERR_BADPTR;
+	if (strcmp(optname, "GOTEK:PARTITION")) return DSK_ERR_BADOPT;
+
+	if (value) *value = gxself->gotek_image;
+	return DSK_ERR_OK;	
+}
+
+
+dsk_err_t gotek_option_set(DSK_DRIVER *self, const char *optname, int value)
+{
+	GOTEK_DSK_DRIVER *gxself;
+
+	CHECK_CLASS(self);
+
+	if (!optname) return DSK_ERR_BADPTR;
+
+	if (strcmp(optname, "GOTEK:PARTITION")) return DSK_ERR_BADOPT;
+
+	if (value >= 0 && value <= 999)
+	{
+		gxself->gotek_image = value;
+		gxself->gotek_base = gxself->gotek_gap * value;
+		return DSK_ERR_OK;
+	}
+	return DSK_ERR_BADVAL;
+}
 
 
 dsk_err_t gotek_close(DSK_DRIVER *self)
@@ -255,9 +369,9 @@ static unsigned long gotek_offset(GOTEK_DSK_DRIVER *gxself,
 	unsigned long offset = 0;
 
 	/* Sectors in a Gotek image are stored in a fixed geometry 
-	 * (18 x 512-byte sectors numbered 1-18, SIDES_ALT) */
+	 * (gotek_spt x 512-byte sectors numbered 1-gotek_spt, SIDES_ALT) */
 	offset = (cylinder * 2) + head;
-	offset *= 18;
+	offset *= gxself->gotek_spt;
 	if (sector >= 1) /* which it should always be */ 
 		offset += (sector - 1);
 	offset *= 512;
@@ -352,7 +466,7 @@ dsk_err_t gotek_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 	CHECK_CLASS(self);
 
 	if (gxself->gotek_readonly) return DSK_ERR_RDONLY;
-	if (sector < 1 || sector > 18)
+	if (sector < 1 || sector > gxself->gotek_spt)
 		return DSK_ERR_NOADDR;
 
 	offset = gotek_offset(gxself, cylinder, head, sector);
@@ -410,7 +524,8 @@ dsk_err_t gotek_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 
 	offset = gotek_offset(gxself, cylinder, head, 1);
 
-	trklen = 18 * 512;	/* Always format 18 512-byte sectors */
+/* Always format gotek_spt 512-byte sectors */
+	trklen = gxself->gotek_spt * 512;	
 	err = seekto(gxself, offset);
 	if (err) return err;
 
@@ -422,7 +537,7 @@ dsk_err_t gotek_format(DSK_DRIVER *self, DSK_GEOMETRY *geom,
 		int res;
 		int n;
 
-		for (n = 0; n < 18; n++)
+		for (n = 0; n < gxself->gotek_spt; n++)
 		{
 			memset(gxself->gotek_buffer, filler, 512);
 			res = WriteFile(gxself->gotek_hVolume, gxself->gotek_buffer,
@@ -459,7 +574,7 @@ dsk_err_t gotek_xseek(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 		return DSK_ERR_SEEKFAIL;
 
 	offset = (cylinder * 2) + head;	/* Drive track */
-	offset *= 18 * 512;
+	offset *= gxself->gotek_spt * 512;
 	offset += gxself->gotek_base;
 #ifdef WIN32FLOPPY
 	if (gxself->gotek_hVolume != INVALID_HANDLE_VALUE) 
@@ -503,15 +618,26 @@ dsk_err_t gotek_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 	dsk_err_t err;
 
 	if (!self || !geom) return DSK_ERR_BADPTR;
-	if (self->dr_class != &dc_gotek)  return DSK_ERR_BADPTR;
+	if (self->dr_class != &dc_gotek1440 && self->dr_class != &dc_gotek720)
+		return DSK_ERR_BADPTR;
 
 	/* Default to 1.4M geometry */
-	dg_stdformat(geom, FMT_1440K, NULL, NULL);
-	geom->dg_cylinders = 85;	/* There's enough space for 85 
-					 * cylinders in 0x180000 bytes */
+	if (self->dr_class == &dc_gotek720)
+	{
+		dg_stdformat(geom, FMT_720K, NULL, NULL);
+		geom->dg_cylinders = 113;	/* There's enough space for 113 
+						 * cylinders in 0x100000 bytes */
+
+	}
+	else
+	{
+		dg_stdformat(geom, FMT_1440K, NULL, NULL);
+		geom->dg_cylinders = 85;	/* There's enough space for 85 
+						 * cylinders in 0x180000 bytes */
+	}
 
 	err = gotek_read(self, geom, bootblock, 0, 0, 1);
-	/* Any error causes the 1.4M format to be returned */
+	/* Any error causes the default format to be returned */
 	if (err) return DSK_ERR_OK;
 	
 	/* Is there a recognisable boot block, and does it match the
@@ -596,6 +722,7 @@ dsk_err_t gotek_to_ldbs(DSK_DRIVER *self, struct ldbs **result, DSK_GEOMETRY *ge
 			th->sector[sec].id_head = head;
 			th->sector[sec].id_sec  = sec + geom->dg_secbase;
 			th->sector[sec].id_psh  = dsk_get_psh(geom->dg_secsize);
+			th->sector[sec].datalen = geom->dg_secsize;
 			th->sector[sec].copies = 0;
 			for (n = 1; n < (int)(geom->dg_secsize); n++)
 			{
@@ -657,7 +784,7 @@ static dsk_err_t gotek_from_ldbs_callback(PLDBS ldbs, dsk_pcyl_t cyl,
 	{
 		return DSK_ERR_OK;
 	}
-	if (se->id_sec >= 1 && se->id_sec <= 18)
+	if (se->id_sec >= 1 && se->id_sec <= gxself->gotek_spt)
 	{
 		return DSK_ERR_OK;
 	}

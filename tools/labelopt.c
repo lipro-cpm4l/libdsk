@@ -283,6 +283,7 @@ dsk_err_t get_labels(DSK_PDRIVER dsk, DSK_GEOMETRY *geom, char *oemid,
 	if (fsid)  fsid[0] = 0;
 	if (bootlabel) bootlabel[0] = 0;
 	if (dirlabel) dirlabel[0] = 0;
+	
 
 	/* Get filesystem parameters */
 	if (!dsk_get_option(dsk, "FS:FAT:FATCOPIES",  &fatcopies) &&
@@ -315,6 +316,8 @@ dsk_err_t get_labels(DSK_PDRIVER dsk, DSK_GEOMETRY *geom, char *oemid,
 		{
 			err = dos_walk_dir(dsk, geom, dirlabel, 0);
 			if (!err) found = 1;
+/* If we've already got an OEM or boot sector label, return OK */ 
+			if (found && err == 1) err = DSK_ERR_OK;
 		}
 		if (err) return err;
 		if (!found) return 1;
@@ -351,6 +354,34 @@ dsk_err_t get_labels(DSK_PDRIVER dsk, DSK_GEOMETRY *geom, char *oemid,
 			if (dirlabel) sprintf(dirlabel, "%-12.12s", diskname);
 		}
 	}
+	else if (!dsk_get_option(dsk, "FS:HFS:BLOCKS",  &dsm))
+	{
+		/* It's a Mac HFS disk. */
+		unsigned char mdb[1024];
+
+		err = dsk_lread(dsk, geom, mdb, 2);
+		if (!err)
+		{
+			if (oemid) sprintf(oemid, "%-8.8s", "  Apple ");
+			if (fsid)  sprintf(fsid,  "%-8.8s", "HFS");
+			if (bootlabel) sprintf(bootlabel, "%-*.*s",
+				mdb[36], mdb[36], mdb + 37);	
+		}
+	} 
+	else if (!dsk_get_option(dsk, "FS:MFS:BLOCKS",  &dsm))
+	{
+		/* It's a Mac MFS disk. */
+		unsigned char mdb[1024];
+
+		err = dsk_lread(dsk, geom, mdb, 2);
+		if (!err)
+		{
+			if (oemid) sprintf(oemid, "%-8.8s", "  Apple ");
+			if (fsid)  sprintf(fsid,  "%-8.8s", "MFS");
+			if (bootlabel) sprintf(bootlabel, "%-*.*s",
+				mdb[36], mdb[36], mdb + 37);	
+		}
+	}	
 	return DSK_ERR_OK;
 }
 
@@ -449,6 +480,25 @@ dsk_err_t set_labels(DSK_PDRIVER dsk, DSK_GEOMETRY *geom, const char *oemid,
 			return err;
 		}
 	}
+	else if (!dsk_get_option(dsk, "FS:HFS:BLOCKS",  &dsm) ||
+		 !dsk_get_option(dsk, "FS:MFS:BLOCKS",  &dsm))
+	{
+		/* It's a Mac HFS disk. */
+		unsigned char mdb[1024];
+
+		err = dsk_lread(dsk, geom, mdb, 2);
+		if (!err && bootlabel)
+		{
+			char buf[30];
+
+			strncpy(buf + 1, bootlabel, 28);
+			buf[29] = 0;
+			buf[0] = strlen(buf + 1);		
+			memcpy(mdb + 36, buf, 28);
+			return dsk_lwrite(dsk, geom, mdb, 2);
+		}
+	} 
+
 	return DSK_ERR_OK;
 }
 

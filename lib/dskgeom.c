@@ -51,6 +51,33 @@ static void set_dos_fs(DSK_DRIVER *self, DSK_GEOMETRY *geom, unsigned char *bpb)
 	dsk_isetoption(self, "FS:FAT:SECFAT",     bpb[11] + 256 * bpb[12], 1);
 }
 
+/* We have detected an HFS / MFS superblock. Parse it for filesystem info.
+ * NOTE: This is currently very incomplete */
+static void set_hfs_fs(DSK_DRIVER *self, DSK_GEOMETRY *geom, 
+						const unsigned char *mdb)
+{
+	unsigned long blocks;
+	unsigned long blocksize;
+	int mfs = (mdb[0] == 0xD2 && mdb[1] == 0xD7);	/* HFS magic */
+	int hfs = (mdb[0] == 0x42 && mdb[1] == 0x44);	/* MFS magic */
+
+	blocks    = (((unsigned long)mdb[0x12]) << 8) | mdb[0x13];
+	blocksize = (((unsigned long)mdb[0x14]) << 24) | 
+		    (((unsigned long)mdb[0x15]) << 16) |
+		    (((unsigned long)mdb[0x16]) << 8)  | mdb[0x17];
+
+	if (hfs)
+	{
+		dsk_isetoption(self, "FS:HFS:BLOCKS", blocks, 1);
+		dsk_isetoption(self, "FS:HFS:BLOCKSIZE", blocksize, 1);
+	}
+	else if (mfs)
+	{
+		dsk_isetoption(self, "FS:MFS:BLOCKS", blocks, 1);
+		dsk_isetoption(self, "FS:MFS:BLOCKSIZE", blocksize, 1);
+	}
+}
+
 /* We have detected a PCW superblock. Parse it for CP/M filesystem info */
 static void set_pcw_fs(DSK_DRIVER *self, DSK_GEOMETRY *geom, unsigned char *buf)
 {
@@ -401,6 +428,24 @@ dsk_err_t dsk_defgetgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom)
 	}
 	oldrate = geom->dg_datarate;	
 	/* We have the sector. Let's try to guess what it is */
+	if (geom->dg_secsize == 512 && dg_ismacboot(secbuf))
+	{
+		unsigned char secbuf2[512];
+		/* This looks awfully like an Apple HFS or MFS boot 
+		 * sector. See if we can load and parse the superblock. */
+		e = dsk_lread(self, geom, secbuf2, 2);
+		if (e == DSK_ERR_OK)
+		{
+			if (!dg_hfsgeom(geom, secbuf2))
+			{
+				set_hfs_fs(self, geom, secbuf2);
+				dsk_free(secbuf);
+				return DSK_ERR_OK; 
+			}
+		}
+		/* No HFS / MFS superblock found. */
+	}
+
 	e = dg_dosgeom(geom, secbuf);	
 	if (e == DSK_ERR_OK)
 	{
@@ -811,4 +856,69 @@ LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_dfsgeom(DSK_GEOMETRY *geom,
 	}
 	return err;
 }
+
+
+/* Interpret a Mac HFS superblock (LBA 2) */
+LDPUBLIC32 dsk_err_t LDPUBLIC16 dg_hfsgeom(DSK_GEOMETRY *self, const unsigned char *mdb)
+{
+	unsigned long blocks;
+	unsigned long blocksize;
+	dsk_err_t err = DSK_ERR_BADFMT;
+	int mfs = (mdb[0] == 0xD2 && mdb[1] == 0xD7);	/* HFS magic */
+	int hfs = (mdb[0] == 0x42 && mdb[1] == 0x44);	/* MFS magic */
+
+	/* Check magic */
+	if (mfs || hfs)
+	{
+		blocks    = (((unsigned long)mdb[0x12]) << 8) | mdb[0x13];
+		blocksize = (((unsigned long)mdb[0x14]) << 24) | 
+			    (((unsigned long)mdb[0x15]) << 16) |
+			    (((unsigned long)mdb[0x16]) << 8)  | mdb[0x17];
+
+		/* 1.4M filesystem */
+		if (blocks > 1594 && blocks <= 2874 && blocksize == 512)
+		{
+			err = dg_stdformat(self, FMT_1440K, NULL, NULL);
+		}
+		/* This will detect MFS 400k and HFS 800k respectively. But
+		 * that means opening something of a can of worms: LibDsk
+		 * would need support for the Apple GCR encoding, the 12 
+		 * bytes of tag data for each sector, and so on. DSK_GEOMETRY
+		 * would also need to gain the concept of multiple zones each
+		 * with its own geometry, or special-case the Mac variable 
+		 * rate. Without this, the best that I can do is provide
+		 * a geometry based on the maximum number of sectors and 
+		 * rely on the calling code to cope. */
+		else if (blocks <= 391 && blocksize == 1024)	// MFS 400k
+		{
+			err = dg_stdformat(self, FMT_MAC400, NULL, NULL);
+		}
+		else if (blocks <= 1594 && blocksize == 512)	// HFS 800k
+		{
+			err = dg_stdformat(self, FMT_MAC800, NULL, NULL);
+		}	
+	}
+	return err;
+}
+
+
+int dg_ismacboot(const unsigned char *secbuf)
+{
+	return (secbuf[0] == 0x4C && secbuf[1] == 0x4B && secbuf[2] == 0x60 &&
+	    secbuf[3] == 0x00 && secbuf[4] == 0x00 && 
+	    (secbuf[5] == 0x86 || secbuf[5] == 0x84));
+}
+
+
+/* For a Mac variable-speed drive, how many sectors would you expect to
+ * find on each track? */
+int dg_macspt(dsk_pcyl_t cylinder)
+{
+	if (cylinder < 16) return 12;
+	if (cylinder < 32) return 11;
+	if (cylinder < 48) return 10;
+	if (cylinder < 64) return 9;
+	return 8;
+}
+
 

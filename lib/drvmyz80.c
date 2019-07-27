@@ -398,6 +398,7 @@ dsk_err_t myz80_to_ldbs(DSK_DRIVER *self, struct ldbs **result,
 			trkh->sector[sec].id_head = 0;
 			trkh->sector[sec].id_sec = sec;
 			trkh->sector[sec].id_psh = 3;
+			trkh->sector[sec].datalen = 1024;
 			trkh->sector[sec].copies = 0;
 			for (n = 1; n < 1024; n++)
 				if (secbuf[n] != secbuf[0])

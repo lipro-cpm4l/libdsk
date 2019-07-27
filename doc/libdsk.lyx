@@ -1,7 +1,9 @@
-#LyX 2.1 created this file. For more info see http://www.lyx.org/
-\lyxformat 474
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
 \begin_document
 \begin_header
+\save_transient_properties true
+\origin unavailable
 \textclass article
 \use_default_options false
 \maintain_unincluded_children false
@@ -9,16 +11,16 @@
 \language_package default
 \inputencoding iso8859-1
 \fontencoding global
-\font_roman times
-\font_sans default
-\font_typewriter default
-\font_math auto
+\font_roman "times" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
 \font_default_family default
 \use_non_tex_fonts false
 \font_sc false
 \font_osf false
-\font_sf_scale 100
-\font_tt_scale 100
+\font_sf_scale 100 100
+\font_tt_scale 100 100
 \graphics default
 \default_output_format default
 \output_sync 0
@@ -121,7 +123,7 @@ About this document
 \end_layout
 
 \begin_layout Standard
-This document only covers LibDsk -- the library -- itself.
+This document only covers LibDsk – the library – itself.
  For information on the example utilities supplied with LibDsk (apriboot,
  dskform, dsktrans, dskid, dskdump, dskscan, dskutil and md3serial) see
  their respective manual pages.
@@ -264,13 +266,28 @@ If you have coded against a version of LibDsk prior to 1.5.3, bear in mind
  The API for your programs remains the same, but there are differences in
  implementation that may trip you up.
  In particular, if you are writing to a disc image file it is very important
- to check the result of dsk_close() -- there are a lot of drivers which
- make their changes in memory and don't try to commit them until dsk_close()
+ to check the result of dsk_close() – there are a lot of drivers which make
+ their changes in memory and don't try to commit them until dsk_close()
  is called.
 \end_layout
 
 \begin_layout Standard
 For full details, see the file ChangeLog.
+\end_layout
+
+\begin_layout Itemize
+New 'dc42' driver for accessing Apple Disk Copy 4.2 disc images.
+ This means that LibDsk is dipping a first tentative toe into the world
+ of GCR encoding, and representing it in disc images.
+\end_layout
+
+\begin_layout Itemize
+Read-only support for QRST5 disc images (a compressed form of QRST).
+\end_layout
+
+\begin_layout Itemize
+New 'gotek720' driver for accessing raw disc images within Gotek-format
+ archives of 720k disc images.
 \end_layout
 
 \begin_layout Itemize
@@ -742,6 +759,17 @@ qrst
 \begin_inset Quotes eld
 \end_inset
 
+dc42
+\begin_inset Quotes erd
+\end_inset
+
+: Apple Disk Copy 4.2.
+\end_layout
+
+\begin_layout Description
+\begin_inset Quotes eld
+\end_inset
+
 ldbs
 \begin_inset Quotes erd
 \end_inset
@@ -933,6 +961,10 @@ dg_heads
  is greater than 1 (otherwise all the methods are equivalent) and you are
  using functions that take logical sectors or tracks as parameters.
  It will be one of: 
+\begin_inset Separator latexpar
+\end_inset
+
+
 \end_layout
 
 \begin_deeper
@@ -1077,6 +1109,10 @@ dg_datarate;
 \family default
  /* Data rate.
  This will be one of:
+\begin_inset Separator latexpar
+\end_inset
+
+
 \end_layout
 
 \begin_deeper
@@ -1150,6 +1186,10 @@ dg_fm;
  compatibility.
  It contains the recording mode and additional flags.
  To extract the recording mode, use (dg_fm & RECMODE_MASK):
+\begin_inset Separator latexpar
+\end_inset
+
+
 \end_layout
 
 \begin_deeper
@@ -1173,6 +1213,52 @@ RECMODE_FM
  The BBC Micro used FM recording for its 100k and 200k DFS formats.
  The Windows / DOS floppy drivers do not support FM recording.
  
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+RECMODE_GCR_MAC
+\family default
+ Apple GCR (Macintosh style)
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+RECMODE_GCR_LISA
+\family default
+ Apple GCR (Lisa style)
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+RECMODE_GCR_PRODOS
+\family default
+ Apple GCR (Apple II Prodos style)
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+RECMODE_GCR_FIRST
+\begin_inset space ~
+\end_inset
+
+/
+\begin_inset space ~
+\end_inset
+
+RECMODE_GCR_LAST 
+\family default
+Apple GCR actually allows 32 variants of the encoding, three of which are
+ the above Macintosh / Lisa / Prodos versions.
+ If a different one is encountered, it can be stored as 
+\family typewriter
+(variant & 0x1F) + RECMODE_GCR_FIRST
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -2134,7 +2220,7 @@ geom->dg_noskip
 \align center
 \begin_inset Tabular
 <lyxtabular version="3" rows="8" columns="5">
-<features rotate="0" tabularvalignment="middle">
+<features tabularvalignment="middle">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
@@ -3092,7 +3178,7 @@ If additional formats have been specified in the libdskrc file (section
  
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "sub:libdskrc-format"
+reference "subsec:libdskrc-format"
 
 \end_inset
 
@@ -3907,7 +3993,7 @@ ic file (.libdskrc).
 \begin_layout Subsection
 \begin_inset CommandInset label
 LatexCommand label
-name "sub:libdskrc-format"
+name "subsec:libdskrc-format"
 
 \end_inset
 
@@ -3937,7 +4023,7 @@ For each geometry, the entries listed below can be present.
 
 \begin_layout Description
 description=DESC The description of the format as shown by (for example)
- dskform --help.
+ dskform –help.
  
 \end_layout
 
@@ -3947,17 +4033,17 @@ sides=TREATMENT How a double-sided disk is handled.
 \emph on
 alt
 \emph default
- (sides alternate -- used by most PC-hosted operating systems), 
+ (sides alternate – used by most PC-hosted operating systems), 
 \emph on
 outback
 \emph default
- (use side 0 tracks 0-79, then side 1 tracks 79-0 -- used by 144FEAT CP/M
+ (use side 0 tracks 0-79, then side 1 tracks 79-0 – used by 144FEAT CP/M
  disks), 
 \emph on
 outout
 \emph default
- (use side 0 tracks 0-79, then side 1 tracks 0-79 -- used by some Acorn
- formats) or 
+ (use side 0 tracks 0-79, then side 1 tracks 0-79 – used by some Acorn formats)
+ or 
 \emph on
 extsurface
 \emph default
@@ -4019,15 +4105,11 @@ fmtgap=VALUE Sets the format gap.
 \end_layout
 
 \begin_layout Description
-recmode=FM
-\begin_inset space ~
-\end_inset
-
-or
-\begin_inset space ~
-\end_inset
-
-MFM Sets the recording mode - FM or MFM.
+recmode=VALUE Sets the recording mode - one of 
+\emph on
+FM, MFM, GCR_MAC, GCR_LISA, GCR_PRODOS
+\emph default
+.
  For backward compatibility, the alternate syntax 
 \series bold
 FM=Y or N
@@ -4166,7 +4248,7 @@ Unix
 \begin_layout Standard
 The systemwide file is located at ${datadir}/LibDsk/libdskrc.
  The ${datadir} is usually /usr/local/share; you can change it with the
- --datadir or --prefix arguments to the configure script.
+ –datadir or –prefix arguments to the configure script.
  
 \end_layout
 
@@ -4259,11 +4341,11 @@ The systemwide file is only searched for if the LIBDSK environment variable
 \end_layout
 
 \begin_layout Section
-The Gotek backend
+The Gotek backends
 \end_layout
 
 \begin_layout Standard
-This backend is new in version 1.5.10, and should be treated with the caution
+Gotek support is new in version 1.5.10, and should be treated with the caution
  appropriate to new, untried code.
  It can directly access a USB drive containing floppy images, but it's safer
  to back the drive up to a file (under Windows this can be done with a tool
@@ -4317,6 +4399,20 @@ The utility lsgotek can be used to list the contents of a device / file
  in Gotek format.
  dsklabel can be used to change the labels of the disk images within the
  file, to help you keep track of what is where.
+\end_layout
+
+\begin_layout Standard
+In version 1.5.11 there is a similar backend (gotek720) for Gotek devices
+ that hold 720k disc images.
+ The option 
+\begin_inset Quotes eld
+\end_inset
+
+-720
+\begin_inset Quotes erd
+\end_inset
+
+ should be passed to lsgotek to list the contents of these.
 \end_layout
 
 \begin_layout Section
@@ -4440,7 +4536,7 @@ For a directory to be usable by rcpmfs, it should contain a file called
  This file is in INI format, similar to libdskrc (section 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "sub:libdskrc-format"
+reference "subsec:libdskrc-format"
 
 \end_inset
 
@@ -4473,15 +4569,19 @@ SysTracks Number of system tracks.
 \begin_layout Description
 Version CP/M version that will be accessing the filesystem.
  This should be 2, 3 or ISX:
+\begin_inset Separator latexpar
+\end_inset
+
+
 \end_layout
 
 \begin_deeper
 \begin_layout Description
-2 CP/M 2 -- no time stamps or disk labels.
+2 CP/M 2 – no time stamps or disk labels.
 \end_layout
 
 \begin_layout Description
-3 CP/M 3 -- time stamps and disk labels are present.
+3 CP/M 3 – time stamps and disk labels are present.
 \end_layout
 
 \begin_layout Description
@@ -4657,7 +4757,7 @@ Originally said by Microsoft with respect to Java.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="5" columns="3">
-<features rotate="0" tabularvalignment="middle">
+<features tabularvalignment="middle">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
@@ -5132,7 +5232,7 @@ This contains LibDsk functions not associated with a particular disk image.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="13" columns="3">
-<features rotate="0" tabularvalignment="middle">
+<features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -5828,6 +5928,10 @@ The various parts of this filename specification are:
 
 \begin_layout Description
 port The local serial port to use.
+\begin_inset Separator latexpar
+\end_inset
+
+
 \end_layout
 
 \begin_deeper
@@ -6632,7 +6736,7 @@ Read / write sector whose ID may not match its position on disc, or which
  driver exposes this level of functionality.
  Currently it is implemented in the Linux, NTWDM and CPCEMU drivers, plus
  those using LDBS as their internal storage (LDBS itself, DSK, EDSK, ApriDisk,
- CFI, JV3, CopyQM, QRST, Teledisk).
+ CFI, JV3, CopyQM, QRST, Teledisk, DC42).
 \end_layout
 
 \begin_layout Subsubsection
@@ -7835,7 +7939,7 @@ Driver header
 
 \begin_layout Standard
 This is done as for disc drivers.
- Create a structure based on REMOTE_DATA to hold your class's data -- see
+ Create a structure based on REMOTE_DATA to hold your class's data – see
  lib/rpctios.h and lib/rpcfork.h for examples.
 \end_layout
 
@@ -7894,7 +7998,7 @@ The first three entries in this structure are:
 \end_layout
 
 \begin_layout Itemize
-The size of your driver's instance data -- sizeof(your_REMOTE_DATA) structure.
+The size of your driver's instance data – sizeof(your_REMOTE_DATA) structure.
 \end_layout
 
 \begin_layout Itemize
@@ -8203,7 +8307,7 @@ The CopyQM files consist of a header, an optional comment (if indicated
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="30" columns="3">
-<features rotate="0" tabularvalignment="middle">
+<features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
 <column alignment="left" valignment="top">
@@ -9509,10 +9613,20 @@ Byte 13h: Recording mode.
 2 MFM
 \end_layout
 
+\begin_layout Description
+16-47 Macintosh GCR (using the same values as dsk_recmode_t).
+\end_layout
+
 \begin_layout Standard
 Existing files should have zeroes in these bytes; hence the use of 0 for
  Unknown.
  LibDsk will guess the values in if the ones in the file are zero.
+ 
+\end_layout
+
+\begin_layout Standard
+No known disks with GCR recording mode exist in the wild, but they can be
+ generated by using dskconv to convert a Diskcopy GCR image to CPCEMU .DSK.
 \end_layout
 
 \end_body

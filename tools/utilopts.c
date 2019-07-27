@@ -330,7 +330,10 @@ const char *guess_type(const char *arg)
 
 /* Attempt to guess the output file type based on the filename */
 	if (!strncmp(arg, "gotek:", 6) ||
-	    !strncmp(arg, "gotek144:", 9)) return "gotek";
+	    !strncmp(arg, "gotek144:", 9) ||
+	    !strncmp(arg, "gotek1440:", 10)) return "gotek1440";
+	if (!strncmp(arg, "gotek72:", 8) ||
+	    !strncmp(arg, "gotek720:", 9)) return "gotek720";
 
 #ifdef HAVE_LINUX_FDREG_H
 	if (!strncmp(arg, "/dev/fd", 7)) return "floppy";

@@ -367,6 +367,7 @@ static dsk_err_t drv_qm_load_image(QM_DSK_DRIVER * qm_self, FILE * fp)
 				trkh->sector[sec].id_sec  = sec + 1 + 
 					qm_self->qm_h_secbase;
 				trkh->sector[sec].id_psh = dsk_get_psh(seclen);
+				trkh->sector[sec].datalen = seclen;
 				/* Load sector data */
 				for (n = 0; n < (int)seclen; n++)
 				{
@@ -1009,6 +1010,11 @@ dsk_err_t drv_qm_close(DSK_DRIVER * self)
 			   * ((long)stats.max_head + 1)
 			   * ((long)stats.max_spt)
 			   * ((long)stats.max_sector_size)) >> 10);
+#ifdef DRV_QM_DEBUG
+	fprintf(stderr, "Parameters at close: "
+	"Cyl %d, Heads %d, Sect_per_track %d, Sector_size %ld, Capacity %dK\n",
+	stats.max_cylinder + 1, stats.max_head + 1, stats.max_spt, (long)stats.max_sector_size, tmp);
+#endif
 
 		sprintf((char *) &header[QM_H_DESCR], "%dK %s-Sided", tmp,
 				stats.max_head == 0 ? "Single" : "Double");
@@ -1175,7 +1181,7 @@ dsk_err_t drv_qm_close(DSK_DRIVER * self)
 			}
 			if (trkh)	/* Track exists? */
 			{
-				errcond = ldbs_load_track(qm_self->qm_super.ld_store, trkh, (void **)&ucmt, &len, stats.max_sector_size);
+				errcond = ldbs_load_track(qm_self->qm_super.ld_store, trkh, (void **)&ucmt, &len, stats.max_sector_size, LLTO_DATA_ONLY);
 				if (errcond)
 				{
 					if (trk_buf) dsk_free(trk_buf);

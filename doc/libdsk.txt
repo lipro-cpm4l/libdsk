@@ -16,149 +16,149 @@ GPL. See COPYING for details.
 
 Table of Contents
 
-        1 Introduction
-            1.1 About this document
-            1.2 About LibDsk
-            1.3 What's new? 
-            1.4 Terms and definitions
-        2 Supported file formats
-        3 Architecture 
-            3.1 Logical and physical sectors
-                3.1.1 DSK_GEOMETRY in detail
-        4 LibDsk Function Reference 
-            4.1 dsk_open: Open an existing disc imag
-            4.2 dsk_creat: Create a new disc image
-            4.3 dsk_close: Close a drive or disc ima
-            4.4 dsk_dirty: Read the dirty flag
-            4.5 dsk_pread, dsk_lread : Read a sector
-            4.6 dsk_pwrite, dsk_lwrite: Write a sect
-            4.7 dsk_pcheck, dsk_lcheck: Verify secto
-            4.8 dsk_pformat, dsk_lformat: Format a d
-            4.9 dsk_apform, dsk_alform: Automatic fo
-            4.10 dsk_psecid, dsk_lsecid: Read a sect
-            4.11 dsk_ptrackids, dsk_ltrackids: Ident
-            4.12 dsk_rtread: Reserved.
-            4.13 dsk_xread, dsk_xwrite: Low-level re
-                4.13.1 dsk_xread(), dsk_xwrite(): Delete
-            4.14 dsk_ltread, dsk_ptread, dsk_xtread 
-            4.15 dsk_lseek, dsk_pseek 
-            4.16 dsk_drive_status 
-            4.17 dsk_dirty: Has drive been written t
-            4.18 dsk_getgeom: Guess disc geometry
-            4.19 dg_*geom : Initialise disc geometry
-            4.20 dg_stdformat : Initialise disc geom
-            4.21 dsk_*_forcehead: Override disc head
-            4.22 dsk_*_option: Set/get driver option
-                4.22.1 Filesystem driver options
-            4.23 dsk_option_enum: Get list of driver
-            4.24 dsk_*_comment: Set comment for disc
-            4.25 dsk_type_enum 
-            4.26 dsk_comp_enum 
-            4.27 dsk_drvname, dsk_drvdesc 
-            4.28 dsk_compname, dsk_compdesc 
-            4.29 dg_ps2ls, dg_ls2ps, dg_pt2lt, dg_lt
-            4.30 dsk_strerror: Convert error code to
-            4.31 dsk_reportfunc_set / dsk_reportfunc
-            4.32 dsk_set_retry / dsk_get_retry
-            4.33 dsk_get_psh 
-            4.34 dsk_copy: Copy an entire disk image
-            4.35 Structure: DSK_FORMAT
-            4.36 LibDsk errors 
-            4.37 Miscellaneous 
-        5 Initialisation files
-            5.1 libdskrc format
-                5.1.1 libdskrc example
-            5.2 Locating libdskrc
-                5.2.1 Unix
-                5.2.2 Win32
-                5.2.3 Win16
-                5.2.4 DOS
-        6 The Gotek backend
-        7 Reverse CP/M-FS (rcpmfs) backend
-            7.1 In Use
-            7.2 rcpmfs initialisation file
-            7.3 Bugs
-        8 LibDsk under Windows
-            8.1 Windows 3.x
-            8.2 Windows 4.x (95, 98 and ME)
-            8.3 Windows NT (NT 3.x, NT 4.x, 2000, XP
-            8.4 Windows 2000 and later with ntwdm dr
-            8.5 General comments on programming flop
-                8.5.1 The Win16 driver. 
-                8.5.2 The Win32c driver.
-                8.5.3 The Win32 driver.
-                8.5.4 The ntwdm driver.
-                8.5.5 Other floppy APIs
-            8.6 LDSERVER
-                8.6.1 Compiling LDSERVER
-                8.6.2 Using LDSERVER
-                8.6.3 Important Security Warning
-            8.7 LibDsk and COM
-                8.7.1 General points
-                8.7.2 Library
-                8.7.3 Geometry
-                8.7.4 Disk
-                8.7.5 IReporter
-        9 LibDsk RPC system
-            9.1 The 'serial' driver
-                9.1.1 Servers for the serial driver
-            9.2 The 'fork' driver
-        10 Writing new drivers
-            10.1 The driver header 
-            10.2 The driver source file
-            10.3 Driver functions
-                10.3.1 dc_open
-                10.3.2 dc_creat
-                10.3.3 dc_close
-                10.3.4 dc_read 
-                10.3.5 dc_write 
-                10.3.6 dc_format 
-                10.3.7 dc_getgeom
-                10.3.8 dc_secid 
-                10.3.9 dc_xseek 
-                10.3.10 dc_xread, dc_xwrite 
-                10.3.11 dc_status 
-                10.3.12 dc_tread 
-                10.3.13 dc_xtread
-                10.3.14 dc_option_enum
-                10.3.15 dc_option_set, dc_option_get
-                10.3.16 dc_trackids
-                10.3.17 dc_rtread
-                10.3.18 dc_to_ldbs
-                10.3.19 dc_from_ldbs
-        11 Writing new drivers (derived from LDB
-            11.1 The driver header 
-            11.2 The driver source file
-            11.3 Driver functions
-                11.3.1 dc_open
-                11.3.2 dc_creat
-                11.3.3 dc_close
-        12 Adding new compression methods
-            12.1 Driver header 
-            12.2 Driver implementation 
-            12.3 Compression functions
-                12.3.1 cc_open 
-                12.3.2 cc_creat
-                12.3.3 cc_commit
-                12.3.4 cc_abort 
-        13 Adding new remote transports.
-            13.1 Driver header 
-            13.2 Driver implementation 
-            13.3 Remote communication functions
-                13.3.1 rc_open 
-                13.3.2 rc_close
-                13.3.3 rc_call
-        N The CopyQM File Format
-            N.1 Introduction
-            N.2 Header
-            N.3 CRC
-            N.4 Image comment
-            N.5 Image data
-        O DQK Files 
-        P LibDsk with cpmtools
-        Q DSK / EDSK recording mode extension
-                    Byte 12h: Data rate. 
-                    Byte 13h: Recording mode. 
+1 Introduction
+1.1 About this document
+1.2 About LibDsk
+1.3 What's new? 
+1.4 Terms and definitions
+2 Supported file formats
+3 Architecture 
+3.1 Logical and physical sectors
+3.1.1 DSK_GEOMETRY in detail
+4 LibDsk Function Reference 
+4.1 dsk_open: Open an existing disc image
+4.2 dsk_creat: Create a new disc image
+4.3 dsk_close: Close a drive or disc image
+4.4 dsk_dirty: Read the dirty flag
+4.5 dsk_pread, dsk_lread : Read a sector
+4.6 dsk_pwrite, dsk_lwrite: Write a sector
+4.7 dsk_pcheck, dsk_lcheck: Verify sectors on disc against memory
+4.8 dsk_pformat, dsk_lformat: Format a disc track
+4.9 dsk_apform, dsk_alform: Automatic format
+4.10 dsk_psecid, dsk_lsecid: Read a sector ID.
+4.11 dsk_ptrackids, dsk_ltrackids: Identify sectors on track.
+4.12 dsk_rtread: Reserved.
+4.13 dsk_xread, dsk_xwrite: Low-level reading and writing
+4.13.1 dsk_xread(), dsk_xwrite(): Deleted data 
+4.14 dsk_ltread, dsk_ptread, dsk_xtread 
+4.15 dsk_lseek, dsk_pseek 
+4.16 dsk_drive_status 
+4.17 dsk_dirty: Has drive been written to?
+4.18 dsk_getgeom: Guess disc geometry
+4.19 dg_*geom : Initialise disc geometry from boot sector
+4.20 dg_stdformat : Initialise disc geometry from a standard LibDsk format.
+4.21 dsk_*_forcehead: Override disc head
+4.22 dsk_*_option: Set/get driver option
+4.22.1 Filesystem driver options
+4.23 dsk_option_enum: Get list of driver options
+4.24 dsk_*_comment: Set comment for disc image
+4.25 dsk_type_enum 
+4.26 dsk_comp_enum 
+4.27 dsk_drvname, dsk_drvdesc 
+4.28 dsk_compname, dsk_compdesc 
+4.29 dg_ps2ls, dg_ls2ps, dg_pt2lt, dg_lt2pt 
+4.30 dsk_strerror: Convert error code to string
+4.31 dsk_reportfunc_set / dsk_reportfunc_get
+4.32 dsk_set_retry / dsk_get_retry
+4.33 dsk_get_psh 
+4.34 dsk_copy: Copy an entire disk image
+4.35 Structure: DSK_FORMAT
+4.36 LibDsk errors 
+4.37 Miscellaneous 
+5 Initialisation files
+5.1 libdskrc format
+5.1.1 libdskrc example
+5.2 Locating libdskrc
+5.2.1 Unix
+5.2.2 Win32
+5.2.3 Win16
+5.2.4 DOS
+6 The Gotek backends
+7 Reverse CP/M-FS (rcpmfs) backend
+7.1 In Use
+7.2 rcpmfs initialisation file
+7.3 Bugs
+8 LibDsk under Windows
+8.1 Windows 3.x
+8.2 Windows 4.x (95, 98 and ME)
+8.3 Windows NT (NT 3.x, NT 4.x, 2000, XP) without ntwdm driver
+8.4 Windows 2000 and later with ntwdm driver
+8.5 General comments on programming floppy access for Windows
+8.5.1 The Win16 driver. 
+8.5.2 The Win32c driver.
+8.5.3 The Win32 driver.
+8.5.4 The ntwdm driver.
+8.5.5 Other floppy APIs
+8.6 LDSERVER
+8.6.1 Compiling LDSERVER
+8.6.2 Using LDSERVER
+8.6.3 Important Security Warning
+8.7 LibDsk and COM
+8.7.1 General points
+8.7.2 Library
+8.7.3 Geometry
+8.7.4 Disk
+8.7.5 IReporter
+9 LibDsk RPC system
+9.1 The 'serial' driver
+9.1.1 Servers for the serial driver
+9.2 The 'fork' driver
+10 Writing new drivers
+10.1 The driver header 
+10.2 The driver source file
+10.3 Driver functions
+10.3.1 dc_open
+10.3.2 dc_creat
+10.3.3 dc_close
+10.3.4 dc_read 
+10.3.5 dc_write 
+10.3.6 dc_format 
+10.3.7 dc_getgeom
+10.3.8 dc_secid 
+10.3.9 dc_xseek 
+10.3.10 dc_xread, dc_xwrite 
+10.3.11 dc_status 
+10.3.12 dc_tread 
+10.3.13 dc_xtread
+10.3.14 dc_option_enum
+10.3.15 dc_option_set, dc_option_get
+10.3.16 dc_trackids
+10.3.17 dc_rtread
+10.3.18 dc_to_ldbs
+10.3.19 dc_from_ldbs
+11 Writing new drivers (derived from LDBS)
+11.1 The driver header 
+11.2 The driver source file
+11.3 Driver functions
+11.3.1 dc_open
+11.3.2 dc_creat
+11.3.3 dc_close
+12 Adding new compression methods
+12.1 Driver header 
+12.2 Driver implementation 
+12.3 Compression functions
+12.3.1 cc_open 
+12.3.2 cc_creat
+12.3.3 cc_commit
+12.3.4 cc_abort 
+13 Adding new remote transports.
+13.1 Driver header 
+13.2 Driver implementation 
+13.3 Remote communication functions
+13.3.1 rc_open 
+13.3.2 rc_close
+13.3.3 rc_call
+A The CopyQM File Format
+A.1 Introduction
+A.2 Header
+A.3 CRC
+A.4 Image comment
+A.5 Image data
+B DQK Files 
+C LibDsk with cpmtools
+D DSK / EDSK recording mode extension
+Byte 12h: Data rate. 
+Byte 13h: Recording mode. 
 
 
 
@@ -166,7 +166,7 @@ Table of Contents
 
 1.1 About this document
 
-This document only covers LibDsk -- the library -- itself. For 
+This document only covers LibDsk – the library – itself. For 
 information on the example utilities supplied with LibDsk 
 (apriboot, dskform, dsktrans, dskid, dskdump, dskscan, dskutil 
 and md3serial) see their respective manual pages.
@@ -240,11 +240,22 @@ prior to 1.5.3, bear in mind that 1.5.3 is a substantial rewrite.
 The API for your programs remains the same, but there are 
 differences in implementation that may trip you up. In 
 particular, if you are writing to a disc image file it is very 
-important to check the result of dsk_close() -- there are a lot 
-of drivers which make their changes in memory and don't try to 
+important to check the result of dsk_close() – there are a lot of 
+drivers which make their changes in memory and don't try to 
 commit them until dsk_close() is called.
 
 For full details, see the file ChangeLog.
+
+• New 'dc42' driver for accessing Apple Disk Copy 4.2 disc 
+  images. This means that LibDsk is dipping a first tentative toe 
+  into the world of GCR encoding, and representing it in disc 
+  images.
+
+• Read-only support for QRST5 disc images (a compressed form of 
+  QRST).
+
+• New 'gotek720' driver for accessing raw disc images within 
+  Gotek-format archives of 720k disc images.
 
 • New utility: 'dsklabel' allows the drive label to be viewed and 
   changed on disk images where LibDsk detects a DOS, CP/M or DFS 
@@ -405,6 +416,8 @@ The following disc image file formats are supported by LibDsk.
 
   “qrst”: Compaq Quick Release Sector Transfer.
 
+  “dc42”: Apple Disk Copy 4.2.
+
   “ldbs”: LibDsk Block Store.
 
 3 Architecture 
@@ -462,6 +475,7 @@ typedef struct
   you are using functions that take logical sectors or tracks as 
   parameters. It will be one of: 
 
+
   SIDES_ALT The tracks are ordered Cylinder 0 Head 0; C0H1; C1H0; 
     C1H1; C2H0; C2H1 etc. This layout is used by most PC-hosted 
     operating systems, including DOS and Linux. Amstrad's 8-bit 
@@ -502,6 +516,7 @@ typedef struct
 
   dsk_rate_t dg_datarate; /* Data rate. This will be one of:
 
+
   RATE_HD High-density disc (1.4Mb or 1.2Mb)
 
   RATE_DD Double-density disc in 1.2Mb drive (ie, 360k disc in 
@@ -520,6 +535,7 @@ typedef struct
   mode and additional flags. To extract the recording mode, use 
   (dg_fm & RECMODE_MASK):
 
+
   RECMODE_MFM MFM (double density) recording mode.
 
   RECMODE_FM FM (single density) recording mode. Not all PC 
@@ -528,6 +544,18 @@ typedef struct
     controllers can at least read FM discs. The BBC Micro used FM 
     recording for its 100k and 200k DFS formats. The Windows / 
     DOS floppy drivers do not support FM recording. 
+
+  RECMODE_GCR_MAC Apple GCR (Macintosh style)
+
+  RECMODE_GCR_LISA Apple GCR (Lisa style)
+
+  RECMODE_GCR_PRODOS Apple GCR (Apple II Prodos style)
+
+  RECMODE_GCR_FIRST / RECMODE_GCR_LAST Apple GCR actually allows 
+    32 variants of the encoding, three of which are the above 
+    Macintosh / Lisa / Prodos versions. If a different one is 
+    encountered, it can be stored as (variant & 0x1F) + 
+    RECMODE_GCR_FIRST.
 
   To extract the flags, use (dg_fm & RECMODE_FLAGMASK). There is 
   currently one additional flag: RECMODE_COMPLEMENT. If this flag 
@@ -1088,7 +1116,7 @@ list in your program - see tools/formnames.c for example code
 that does this.
 
 If additional formats have been specified in the libdskrc file 
-(section [sub:libdskrc-format]), they will be returned by this 
+(section [subsec:libdskrc-format]), they will be returned by this 
 function, using format numbers starting at the last builtin 
 format plus 1.
 
@@ -1445,7 +1473,7 @@ load formats from one or two external files - a systemwide file
 (libdskrc) and a user-specific file (.libdskrc). The rules for 
 how these files are found differ from platform to platform.
 
-5.1 <sub:libdskrc-format>libdskrc format
+5.1 <subsec:libdskrc-format>libdskrc format
 
 The file format is similar to a Windows .INI file. Each format is 
 described in a section, which starts with the format name in 
@@ -1462,13 +1490,13 @@ from its "pcw180" format. As you can see, they correspond to
 members of the DSK_GEOMETRY structure.
 
   description=DESC The description of the format as shown by (for 
-  example) dskform --help. 
+  example) dskform –help. 
 
   sides=TREATMENT How a double-sided disk is handled. This can 
-  either be alt (sides alternate -- used by most PC-hosted 
+  either be alt (sides alternate – used by most PC-hosted 
   operating systems), outback (use side 0 tracks 0-79, then side 
-  1 tracks 79-0 -- used by 144FEAT CP/M disks), outout (use side 
-  0 tracks 0-79, then side 1 tracks 0-79 -- used by some Acorn 
+  1 tracks 79-0 – used by 144FEAT CP/M disks), outout (use side 0 
+  tracks 0-79, then side 1 tracks 0-79 – used by some Acorn 
   formats) or extsurface (sectors on side 0 are numbered 1-n, 
   sectors on side 1 are numbered n+1 - n*2). If the disk is 
   single-sided, this parameter can be omitted.
@@ -1494,9 +1522,9 @@ members of the DSK_GEOMETRY structure.
 
   fmtgap=VALUE Sets the format gap.
 
-  recmode=FM or MFM Sets the recording mode - FM or MFM. For 
-  backward compatibility, the alternate syntax FM=Y or N is also 
-  supported.
+  recmode=VALUE Sets the recording mode - one of FM, MFM, 
+  GCR_MAC, GCR_LISA, GCR_PRODOS. For backward compatibility, the 
+  alternate syntax FM=Y or N is also supported.
 
   complement=Y or N Sets the complement flag - Y if the format 
   stores data complemented.
@@ -1552,7 +1580,7 @@ definitions of all the built-in disk formats.
 
 The systemwide file is located at ${datadir}/LibDsk/libdskrc. The 
 ${datadir} is usually /usr/local/share; you can change it with 
-the --datadir or --prefix arguments to the configure script. 
+the –datadir or –prefix arguments to the configure script. 
 
 The user-specific file is $(HOME)/.libdskrc. 
 
@@ -1586,13 +1614,14 @@ environment variable is set; if it is set, it is assumed to be
 the name of the directory containing libdskrc. There is no 
 user-specific file.
 
-6 The Gotek backend
+6 The Gotek backends
 
-This backend is new in version 1.5.10, and should be treated with 
-the caution appropriate to new, untried code. It can directly 
-access a USB drive containing floppy images, but it's safer to 
-back the drive up to a file (under Windows this can be done with 
-a tool like Win32DiskImager) and work on a copy of that file.
+Gotek support is new in version 1.5.10, and should be treated 
+with the caution appropriate to new, untried code. It can 
+directly access a USB drive containing floppy images, but it's 
+safer to back the drive up to a file (under Windows this can be 
+done with a tool like Win32DiskImager) and work on a copy of that 
+file.
 
 To access a disk image within the drive / file, pass a filename 
 to LibDsk of the form:
@@ -1619,6 +1648,10 @@ The utility lsgotek can be used to list the contents of a device
 / file in Gotek format. dsklabel can be used to change the labels 
 of the disk images within the file, to help you keep track of 
 what is where.
+
+In version 1.5.11 there is a similar backend (gotek720) for Gotek 
+devices that hold 720k disc images. The option “-720” should be 
+passed to lsgotek to list the contents of these.
 
 7 <sec:rcpmfs>Reverse CP/M-FS (rcpmfs) backend
 
@@ -1671,9 +1704,9 @@ emulator, which stores file sizes slightly differently.
 
 For a directory to be usable by rcpmfs, it should contain a file 
 called .libdsk.ini describing the format to use. This file is in 
-INI format, similar to libdskrc (section [sub:libdskrc-format]). 
-It must contain only one section: [RCPMFS]. Within that section, 
-the following variables may be present:
+INI format, similar to libdskrc (section [subsec:libdskrc-format]
+). It must contain only one section: [RCPMFS]. Within that 
+section, the following variables may be present:
 
   BlockSize Size of a CP/M data block. Must be a power of 2, and 
   at least 1024. If there are more than 255 blocks in the CP/M 
@@ -1689,9 +1722,10 @@ the following variables may be present:
   Version CP/M version that will be accessing the filesystem. 
   This should be 2, 3 or ISX:
 
-  2 CP/M 2 -- no time stamps or disk labels.
 
-  3 CP/M 3 -- time stamps and disk labels are present.
+  2 CP/M 2 – no time stamps or disk labels.
+
+  3 CP/M 3 – time stamps and disk labels are present.
 
   ISX Used by the ISX emulator. Similar to CP/M 2, but byte 13 of 
     the CP/M directory entry holds the number of unused bytes in 
@@ -2128,6 +2162,7 @@ The various parts of this filename specification are:
 
   port The local serial port to use.
 
+
   • Under Linux, this is the name of a serial port (eg 
     /dev/ttyS0).
 
@@ -2484,7 +2519,7 @@ image emulates sector IDs or your floppy driver exposes this
 level of functionality. Currently it is implemented in the Linux, 
 NTWDM and CPCEMU drivers, plus those using LDBS as their internal 
 storage (LDBS itself, DSK, EDSK, ApriDisk, CFI, JV3, CopyQM, 
-QRST, Teledisk).
+QRST, Teledisk, DC42).
 
 10.3.11 dc_status 
 
@@ -3018,7 +3053,7 @@ add it to various files.
 13.1 Driver header 
 
 This is done as for disc drivers. Create a structure based on 
-REMOTE_DATA to hold your class's data -- see lib/rpctios.h and 
+REMOTE_DATA to hold your class's data – see lib/rpctios.h and 
 lib/rpcfork.h for examples.
 
 13.2 Driver implementation 
@@ -3049,7 +3084,7 @@ REMOTE_CLASS rpc_fork =
 
 The first three entries in this structure are: 
 
-• The size of your driver's instance data -- 
+• The size of your driver's instance data – 
   sizeof(your_REMOTE_DATA) structure.
 
 • The driver's name. If the filename passed to LibDsk begins with 
@@ -3158,16 +3193,16 @@ the wire, wait for a response, and unpack the response into
 'serial' driver waits 30 seconds) and DSK_ERR_ABORT if the user 
 deliberately broke the connection.
 
-N <sec:copyqm>The CopyQM File Format
+A <sec:copyqm>The CopyQM File Format
 
-N.1 Introduction
+A.1 Introduction
 
 This section describes the file format of files created by 
 CopyQM. A lot of the information has been extracted by looking at 
 hex-dumps of the files, so there might be some errors in the 
 description. 
 
-N.2 Header
+A.2 Header
 
 The CopyQM files consist of a header, an optional comment (if 
 indicated by the header) followed by the tracks of the image 
@@ -3242,7 +3277,7 @@ are added together in a byte, the result should be zero.
 +---------+-------+-----------------------------------------------------------------+
 
 
-N.3 CRC
+A.3 CRC
 
 The CRC is calculated for the unpacked data for all tracks that 
 are used in the image. The CRC value is initialized with 0 and 
@@ -3251,12 +3286,12 @@ algorithm. Due to a feature in CopyQM (8 bit register as an index
 into a 1024 byte table) all bytes must have their top two bits 
 removed before added to the CRC.
 
-N.4 Image comment
+A.4 Image comment
 
 The image comment follows the header. It has a variable size 
 found in the header. The image comment can contain \0-bytes.
 
-N.5 Image data
+A.5 Image data
 
 The image data is run length encoded. Each run is preceded by a 
 16-bit length. If the length is negative, the byte after the 
@@ -3267,7 +3302,7 @@ new track. Older versions of CopyQM always alternates between
 runs of differing data and repeating data, even if the length of 
 one of them is zero.
 
-O <sec: dqk>DQK Files 
+B <sec: dqk>DQK Files 
 
 A DQK file is a .DSK file compressed using Richard Greenlaw's 
 Squeeze file format (originally from CP/M as SQ.COM, and later 
@@ -3306,7 +3341,7 @@ LibDsk has been given .DQK support (use the “dsk” driver with “sq”
  compression) so that .DQK files don't have to be created and 
 compressed in a two-state process. 
 
-P LibDsk with cpmtools
+C LibDsk with cpmtools
 
 cpmtools v1.9 and later <http://www.moria.de/~michael/cpmtools/> 
 can be configured to use LibDsk for all disc access, thus 
@@ -3392,7 +3427,7 @@ microbee  512 80  10 2048 128  1 2 2.2
 
 
 
-Q DSK / EDSK recording mode extension
+D DSK / EDSK recording mode extension
 
 This extension was proposed by me on the comp.sys.sinclair and 
 comp.sys.amstrad.8bit newsgroups on 10 January 2004. It was 
@@ -3428,7 +3463,13 @@ Track-Info” block:
 
   2 MFM
 
+  16-47 Macintosh GCR (using the same values as dsk_recmode_t).
+
 Existing files should have zeroes in these bytes; hence the use 
 of 0 for Unknown. LibDsk will guess the values in if the ones in 
-the file are zero.
+the file are zero. 
+
+No known disks with GCR recording mode exist in the wild, but 
+they can be generated by using dskconv to convert a Diskcopy GCR 
+image to CPCEMU .DSK.
 

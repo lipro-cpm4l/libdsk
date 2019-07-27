@@ -213,6 +213,7 @@ dsk_err_t sap_open(DSK_DRIVER *self, const char *filename)
 			trkh->sector[sec].id_head = head;
 			trkh->sector[sec].id_sec = secbuf[3];
 			trkh->sector[sec].id_psh = dsk_get_psh(secsize);
+			trkh->sector[sec].datalen = secsize;
 			for (n = 0, allsame = 1; n < secsize; n++)
 			{
 				if (secbuf[n+4] != secbuf[4]) 

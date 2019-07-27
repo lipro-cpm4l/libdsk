@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2002  John Elliott <seasip.webmaster@gmail.com>            *
+ *    Copyright (C) 2002,2019  John Elliott <seasip.webmaster@gmail.com>   *
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -20,16 +20,30 @@
  *                                                                         *
  ***************************************************************************/
 
-/* Compression engines supported by LibDsk */
+/* Compaq QRST (v5) decompression */
 
-	&cc_sq,		/* SQueeze */
-/*	&cc_dskf,	 * IBM LoadDskF */
+typedef struct
+{
+        COMPRESS_DATA qrst5_super;
+	unsigned char inbuf[1024];
+	unsigned char bootsec[512];
+	unsigned char header[821];
+	unsigned bootsec_len;
+	DSK_GEOMETRY geom;
+	dsk_pcyl_t cylinder;
+	dsk_phead_t head;
+	unsigned tracklen;
+	
+	FILE *fp_in;
+	FILE *fp_out;
+} QRST5_COMPRESS_DATA;
 
-#ifdef HAVE_LIBZ
-	&cc_gz,		/* GZip */
-#endif
-#ifdef HAVE_LIBBZ2
-	&cc_bz2,	/* BZip2 */
-#endif
-	&cc_tlzh,	/* TeleDisk LZH */
-	&cc_qrst5,	/* Compaq QRST v5 */
+
+extern COMPRESS_CLASS cc_qrst5;
+
+
+dsk_err_t qrst5_open(COMPRESS_DATA *self);
+dsk_err_t qrst5_creat(COMPRESS_DATA *self);
+dsk_err_t qrst5_commit(COMPRESS_DATA *self);
+dsk_err_t qrst5_abort(COMPRESS_DATA *self);
+

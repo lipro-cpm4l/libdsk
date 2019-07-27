@@ -113,8 +113,8 @@ int do_label(char *outfile, char *outtyp, char *outcomp, int forcehead)
 	DSK_GEOMETRY dg;
 	char oemid[9];
 	char fsid[9];
-	char bootlabel[13];
-	char dirlabel[13];
+	char bootlabel[30];
+	char dirlabel[30];
 
 	e = dsk_open(&outdr, outfile, outtyp, outcomp);
 	if (!e && forcehead >= 0) e = dsk_set_forcehead(outdr, forcehead);

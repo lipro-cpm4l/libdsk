@@ -374,6 +374,7 @@ dsk_err_t nwasp_to_ldbs(DSK_DRIVER *self, struct ldbs **result, DSK_GEOMETRY *ge
 				trkh->sector[sec].id_head = head;
 				trkh->sector[sec].id_sec = sec + 1;
 				trkh->sector[sec].id_psh = 2;
+				trkh->sector[sec].datalen = 512;
 				trkh->sector[sec].copies = 0;
 				for (n = 1; n < 512; n++)
 					if (secbuf[n] != secbuf[0])

@@ -302,6 +302,7 @@ static dsk_err_t adisk_add_block(ADISK_DSK_DRIVER *self, FILE *fp)
 	trkh->sector[nsec].id_head = rh.head;
 	trkh->sector[nsec].id_sec  = rh.sector;
 	trkh->sector[nsec].id_psh  = dsk_get_psh(rh.data_size);
+	trkh->sector[nsec].datalen = rh.data_size;
 	trkh->sector[nsec].st1     = 0;
 	trkh->sector[nsec].st2     = 0;
 	if (allsame == -1)
@@ -513,7 +514,7 @@ static dsk_err_t sector_callback(PLDBS store, dsk_pcyl_t cyl, dsk_phead_t head,
 	int compress = 1;
 	unsigned char *buf;
 	char type[4];
-	size_t secsize = (128 << se->id_psh);
+	size_t secsize = se->datalen;
 	dsk_err_t err;
 
 	/* If the sector is blank, save as compressed; otherwise 
@@ -535,7 +536,7 @@ static dsk_err_t sector_callback(PLDBS store, dsk_pcyl_t cyl, dsk_phead_t head,
 	else
 	{
 		ldbs_poke2(buf + 4, (unsigned short)APRIDISK_UNCOMPRESSED);
-		ldbs_poke4(buf + 8, 128 << se->id_psh);
+		ldbs_poke4(buf + 8, se->datalen);
 		err = ldbs_getblock(adiskself->adisk_super.ld_store, 
 			se->blockid, type, buf + 16, &secsize);
 		if (err && err != DSK_ERR_OVERRUN)

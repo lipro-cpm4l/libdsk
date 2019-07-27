@@ -218,6 +218,7 @@ static dsk_err_t imd_load_track(IMD_DSK_DRIVER *self, dsk_ltrack_t count,
 		trkh->sector[n].id_cyl  = tmp.imdt_cylinder;
 		trkh->sector[n].id_head = tmp.imdt_head & 0x3F;
 		trkh->sector[n].id_psh  = psh;
+		trkh->sector[n].datalen = 128 << psh;
 	}
 	/* Load sector IDs */	
 	for (n = 0; n < tmp.imdt_sectors; n++)

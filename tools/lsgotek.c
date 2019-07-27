@@ -46,12 +46,14 @@
 
 static unsigned first = 0;
 static unsigned last  = 999;
+static const char *driver = "gotek1440";
 
 int help(int argc, char **argv)
 {
 	fprintf(stderr, "Syntax: \n"
                 "      %s { options} dskimage \n\n"
 		"Options:\n"
+		"  -720        Device uses 720k (SFRM72-TU100K) disc images\n"
 		"  -first <n>  First image to list (default is 0)\n"
 		"  -last  <n>  Last image to list (default is 0)\n",
 		AV0);
@@ -101,10 +103,16 @@ int lsgotek(int argc, const char *filename)
 	}
 	if (argc > 1) printf("%s:\n", filename);
 	printf("    No.\tSize\tFilesystem\tOEM ID  \tBoot label\tLabel\n");
+	sprintf(buf, "%s:%s,0", driver, filename);
+	err = dsk_open(&pdriver, buf, driver, NULL);
+	if (err)
+	{
+		fprintf(stderr, "%s: %s\n", filename, dsk_strerror(err));
+		return 1;
+	}
 	for (n = first; n <= last; n++)
 	{
-		sprintf(buf, "gotek:%s,%u", filename, n);
-		err = dsk_open(&pdriver, buf, "gotek", NULL);
+		err = dsk_set_option(pdriver, "GOTEK:PARTITION", n);
 		if (err)
 		{
 			fprintf(stderr, "%s: %s\n", filename,
@@ -128,8 +136,8 @@ int lsgotek(int argc, const char *filename)
 		{
 			char oemid[9];
 			char fsid[9];
-			char bootlabel[13];
-			char dirlabel[13];
+			char bootlabel[30];
+			char dirlabel[30];
 
 			err = get_labels(pdriver, &geom, oemid, fsid, 
 						bootlabel, dirlabel);
@@ -145,8 +153,8 @@ int lsgotek(int argc, const char *filename)
 			}
 		}
 		putchar('\n');
-		dsk_close(&pdriver);
 	}
+	dsk_close(&pdriver);
 	return 0;
 }
 
@@ -174,7 +182,13 @@ int main(int argc, char **argv)
 
 	parse_number("-first", &argc, argv, &first);
 	parse_number("-last",  &argc, argv, &last);
-
+	n = find_arg("-720", argc, argv);
+	if (n < 0) n = find_arg("--720", argc, argv);
+	if (n >= 0) 
+	{
+		excise_arg(n, &argc, argv);
+		driver = "gotek720";
+	}
 	if (argc < 2) return help(argc, argv);
 
         if (find_arg("--help",    argc, argv) > 0) return help(argc, argv);

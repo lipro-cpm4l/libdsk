@@ -251,7 +251,7 @@ static void *decode_ptr(LDBS *self, long l)
 
 void remktemp(char *s)
 {
-	srand(ldbs_peek2(s));
+	srand(ldbs_peek2((unsigned char *)s));
 	while (*s) 
 	{
 		*s = (rand() % 36) + 'A';
@@ -1918,6 +1918,20 @@ dsk_err_t ldbs_get_trackhead(PLDBS self, LDBS_TRACKHEAD **trkh,
 			result->sector[n].trail  = ldbs_peek2(buf + n * se_size + se_offset + 12);
 			result->sector[n].offset = ldbs_peek2(buf + n * se_size + se_offset + 14);
 		}
+		if (se_size >= 18)
+		{
+			result->sector[n].datalen = ldbs_peek2(buf + n * se_size + se_offset + 16);
+		}
+		else
+		{
+			result->sector[n].datalen = 0;
+		}
+/* If size was not provided (eg, file was in LDBS 0.3 format), make it 
+ * equal to 128 << PSH */
+		if (0 == result->sector[n].datalen)
+		{
+			result->sector[n].datalen = (128 << result->sector[n].id_psh);
+		}
 	}
 	ldbs_free(buf);
 	*trkh = result;
@@ -1948,7 +1962,7 @@ dsk_err_t ldbs_put_trackhead(PLDBS self, const LDBS_TRACKHEAD *trkh,
 	else
 	{
 		se_offset = 12;
-		se_size = 16;
+		se_size = 18;
 	}
 	bufsize = (trkh->count * se_size) + se_offset;	
 	buf = ldbs_malloc(bufsize);
@@ -1988,6 +2002,20 @@ dsk_err_t ldbs_put_trackhead(PLDBS self, const LDBS_TRACKHEAD *trkh,
 		{
 			ldbs_poke2(buf + n * se_size + se_offset + 12, trkh->sector[n].trail);
 			ldbs_poke2(buf + n * se_size + se_offset + 14, trkh->sector[n].offset);
+		}
+		if (se_size >= 18)
+		{
+/* Don't allow a 0 to be written to datalen; if the caller passed in 0, 
+ * replace it with 128 << PSH */
+			if (trkh->sector[n].datalen)
+			{
+				ldbs_poke2(buf + n * se_size + se_offset + 16, trkh->sector[n].datalen);
+			}
+			else
+			{
+				ldbs_poke2(buf + n * se_size + se_offset + 16, 128 << trkh->sector[n].id_psh);
+			}
+
 		}
 	}
 	err = ldbs_putblock_d(self, type, buf, bufsize);
@@ -2556,7 +2584,7 @@ static dsk_err_t track_stat_callback(PLDBS self,
 		stats->min_spt      = stats->max_spt      = th->count;
 		stats->min_secid    = stats->max_secid = th->sector[0].id_sec;
 		stats->min_sector_size = stats->max_sector_size = 
-			(128 << th->sector[0].id_psh);
+			th->sector[0].datalen;
 	}
 	if (cyl < stats->min_cylinder) stats->min_cylinder = cyl;
 	if (cyl > stats->max_cylinder) stats->max_cylinder = cyl;
@@ -2568,7 +2596,7 @@ static dsk_err_t track_stat_callback(PLDBS self,
 	for (n = 0; n < th->count; n++)
 	{
 		LDBS_SECTOR_ENTRY *se = &th->sector[n];
-		size_t secsize = (128 << se->id_psh);
+		size_t secsize = se->datalen;
 
 		if (se->id_sec < stats->min_secid) stats->min_secid = se->id_sec;
 		if (se->id_sec > stats->max_secid) stats->max_secid = se->id_sec;
@@ -2596,7 +2624,8 @@ dsk_err_t ldbs_get_stats(PLDBS self, LDBS_STATS *stats)
 
 
 dsk_err_t ldbs_load_track(PLDBS self, const LDBS_TRACKHEAD *trkh, void **buf, 
-			size_t *buflen, size_t sector_size)
+			size_t *buflen, size_t sector_size, 
+			LDBS_LOAD_TRACK_OPTIONS options)
 {
 	size_t tracklen;
 	unsigned n;
@@ -2624,9 +2653,31 @@ dsk_err_t ldbs_load_track(PLDBS self, const LDBS_TRACKHEAD *trkh, void **buf,
 	{
 		for (n = 0, tracklen = 0; n < trkh->count; n++)
 		{
-			tracklen += (128 << trkh->sector[n].id_psh);	
+			switch (options)
+			{
+				default:
+				case LLTO_DATA_ONLY:
+					tracklen += trkh->sector[n].datalen;
+					break;
+				case LLTO_TRAIL_ONLY:
+					tracklen += trkh->sector[n].trail;
+					break;
+				case LLTO_DATA_AND_TRAIL:
+					tracklen += trkh->sector[n].datalen;
+					tracklen += trkh->sector[n].trail;
+					break;
+			}
 		}
 	}
+	/* Empty track (eg, trying to read trailing bytes and there aren't
+	 * any) */
+	if (!tracklen)
+	{
+		*buflen = 0;
+		*buf = NULL;
+		return DSK_ERR_OK;
+	}
+
 	*buf    = ldbs_malloc(tracklen);
 	*buflen = tracklen;
 	if (!*buf) return DSK_ERR_NOMEM;
@@ -2649,22 +2700,72 @@ dsk_err_t ldbs_load_track(PLDBS self, const LDBS_TRACKHEAD *trkh, void **buf,
 		}
 		if (candidate < 0) break;	/* Should never happen! */
 
+		/* Work out how many bytes the sector occupies in the 
+		 * destination buffer */
 		if (sector_size) secsize = sector_size;
-		else	 secsize = 128 << trkh->sector[candidate].id_psh;
+		else switch (options)
+		{
+			default:
+			case LLTO_DATA_ONLY:
+				secsize = trkh->sector[candidate].datalen;
+				break;
+			case LLTO_TRAIL_ONLY:
+				secsize = trkh->sector[candidate].trail;
+				break;
+			case LLTO_DATA_AND_TRAIL:
+				secsize = trkh->sector[candidate].datalen +
+					  trkh->sector[candidate].trail;
+				break;
+		}
+		/* Fill the sector buffer with default values */
+		switch (options)
+		{
+			default:
+			case LLTO_DATA_ONLY:
+				memset(offset, trkh->sector[candidate].filler, secsize);
+				break;
+			case LLTO_TRAIL_ONLY:
+				memset(offset, 0, secsize);
+				break;
+			case LLTO_DATA_AND_TRAIL:
+				if (sector_size) 
+				{
+					memset(offset, trkh->sector[candidate].filler, sector_size);
+				}
+				else
+				{	
+					memset(offset, trkh->sector[candidate].filler, 
+						trkh->sector[candidate].datalen);
+					memset(offset + trkh->sector[candidate].datalen, 0,
+						trkh->sector[candidate].trail);
+				}
+				break;
+		}
+
 		if (trkh->sector[candidate].copies)
 		{
-			size_t ssiz = secsize;
+			unsigned char *secbuf;
+			size_t buflen;
 
-			err = ldbs_getblock(self, 
+/* Load the sector into memory */
+			err = ldbs_getblock_a(self, 
 				trkh->sector[candidate].blockid, 
-				NULL, offset, &ssiz);
-/* DSK_ERR_OVERRUN will be returned if there are multiple copies of the 
- * sector. We just use the first one in such cases. */
-			if (err && err != DSK_ERR_OVERRUN) return err;
-		}
-		else
-		{
-			memset(offset, trkh->sector[candidate].filler, secsize);
+				NULL, (void **)&secbuf, &buflen);
+			if (err) return err;
+/* Extract what we need */
+			if (buflen > secsize) buflen = secsize;
+			switch (options)
+			{
+				default:
+				case LLTO_DATA_ONLY:
+				case LLTO_DATA_AND_TRAIL:
+					memcpy(offset, secbuf, buflen);
+					break;
+				case LLTO_TRAIL_ONLY:
+					memcpy(offset, secbuf + trkh->sector[candidate].datalen, buflen);
+					break;
+			}
+			ldbs_free(secbuf);
 		}
 		offset += secsize;	
 		last_id = trkh->sector[candidate].id_sec;

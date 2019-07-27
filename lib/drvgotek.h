@@ -28,9 +28,11 @@ typedef struct
 	char *gotek_filename;
         FILE *gotek_fp;
 	int   gotek_readonly;
+	int   gotek_image;
 	unsigned long  gotek_filesize;
 	unsigned long  gotek_base;
 	unsigned long  gotek_gap;
+	int gotek_spt;
 /* If, under Windows, accessing a raw USB device directly */
 #ifdef WIN32FLOPPY
 	HANDLE	gotek_hVolume;	/* Handle for the partition in question */
@@ -57,4 +59,7 @@ dsk_err_t gotek_status(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 dsk_err_t gotek_getgeom(DSK_DRIVER *self, DSK_GEOMETRY *geom);
 dsk_err_t gotek_to_ldbs(DSK_DRIVER *self, struct ldbs **result, DSK_GEOMETRY *geom);
 dsk_err_t gotek_from_ldbs(DSK_DRIVER *self, struct ldbs *source, DSK_GEOMETRY *geom);
+dsk_err_t gotek_option_get(DSK_DRIVER *self, const char *optname, int *value);
+dsk_err_t gotek_option_set(DSK_DRIVER *self, const char *optname, int value);
+dsk_err_t gotek_option_enum(DSK_DRIVER *self, int idx, char **optname);
 

@@ -128,6 +128,7 @@ static dsk_err_t convert_sector(TELE_DSK_DRIVER *self, LDBS_TRACKHEAD *trkh,
 	trkh->sector[nsec].id_head = buf[1];
 	trkh->sector[nsec].id_sec  = buf[2];
 	trkh->sector[nsec].id_psh  = buf[3];
+	trkh->sector[nsec].datalen = 128 << buf[3];
 	syndrome = buf[4];
 	/* buf[5] is the CRC, ignored on load */
 
@@ -153,7 +154,7 @@ static dsk_err_t convert_sector(TELE_DSK_DRIVER *self, LDBS_TRACKHEAD *trkh,
 
 	encoding   = buf[2];
 
-	ulen = 128 << trkh->sector[nsec].id_psh;
+	ulen = trkh->sector[nsec].datalen;
 	secbuf = dsk_malloc(ulen + 2);	/* In case of overflow */
 	if (!secbuf) return DSK_ERR_NOMEM;
 
@@ -544,7 +545,7 @@ static dsk_err_t tele_datarate(PLDBS ldbs, dsk_pcyl_t cyl, dsk_phead_t head,
 	 * specified we guess it based on how many bytes the track holds */
 	for (n = 0; n < th->count; n++)
 	{
-		track_size += (128 << th->sector[n].id_psh);
+		track_size += th->sector[n].datalen;
 	}
 
 	if (th->recmode == 1) 	/* If FM, track size will be about half of */
@@ -703,7 +704,7 @@ static dsk_err_t tele_write_track(PLDBS ldbs, dsk_pcyl_t cyl, dsk_phead_t head,
 	/* For each sector... */
 	for (sec = 0; sec < th->count; sec++)
 	{
-		size_t seclen = 128 << th->sector[sec].id_psh;
+		size_t seclen = th->sector[sec].datalen;
 
 		/* Allocate space for the sector (2 copies: compressed 
 		 * and uncompressed) plus a 9-byte header */

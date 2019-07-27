@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001-2018 John Elliott <seasip.webmaster@gmail.com>    *
+ *    Copyright (C) 2001-2019 John Elliott <seasip.webmaster@gmail.com>    *
  *                                                                         *
  *    Modifications to add dsk_dirty()                                     *
  *    (c) 2005 Philip Kendall <pak21-spectrum@srcf.ucam.org>               *
@@ -58,7 +58,7 @@
 extern "C" {
 #endif
 
-#define LIBDSK_VERSION "1.5.10"
+#define LIBDSK_VERSION "1.5.11"
 
 /************************* TYPES ********************************/
 
@@ -158,17 +158,33 @@ typedef enum
 	FMT_AMPRO400S,	/* 5 sectors, 1024 bytes/sector, 1 side */
 	FMT_AMPRO800,	/* 5 sectors, 1024 bytes/sector, 2 sides */
 	FMT_1200K,	/* 15 sectors, 2 sides  */
+	FMT_MAC400,	/* Apple GCR 400k */
+	FMT_MAC800,	/* Apple GCR 800k */
 	FMT_UNKNOWN = -1
 } dsk_format_t;
 
 typedef enum
 {
 	/* Low byte of dg_fm: Recording mode */
-	RECMODE_MASK     = 0x00FF,
-	RECMODE_MFM      = 0x0000,	
-	RECMODE_FM       = 0x0001,
+	RECMODE_MASK       = 0x00FF,
+	RECMODE_MFM        = 0x0000,	
+	RECMODE_FM         = 0x0001,
+/* Annoyingly, LDBS recording modes match LibDsk ones except for MFM, 
+ * which is 2 in LDBS rather than 0. To avoid any possible conflict, 
+ * don't use 2 for any future recording mode in this structure; use
+ * 3+ for MFM variants */
+
+/* Recording modes 0x10-0x2F are GCR, defined as the GCR format byte 
+ * (byte 0x51 of an Apple Disk Copy file) masked with 0x1F, plus 0x10.
+ * These fall into the range RECMODE_GCR_FIRST - RECMODE_GCR_LAST */
+	RECMODE_GCR_FIRST  = 0x0010,
+	RECMODE_GCR_MAC    = 0x0012,      /* Macintosh 400k / 800k GCR */
+	RECMODE_GCR_PRODOS = 0x0014,      /* Apple IIgs Prodos 800k GCR */
+	RECMODE_GCR_LISA   = 0x0022,      /* Apple Lisa 400k GCR */
+	RECMODE_GCR_LAST   = 0x002F,
+
 	/* High byte of dg_fm: Other data recording flags */
-	RECMODE_FLAGMASK = 0xFF00,
+	RECMODE_FLAGMASK   = 0xFF00,
 	RECMODE_COMPLEMENT = 0x0100	
 	
 } dsk_recmode_t;
@@ -401,6 +417,7 @@ LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_cpm86geom(DSK_GEOMETRY *self, const unsigned
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_aprigeom(DSK_GEOMETRY *self, const unsigned char *bootsect);
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_opusgeom(DSK_GEOMETRY *self, const unsigned char *bootsect);
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_dfsgeom(DSK_GEOMETRY *self, const unsigned char *sector0, const unsigned char *sector1);
+LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_hfsgeom(DSK_GEOMETRY *self, const unsigned char *superblock);
 
 /* Tries all the above, in approximate order of detectability. This is 
  * intended to assist in parsing flat file disc images that contain no

@@ -191,6 +191,7 @@ static dsk_err_t track_to_ldbs(CPCEMU_DSK_DRIVER *cpc_self,
 
 		/* Size of theoretical sector record */
 		dsk_secsize = (128 << dsk_track[0x1B + sector * 8]);
+		cursec->datalen = dsk_secsize;
 	
 		/* Size of actual on-disk record */
 		if (dskhead[0] != 'E') 
@@ -568,7 +569,7 @@ static dsk_err_t track_from_ldbs(CPCEMU_DSK_DRIVER *cpc_self, PLDBS infile,
 		trackinfo[0x1C + 8 * n] = ldbs_track->sector[n].st1;
 		trackinfo[0x1D + 8 * n] = ldbs_track->sector[n].st2;
 
-		secsize = 128 << ldbs_track->sector[n].id_psh;
+		secsize = ldbs_track->sector[n].datalen;
 		if (ldbs_track->sector[n].copies > 0)
 		{
 			/* [1.5.4] Provision for trailing bytes */
@@ -602,7 +603,7 @@ static dsk_err_t track_from_ldbs(CPCEMU_DSK_DRIVER *cpc_self, PLDBS infile,
 /* Migrate the sectors */
 	for (n = 0; n < ldbs_track->count; n++)
 	{
-		secsize = 128 << ldbs_track->sector[n].id_psh;
+		secsize = ldbs_track->sector[n].datalen;
 		if (!ldbs_track->sector[n].copies)
 		{
 /* Expand blank sector */

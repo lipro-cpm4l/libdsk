@@ -124,7 +124,7 @@ static dsk_err_t check_density(LDBSDISK_DSK_DRIVER *self,
 	
 	/* Check if the track density and recording mode match the density
 	 * and recording mode in the geometry. */
-	sector_size = 128 << self->ld_cur_track->sector[0].id_psh;
+	sector_size = self->ld_cur_track->sector[0].datalen;
 
 	rate	  = self->ld_cur_track->datarate;
 	recording = self->ld_cur_track->recmode;
@@ -182,8 +182,11 @@ static dsk_err_t check_density(LDBSDISK_DSK_DRIVER *self,
 		case 2: if ((geom->dg_fm & RECMODE_MASK) != RECMODE_MFM) 
 				return DSK_ERR_NOADDR;
 			break;
-		default:	/* GCR??? */
-			return DSK_ERR_NOADDR;
+		/* In all other cases, LibDsk recording mode matches 
+		 * on-disk recording mode */
+		default: if ((geom->dg_fm & RECMODE_MASK) != recording) 
+				return DSK_ERR_NOADDR;
+			break;
 	}
 	return DSK_ERR_OK;
 }
@@ -360,7 +363,7 @@ dsk_err_t ldbsdisk_secid(DSK_DRIVER *pdriver, const DSK_GEOMETRY *geom,
 		result->fmt_cylinder = self->ld_cur_track->sector[n].id_cyl;
 		result->fmt_head     = self->ld_cur_track->sector[n].id_head;
 		result->fmt_sector   = self->ld_cur_track->sector[n].id_sec;
-		result->fmt_secsize  = 128 << self->ld_cur_track->sector[n].id_psh;
+		result->fmt_secsize  = self->ld_cur_track->sector[n].datalen;
 	}	
 
 	++self->ld_sector;
@@ -394,7 +397,7 @@ static dsk_err_t lookup_sector(LDBSDISK_DSK_DRIVER *self, dsk_pcyl_t cyl_expect,
 	if (!*result) return DSK_ERR_NOADDR; /* No matching sector found */
 
 	/* Found and it's the right size */	
-	*size_actual = 128 << result[0]->id_psh;
+	*size_actual = result[0]->datalen;
 	if (*size_actual > size_expected)
 	{
 		*size_actual = size_expected;
@@ -539,8 +542,8 @@ dsk_err_t ldbsdisk_xread(DSK_DRIVER *pdriver, const DSK_GEOMETRY *geom, void *bu
 			/* Offset for multiple copies */
 			if (cursec->copies > 1)
 			{
-				offset = (rand() % cursec->copies) * 
-					(128 << cursec->id_psh);
+				size_t secsize = cursec->datalen + cursec->trail;
+				offset = (rand() % cursec->copies) * secsize;
 			}
 			/* Should never happen! */
 			if (offset + size_actual > sblen)
@@ -736,7 +739,12 @@ dsk_err_t ldbsdisk_format(DSK_DRIVER *pdriver, DSK_GEOMETRY *geom,
 		case RATE_HD: self->ld_cur_track->datarate = 2; break;
 		case RATE_ED: self->ld_cur_track->datarate = 3; break;
 	}
-	switch (geom->dg_fm & RECMODE_MASK)
+	if ((geom->dg_fm & RECMODE_MASK) >= RECMODE_GCR_FIRST &&
+	    (geom->dg_fm & RECMODE_MASK) <= RECMODE_GCR_LAST)
+	{
+		self->ld_cur_track->recmode = geom->dg_fm & RECMODE_MASK;
+	}
+	else switch (geom->dg_fm & RECMODE_MASK)
 	{
 		case RECMODE_FM:  self->ld_cur_track->recmode = 1; break;
 		case RECMODE_MFM: self->ld_cur_track->recmode = 2; break;
@@ -755,6 +763,7 @@ dsk_err_t ldbsdisk_format(DSK_DRIVER *pdriver, DSK_GEOMETRY *geom,
 		secent->id_head = format[sector].fmt_head;
 		secent->id_sec  = format[sector].fmt_sector;
 		secent->id_psh  = dsk_get_psh(format[sector].fmt_secsize);
+		secent->datalen = format[sector].fmt_secsize;
 		secent->st1 = 0;
 		secent->st2 = 0;
 		secent->copies = 0;
@@ -822,8 +831,10 @@ static dsk_err_t getgeom_callback(PLDBS ldbs, dsk_pcyl_t cyl, dsk_phead_t head,
 	}
 	switch (th->recmode)
 	{
+		case 0: break;
 		case 1: stats->dg.dg_fm = RECMODE_FM; break;
 		case 2: stats->dg.dg_fm = RECMODE_MFM; break;
+		default: stats->dg.dg_fm = th->recmode; break;
 	}
 
 	return DSK_ERR_OK;	
@@ -939,7 +950,7 @@ dsk_err_t ldbsdisk_trackids(DSK_DRIVER *pdriver, const DSK_GEOMETRY *geom,
 		(*result)[n].fmt_cylinder = cursec->id_cyl;
 		(*result)[n].fmt_head     = cursec->id_head;
 		(*result)[n].fmt_sector   = cursec->id_sec;
-		(*result)[n].fmt_secsize  = (128 << cursec->id_psh);
+		(*result)[n].fmt_secsize  = cursec->datalen;
 	}
 
 	return DSK_ERR_OK;
