@@ -58,7 +58,7 @@
 extern "C" {
 #endif
 
-#define LIBDSK_VERSION "1.5.11"
+#define LIBDSK_VERSION "1.5.12"
 
 /************************* TYPES ********************************/
 
@@ -101,6 +101,7 @@ typedef const char *  dsk_cchar_t;	/* Const char * */
 #define DSK_ERR_UNKRPC   (-30)  /* RPC server does not recognise function */
 #define DSK_ERR_BADMEDIA (-31)	/* Unsuitable media for drive */
 #define DSK_ERR_CORRUPT  (-32)	/* Disk image file is corrupt */
+#define DSK_ERR_NULLOPT  (-33)  /* Option is valid, but has no value */
 #define DSK_ERR_UNKNOWN  (-99)	/* Unknown error */
 
 /* Is this error a transient error, that may be cleared by a retry? */

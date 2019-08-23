@@ -3265,10 +3265,23 @@ name
 \end_inset
 
  field is the option name.
- If the selected driver does not support the appropriate option, then the
+ 
+\end_layout
+
+\begin_layout Standard
+If the selected driver does not support the appropriate option, then the
  error DSK_ERR_BADOPT will be returned.
- If the option is valid but the value requested is not, DSK_ERR_BADVAL will
- be returned.
+ 
+\end_layout
+
+\begin_layout Standard
+If the option is valid but the value passed to dsk_set_option() is not,
+ DSK_ERR_BADVAL will be returned.
+\end_layout
+
+\begin_layout Standard
+If the option is valid but no meaningful value can be returned by dsk_get_option
+(), DSK_ERR_NULLOPT will be returned.
 \end_layout
 
 \begin_layout Standard
@@ -3423,8 +3436,9 @@ and
 \emph default
  FS:FAT information - for example, a CP/M filesystem saved in a disc image
  that also contains FAT metadata, or vice versa.
- LDBS-format disc images will also return FS:CP/M properties; for a non-CP/M
- disc these will all be zero.
+ LDBS-format disc images also optionally support FS:CP/M properties; attempting
+ to read these from an LDBS image without CP/M filesystem information will
+ return DSK_ERR_NULLOPT.
 \end_layout
 
 \begin_layout Subsection

@@ -1157,10 +1157,16 @@ dsk_err_t dsk_get_option(DSK_PDRIVER self, const char *name, int
 
 Sets or gets a driver-specific numeric option.
 
-The “name” field is the option name. If the selected driver does 
-not support the appropriate option, then the error DSK_ERR_BADOPT 
-will be returned. If the option is valid but the value requested 
+The “name” field is the option name. 
+
+If the selected driver does not support the appropriate option, 
+then the error DSK_ERR_BADOPT will be returned. 
+
+If the option is valid but the value passed to dsk_set_option() 
 is not, DSK_ERR_BADVAL will be returned.
+
+If the option is valid but no meaningful value can be returned by 
+dsk_get_option(), DSK_ERR_NULLOPT will be returned.
 
 The following driver options are supported by the Linux and NTWDM 
 floppy drivers:
@@ -1239,8 +1245,9 @@ filesystem options supported by LibDsk are:
 Note that it is possible for a disc to have FS:CP/M and FS:FAT 
 information - for example, a CP/M filesystem saved in a disc 
 image that also contains FAT metadata, or vice versa. LDBS-format 
-disc images will also return FS:CP/M properties; for a non-CP/M 
-disc these will all be zero.
+disc images also optionally support FS:CP/M properties; 
+attempting to read these from an LDBS image without CP/M 
+filesystem information will return DSK_ERR_NULLOPT.
 
 4.23 dsk_option_enum: Get list of driver options
 

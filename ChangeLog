@@ -1,3 +1,10 @@
+2019-08-23 John Elliott
+
+	* libdsk-1.5.12 released.
+
+	* LDBS driver: Fixed geometry probe when dealing with non-power-of-2
+	 sector sizes.
+
 2019-07-27 John Elliott
 
 	* libdsk-1.5.11 released.

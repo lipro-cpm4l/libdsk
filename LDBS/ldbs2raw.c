@@ -67,7 +67,9 @@ dsk_err_t migrate_track(PLDBS infile, dsk_pcyl_t cyl, dsk_phead_t head,
 			opt_trail ? LLTO_DATA_AND_TRAIL : LLTO_DATA_ONLY);
 
 	if (err) return err;
-	
+
+	fprintf(stderr, "Cyl=%d head=%d Write %d bytes at %ld\n",
+		cyl, head, bufsize, ftell(fpo));	
 	if (fwrite(buffer, 1, bufsize, fpo) < bufsize)
 	{
 		ldbs_free(buffer);
