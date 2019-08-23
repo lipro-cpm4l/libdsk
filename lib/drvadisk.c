@@ -269,22 +269,26 @@ static dsk_err_t adisk_add_block(ADISK_DSK_DRIVER *self, FILE *fp)
 		dsk_free(buf);
 		if (err) return err;
 	}
+	/* At this point buf has been freed in either the if or else 
+	 * branch */
+	buf = NULL;
+
 	/* Now it needs to be recorded in the track header */
 	err = ldbs_get_trackhead(self->adisk_super.ld_store, &trkh, 
 				rh.cylinder, rh.head);
-	if (err) { dsk_free(buf); return err; }
+	if (err) return err; 
 
 	if (trkh)
 	{
 		nsec = trkh->count;
 		trkh = ldbs_trackhead_realloc(trkh, (unsigned short)(1 + trkh->count));
-		if (!trkh) { dsk_free(buf); return DSK_ERR_NOMEM; }
+		if (!trkh) return DSK_ERR_NOMEM; 
 	}
 	else
 	{
 		nsec = 0;
 		trkh = ldbs_trackhead_alloc(1);
-		if (!trkh) { dsk_free(buf); return DSK_ERR_NOMEM; }
+		if (!trkh) return DSK_ERR_NOMEM; 
 
 		trkh->datarate = 1;
 		trkh->recmode = 2;
@@ -298,6 +302,7 @@ static dsk_err_t adisk_add_block(ADISK_DSK_DRIVER *self, FILE *fp)
 	trkh->sector[nsec].id_head = rh.head;
 	trkh->sector[nsec].id_sec  = rh.sector;
 	trkh->sector[nsec].id_psh  = dsk_get_psh(rh.data_size);
+	trkh->sector[nsec].datalen = rh.data_size;
 	trkh->sector[nsec].st1     = 0;
 	trkh->sector[nsec].st2     = 0;
 	if (allsame == -1)
@@ -401,10 +406,10 @@ dsk_err_t adisk_creat(DSK_DRIVER *self, const char *filename)
 	if (self->dr_class != &dc_adisk) return DSK_ERR_BADPTR;
 	adiskself = (ADISK_DSK_DRIVER *)self;
 
-	/* Create a 0-byte file, just to be sure we can */
+	/* Create a minimal file, just to be sure we can */
 	fp = fopen(filename, "wb");
 	if (!fp) return DSK_ERR_SYSERR;
-	if (fwrite(adisk_wmagic, 1, 128, adiskself->adisk_fp) < 128)
+	if (fwrite(adisk_wmagic, 1, 128, fp) < 128)
 	{
 		fclose(fp);
 		return DSK_ERR_SYSERR;
@@ -509,7 +514,7 @@ static dsk_err_t sector_callback(PLDBS store, dsk_pcyl_t cyl, dsk_phead_t head,
 	int compress = 1;
 	unsigned char *buf;
 	char type[4];
-	size_t secsize = (128 << se->id_psh);
+	size_t secsize = se->datalen;
 	dsk_err_t err;
 
 	/* If the sector is blank, save as compressed; otherwise 
@@ -531,7 +536,7 @@ static dsk_err_t sector_callback(PLDBS store, dsk_pcyl_t cyl, dsk_phead_t head,
 	else
 	{
 		ldbs_poke2(buf + 4, (unsigned short)APRIDISK_UNCOMPRESSED);
-		ldbs_poke4(buf + 8, 128 << se->id_psh);
+		ldbs_poke4(buf + 8, se->datalen);
 		err = ldbs_getblock(adiskself->adisk_super.ld_store, 
 			se->blockid, type, buf + 16, &secsize);
 		if (err && err != DSK_ERR_OVERRUN)

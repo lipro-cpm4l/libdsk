@@ -90,6 +90,10 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
+SOURCE=..\lib\blast.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\compbz2.c
 
 !IF  "$(CFG)" == "libdsk - Win32 Release"
@@ -113,6 +117,10 @@ SOURCE=..\lib\compgz.c
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\compqrst.c
 # End Source File
 # Begin Source File
 
@@ -211,6 +219,10 @@ SOURCE=..\lib\drvcpcem.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvdc42.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvdos16.c
 
 !IF  "$(CFG)" == "libdsk - Win32 Release"
@@ -234,6 +246,10 @@ SOURCE=..\lib\drvdos32.c
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvgotek.c
 # End Source File
 # Begin Source File
 
@@ -354,6 +370,10 @@ SOURCE=..\lib\drvrcpm.c
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvsap.c
 # End Source File
 # Begin Source File
 
@@ -758,6 +778,10 @@ SOURCE=..\lib\rpcwin32.c
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
+SOURCE=..\lib\blast.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\comp.h
 # End Source File
 # Begin Source File
@@ -771,6 +795,10 @@ SOURCE=..\lib\compgz.h
 # Begin Source File
 
 SOURCE=..\lib\compi.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\compqrst.h
 # End Source File
 # Begin Source File
 
@@ -814,11 +842,19 @@ SOURCE=..\lib\drvcpcem.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvdc42.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvdos16.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvdos32.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvgotek.h
 # End Source File
 # Begin Source File
 

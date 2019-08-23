@@ -304,10 +304,6 @@ SOURCE=.\dlldatax.c
 # End Source File
 # Begin Source File
 
-SOURCE=..\lib\drvjv3.c
-# End Source File
-# Begin Source File
-
 SOURCE=.\Geometry.cpp
 # End Source File
 # Begin Source File
@@ -337,10 +333,6 @@ SOURCE=.\dlldatax.h
 # PROP Exclude_From_Scan -1
 # PROP BASE Exclude_From_Build 1
 # PROP Exclude_From_Build 1
-# End Source File
-# Begin Source File
-
-SOURCE=..\lib\drvjv3.h
 # End Source File
 # Begin Source File
 
@@ -388,6 +380,10 @@ SOURCE=.\Reporter.rgs
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=..\lib\blast.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\compbz2.c
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -395,6 +391,10 @@ SOURCE=..\lib\compbz2.c
 
 SOURCE=..\lib\compgz.c
 # SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\compqrst.c
 # End Source File
 # Begin Source File
 
@@ -454,6 +454,10 @@ SOURCE=..\lib\drvcpcem.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvdc42.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvdos16.c
 # SUBTRACT CPP /YX /Yc /Yu
 # End Source File
@@ -461,6 +465,10 @@ SOURCE=..\lib\drvdos16.c
 
 SOURCE=..\lib\drvdos32.c
 # SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvgotek.c
 # End Source File
 # Begin Source File
 
@@ -482,6 +490,10 @@ SOURCE=..\lib\drvimd.c
 
 !ENDIF 
 
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvjv3.c
 # End Source File
 # Begin Source File
 
@@ -548,6 +560,10 @@ SOURCE=..\lib\drvqrst.c
 
 SOURCE=..\lib\drvrcpm.c
 # SUBTRACT CPP /YX /Yc /Yu
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvsap.c
 # End Source File
 # Begin Source File
 
@@ -773,6 +789,10 @@ SOURCE=..\lib\rpcwin32.c
 # PROP Default_Filter ""
 # Begin Source File
 
+SOURCE=..\lib\blast.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\comp.h
 # End Source File
 # Begin Source File
@@ -825,6 +845,10 @@ SOURCE=..\lib\drvcpcem.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvdc42.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvdos16.h
 # End Source File
 # Begin Source File
@@ -833,11 +857,19 @@ SOURCE=..\lib\drvdos32.h
 # End Source File
 # Begin Source File
 
+SOURCE=..\lib\drvgotek.h
+# End Source File
+# Begin Source File
+
 SOURCE=..\lib\drvi.h
 # End Source File
 # Begin Source File
 
 SOURCE=..\lib\drvimd.h
+# End Source File
+# Begin Source File
+
+SOURCE=..\lib\drvjv3.h
 # End Source File
 # Begin Source File
 

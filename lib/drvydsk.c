@@ -611,6 +611,7 @@ dsk_err_t ydsk_to_ldbs(DSK_DRIVER *self, struct ldbs **result,
 			trkh->sector[sec].id_head = 0;
 			trkh->sector[sec].id_sec = sec + dg.dg_secbase;
 			trkh->sector[sec].id_psh = dsk_get_psh(dg.dg_secsize);
+			trkh->sector[sec].datalen = dg.dg_secsize;
 			trkh->sector[sec].copies = 0;
 			for (n = 1; n < (int)dg.dg_secsize; n++)
 				if (secbuf[n] != secbuf[0])

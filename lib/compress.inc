@@ -32,3 +32,4 @@
 	&cc_bz2,	/* BZip2 */
 #endif
 	&cc_tlzh,	/* TeleDisk LZH */
+	&cc_qrst5,	/* Compaq QRST v5 */

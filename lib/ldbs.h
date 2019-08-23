@@ -20,7 +20,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
  * OTHER DEALINGS IN THE SOFTWARE. */
 
-#define LDBS_VERSION "0.3"	/* Version of the LDBS spec this library
+#define LDBS_VERSION "0.4"	/* Version of the LDBS spec this library
 				 * implements */
 
 /* Structures and functions to manage a LibDsk Block Store disk image, 
@@ -123,9 +123,18 @@ typedef enum
 typedef enum
 {
 	/* Low byte of dg_fm: Recording mode */
-	RECMODE_MASK     = 0x00FF,
-	RECMODE_MFM      = 0x0000,	
-	RECMODE_FM       = 0x0001,
+	RECMODE_MASK       = 0x00FF,
+	RECMODE_MFM        = 0x0000,	
+	RECMODE_FM         = 0x0001,
+/* Recording modes 0x10-0x2F are GCR, defined as the GCR format byte 
+ * (byte 0x51 of an Apple Disk Copy file) masked with 0x1F, plus 0x10.
+ * These fall into the range RECMODE_GCR_FIRST - RECMODE_GCR_LAST */
+	RECMODE_GCR_FIRST  = 0x0010,
+	RECMODE_GCR_MAC    = 0x0012,      /* Macintosh 400k / 800k GCR */
+	RECMODE_GCR_PRODOS = 0x0014,      /* Apple IIgs Prodos 800k GCR */
+	RECMODE_GCR_LISA   = 0x0022,      /* Apple Lisa 400k GCR */
+	RECMODE_GCR_LAST   = 0x002F,
+
 	/* High byte of dg_fm: Other data recording flags */
 	RECMODE_FLAGMASK = 0xFF00,
 	RECMODE_COMPLEMENT = 0x0100	
@@ -199,6 +208,7 @@ typedef struct ldbs_sector_entry
        			 	 * sector is entirely filled with filler byte */
 	unsigned char filler;	/* Format filler byte */
 	LDBLOCKID blockid;
+	unsigned short datalen;	/* [LDBS 0.4] Data length, normally 1 << id_psh */
 	unsigned short trail;	/* [LDBS 0.3] Number of CRC and GAP#3 bytes
 				 *            included in the sector*/
 	unsigned short offset;	/* [LDBS 0.3] Offset of sector within track */
@@ -231,9 +241,10 @@ typedef struct ldbs_trackhead		/* Track header */
 					 *  2 => high density
 					 *  3 => extended density */
 	unsigned char recmode;		/* Recording mode: 
-					 *  0 => unknown
-					 *  1 => FM
-					 *  2 => MFM */
+					 *      0x00 => unknown
+					 *      0x01 => FM
+					 *      0x02 => MFM 
+					 * 0x10-0x2F => Macintosh GCR*/
 	dsk_gap_t  gap3;		/* Format GAP3 */
 	unsigned char filler;		/* Format filler byte */
 	unsigned short total_len;	/* Total size of track including
@@ -992,6 +1003,15 @@ typedef struct ldbs_stats
 
 dsk_err_t ldbs_get_stats(PLDBS self, LDBS_STATS *stats);
 
+typedef enum
+{
+	LLTO_DATA_ONLY = 1,
+	LLTO_TRAIL_ONLY = 2,
+	LLTO_DATA_AND_TRAIL = 3
+
+} LDBS_LOAD_TRACK_OPTIONS;
+
+
 /* LDBS 0.2: Ability to load a whole track in one go. 
  * Enter with: self    is the handle to the blockstore
  * 	       trkh    is the track header
@@ -1001,6 +1021,8 @@ dsk_err_t ldbs_get_stats(PLDBS self, LDBS_STATS *stats);
  *	               bytes in the buffer
  *             sector_size  if nonzero, sectors will be padded/truncated to
  *                          that size. 
+ *	       options is what data to load (data bytes, trailing bytes or 
+ *			    both)
  *
  * Results:
  * 		DSK_ERR_NOMEM   Cannot allocate buffer
@@ -1011,7 +1033,8 @@ dsk_err_t ldbs_get_stats(PLDBS self, LDBS_STATS *stats);
  * If track has no sectors, returns DSK_ERR_OK with *buf = NULL, *buflen = 0
  */
 dsk_err_t ldbs_load_track(PLDBS self, const LDBS_TRACKHEAD *trkh, void **buf, 
-			size_t *buflen, size_t sector_size);
+			size_t *buflen, size_t sector_size, 
+			LDBS_LOAD_TRACK_OPTIONS options);
 
 /* LDBS 0.2: Ability to clone a disk image */
 dsk_err_t ldbs_clone(PLDBS source, PLDBS target);

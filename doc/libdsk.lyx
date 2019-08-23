@@ -1,7 +1,9 @@
-#LyX 2.1 created this file. For more info see http://www.lyx.org/
-\lyxformat 474
+#LyX 2.2 created this file. For more info see http://www.lyx.org/
+\lyxformat 508
 \begin_document
 \begin_header
+\save_transient_properties true
+\origin unavailable
 \textclass article
 \use_default_options false
 \maintain_unincluded_children false
@@ -9,16 +11,16 @@
 \language_package default
 \inputencoding iso8859-1
 \fontencoding global
-\font_roman times
-\font_sans default
-\font_typewriter default
-\font_math auto
+\font_roman "times" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
 \font_default_family default
 \use_non_tex_fonts false
 \font_sc false
 \font_osf false
-\font_sf_scale 100
-\font_tt_scale 100
+\font_sf_scale 100 100
+\font_tt_scale 100 100
 \graphics default
 \default_output_format default
 \output_sync 0
@@ -70,7 +72,7 @@
 \begin_body
 
 \begin_layout Title
-LibDsk v1.5.9-pre
+LibDsk v1.5.10
 \end_layout
 
 \begin_layout Author
@@ -121,7 +123,7 @@ About this document
 \end_layout
 
 \begin_layout Standard
-This document only covers LibDsk -- the library -- itself.
+This document only covers LibDsk – the library – itself.
  For information on the example utilities supplied with LibDsk (apriboot,
  dskform, dsktrans, dskid, dskdump, dskscan, dskutil and md3serial) see
  their respective manual pages.
@@ -150,6 +152,10 @@ dd if=foo of=bar
 
 \begin_layout Itemize
 Raw images in logical filesystem order;
+\end_layout
+
+\begin_layout Itemize
+Raw images within a Gotek-formatted USB device;
 \end_layout
 
 \begin_layout Itemize
@@ -260,13 +266,54 @@ If you have coded against a version of LibDsk prior to 1.5.3, bear in mind
  The API for your programs remains the same, but there are differences in
  implementation that may trip you up.
  In particular, if you are writing to a disc image file it is very important
- to check the result of dsk_close() -- there are a lot of drivers which
- make their changes in memory and don't try to commit them until dsk_close()
+ to check the result of dsk_close() – there are a lot of drivers which make
+ their changes in memory and don't try to commit them until dsk_close()
  is called.
 \end_layout
 
 \begin_layout Standard
 For full details, see the file ChangeLog.
+\end_layout
+
+\begin_layout Itemize
+New 'dc42' driver for accessing Apple Disk Copy 4.2 disc images.
+ This means that LibDsk is dipping a first tentative toe into the world
+ of GCR encoding, and representing it in disc images.
+\end_layout
+
+\begin_layout Itemize
+Read-only support for QRST5 disc images (a compressed form of QRST).
+\end_layout
+
+\begin_layout Itemize
+New 'gotek720' driver for accessing raw disc images within Gotek-format
+ archives of 720k disc images.
+\end_layout
+
+\begin_layout Itemize
+New utility: 'dsklabel' allows the drive label to be viewed and changed
+ on disk images where LibDsk detects a DOS, CP/M or DFS filesystem.
+\end_layout
+
+\begin_layout Itemize
+New utility: 'lsgotek' lists the drive images on a USB drive or file in
+ the format used by Gotek floppy emulators.
+\end_layout
+
+\begin_layout Itemize
+New 'gotek' driver for accessing raw disc images within Gotek-format floppy
+ archives.
+\end_layout
+
+\begin_layout Itemize
+If an output filetype is not provided to the dsktrans, dskform and dskdump
+ utilities, they will attempt to guess one from the passed filename rather
+ than defaulting to 'dsk'.
+\end_layout
+
+\begin_layout Itemize
+Fixed some memory corruption issues (thanks to Mark Ogden for discovering
+ these).
 \end_layout
 
 \begin_layout Itemize
@@ -499,6 +546,18 @@ logical
 \begin_inset Quotes eld
 \end_inset
 
+gotek
+\begin_inset Quotes erd
+\end_inset
+
+ : Raw 1.4M disc image on a USB drive (or ordinary file) in the format used
+ by Gotek floppy emulators.
+\end_layout
+
+\begin_layout Description
+\begin_inset Quotes eld
+\end_inset
+
 floppy
 \begin_inset Quotes erd
 \end_inset
@@ -700,6 +759,17 @@ qrst
 \begin_inset Quotes eld
 \end_inset
 
+dc42
+\begin_inset Quotes erd
+\end_inset
+
+: Apple Disk Copy 4.2.
+\end_layout
+
+\begin_layout Description
+\begin_inset Quotes eld
+\end_inset
+
 ldbs
 \begin_inset Quotes erd
 \end_inset
@@ -891,6 +961,10 @@ dg_heads
  is greater than 1 (otherwise all the methods are equivalent) and you are
  using functions that take logical sectors or tracks as parameters.
  It will be one of: 
+\begin_inset Separator latexpar
+\end_inset
+
+
 \end_layout
 
 \begin_deeper
@@ -1035,6 +1109,10 @@ dg_datarate;
 \family default
  /* Data rate.
  This will be one of:
+\begin_inset Separator latexpar
+\end_inset
+
+
 \end_layout
 
 \begin_deeper
@@ -1108,6 +1186,10 @@ dg_fm;
  compatibility.
  It contains the recording mode and additional flags.
  To extract the recording mode, use (dg_fm & RECMODE_MASK):
+\begin_inset Separator latexpar
+\end_inset
+
+
 \end_layout
 
 \begin_deeper
@@ -1131,6 +1213,52 @@ RECMODE_FM
  The BBC Micro used FM recording for its 100k and 200k DFS formats.
  The Windows / DOS floppy drivers do not support FM recording.
  
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+RECMODE_GCR_MAC
+\family default
+ Apple GCR (Macintosh style)
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+RECMODE_GCR_LISA
+\family default
+ Apple GCR (Lisa style)
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+RECMODE_GCR_PRODOS
+\family default
+ Apple GCR (Apple II Prodos style)
+\end_layout
+
+\begin_layout Description
+
+\family typewriter
+RECMODE_GCR_FIRST
+\begin_inset space ~
+\end_inset
+
+/
+\begin_inset space ~
+\end_inset
+
+RECMODE_GCR_LAST 
+\family default
+Apple GCR actually allows 32 variants of the encoding, three of which are
+ the above Macintosh / Lisa / Prodos versions.
+ If a different one is encountered, it can be stored as 
+\family typewriter
+(variant & 0x1F) + RECMODE_GCR_FIRST
+\family default
+.
 \end_layout
 
 \begin_layout Standard
@@ -2092,7 +2220,7 @@ geom->dg_noskip
 \align center
 \begin_inset Tabular
 <lyxtabular version="3" rows="8" columns="5">
-<features rotate="0" tabularvalignment="middle">
+<features tabularvalignment="middle">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
@@ -2768,7 +2896,7 @@ dsk_err_t dsk_getgeom(DSK_PDRIVER self, DSK_GEOMETRY *geom)
 \begin_layout Standard
 This attempts to determine the geometry of a disc (number of cylinders,
  tracks, sectors etc.) by loading the boot sector.
- It understands DOS, Apricot, CP/M-86 and PCW boot sectors.
+ It understands DOS, Apricot, CP/M-86, PCW and Acorn DFS boot sectors.
  If the geometry could be guessed, then 
 \begin_inset Quotes eld
 \end_inset
@@ -2809,6 +2937,11 @@ dsk_err_t dg_cpm86geom(DSK_GEOMETRY *self, const unsigned char *bootsect)
 
 \begin_layout LyX-Code
 dsk_err_t dg_aprigeom(DSK_GEOMETRY *self, const unsigned char *bootsect)
+\end_layout
+
+\begin_layout LyX-Code
+dsk_err_t dg_dfsgeom(DSK_GEOMETRY *self, const unsigned char *bootsect0,
+ const unsigned char *bootsect1)
 \end_layout
 
 \begin_layout Standard
@@ -2861,6 +2994,12 @@ dg_cpm86geom will check for a CP/M-86 boot sector.
 
 \begin_layout Description
 dg_aprigeom will check for an Apricot DOS boot sector.
+\end_layout
+
+\begin_layout Description
+dg_dfsgeom will check for an Acorn DFS boot sector and directory.
+ It needs to be passed two buffers, containing the first two sectors of
+ the disc.
 \end_layout
 
 \begin_layout Subsection
@@ -3039,7 +3178,7 @@ If additional formats have been specified in the libdskrc file (section
  
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "sub:libdskrc-format"
+reference "subsec:libdskrc-format"
 
 \end_inset
 
@@ -3126,10 +3265,23 @@ name
 \end_inset
 
  field is the option name.
- If the selected driver does not support the appropriate option, then the
+ 
+\end_layout
+
+\begin_layout Standard
+If the selected driver does not support the appropriate option, then the
  error DSK_ERR_BADOPT will be returned.
- If the option is valid but the value requested is not, DSK_ERR_BADVAL will
- be returned.
+ 
+\end_layout
+
+\begin_layout Standard
+If the option is valid but the value passed to dsk_set_option() is not,
+ DSK_ERR_BADVAL will be returned.
+\end_layout
+
+\begin_layout Standard
+If the option is valid but no meaningful value can be returned by dsk_get_option
+(), DSK_ERR_NULLOPT will be returned.
 \end_layout
 
 \begin_layout Standard
@@ -3278,12 +3430,15 @@ FS:FAT:SECFAT Number of sectors per FAT
 \end_layout
 
 \begin_layout Standard
-Note that it is theoretically possible for a disc to have FS:CP/M 
+Note that it is possible for a disc to have FS:CP/M 
 \emph on
 and
 \emph default
  FS:FAT information - for example, a CP/M filesystem saved in a disc image
  that also contains FAT metadata, or vice versa.
+ LDBS-format disc images also optionally support FS:CP/M properties; attempting
+ to read these from an LDBS image without CP/M filesystem information will
+ return DSK_ERR_NULLOPT.
 \end_layout
 
 \begin_layout Subsection
@@ -3852,7 +4007,7 @@ ic file (.libdskrc).
 \begin_layout Subsection
 \begin_inset CommandInset label
 LatexCommand label
-name "sub:libdskrc-format"
+name "subsec:libdskrc-format"
 
 \end_inset
 
@@ -3882,7 +4037,7 @@ For each geometry, the entries listed below can be present.
 
 \begin_layout Description
 description=DESC The description of the format as shown by (for example)
- dskform --help.
+ dskform –help.
  
 \end_layout
 
@@ -3892,17 +4047,17 @@ sides=TREATMENT How a double-sided disk is handled.
 \emph on
 alt
 \emph default
- (sides alternate -- used by most PC-hosted operating systems), 
+ (sides alternate – used by most PC-hosted operating systems), 
 \emph on
 outback
 \emph default
- (use side 0 tracks 0-79, then side 1 tracks 79-0 -- used by 144FEAT CP/M
+ (use side 0 tracks 0-79, then side 1 tracks 79-0 – used by 144FEAT CP/M
  disks), 
 \emph on
 outout
 \emph default
- (use side 0 tracks 0-79, then side 1 tracks 0-79 -- used by some Acorn
- formats) or 
+ (use side 0 tracks 0-79, then side 1 tracks 0-79 – used by some Acorn formats)
+ or 
 \emph on
 extsurface
 \emph default
@@ -3964,15 +4119,11 @@ fmtgap=VALUE Sets the format gap.
 \end_layout
 
 \begin_layout Description
-recmode=FM
-\begin_inset space ~
-\end_inset
-
-or
-\begin_inset space ~
-\end_inset
-
-MFM Sets the recording mode - FM or MFM.
+recmode=VALUE Sets the recording mode - one of 
+\emph on
+FM, MFM, GCR_MAC, GCR_LISA, GCR_PRODOS
+\emph default
+.
  For backward compatibility, the alternate syntax 
 \series bold
 FM=Y or N
@@ -4111,7 +4262,7 @@ Unix
 \begin_layout Standard
 The systemwide file is located at ${datadir}/LibDsk/libdskrc.
  The ${datadir} is usually /usr/local/share; you can change it with the
- --datadir or --prefix arguments to the configure script.
+ –datadir or –prefix arguments to the configure script.
  
 \end_layout
 
@@ -4201,6 +4352,81 @@ The systemwide file is only searched for if the LIBDSK environment variable
  is set; if it is set, it is assumed to be the name of the directory containing
  libdskrc.
  There is no user-specific file.
+\end_layout
+
+\begin_layout Section
+The Gotek backends
+\end_layout
+
+\begin_layout Standard
+Gotek support is new in version 1.5.10, and should be treated with the caution
+ appropriate to new, untried code.
+ It can directly access a USB drive containing floppy images, but it's safer
+ to back the drive up to a file (under Windows this can be done with a tool
+ like Win32DiskImager) and work on a copy of that file.
+\end_layout
+
+\begin_layout Standard
+To access a disk image within the drive / file, pass a filename to LibDsk
+ of the form:
+\end_layout
+
+\begin_layout LyX-Code
+gotek:
+\emph on
+device
+\emph default
+,
+\emph on
+number
+\end_layout
+
+\begin_layout Standard
+Where 
+\emph on
+device
+\emph default
+ is a USB device (or file) in the format used by the Gotek floppy emulator,
+ and 
+\emph on
+number
+\emph default
+ is the number of the disc image within it, 0 to 999.
+ In my very limited experience, when accessing a device the correct file
+ to use is the first partition (for example /dev/sdh1) rather than the device
+ as a whole (/dev/sdh).
+ On Windows this relies on the first drive image on the USB device having
+ a FAT filesystem and being mounted as a drive by Windows; you can then
+ use a filename like gotek:F:,6 to access it.
+\end_layout
+
+\begin_layout Standard
+The format of disc images supported by the Gotek driver is sharply limited:
+ it is restricted to high-density disc images with up to 18 sectors per
+ track (numbered 1-18).
+ This allows it to support 1.4M and 1.2M DOS formats, and non-DOS formats
+ with similar disc geometry.
+\end_layout
+
+\begin_layout Standard
+The utility lsgotek can be used to list the contents of a device / file
+ in Gotek format.
+ dsklabel can be used to change the labels of the disk images within the
+ file, to help you keep track of what is where.
+\end_layout
+
+\begin_layout Standard
+In version 1.5.11 there is a similar backend (gotek720) for Gotek devices
+ that hold 720k disc images.
+ The option 
+\begin_inset Quotes eld
+\end_inset
+
+-720
+\begin_inset Quotes erd
+\end_inset
+
+ should be passed to lsgotek to list the contents of these.
 \end_layout
 
 \begin_layout Section
@@ -4324,7 +4550,7 @@ For a directory to be usable by rcpmfs, it should contain a file called
  This file is in INI format, similar to libdskrc (section 
 \begin_inset CommandInset ref
 LatexCommand ref
-reference "sub:libdskrc-format"
+reference "subsec:libdskrc-format"
 
 \end_inset
 
@@ -4357,15 +4583,19 @@ SysTracks Number of system tracks.
 \begin_layout Description
 Version CP/M version that will be accessing the filesystem.
  This should be 2, 3 or ISX:
+\begin_inset Separator latexpar
+\end_inset
+
+
 \end_layout
 
 \begin_deeper
 \begin_layout Description
-2 CP/M 2 -- no time stamps or disk labels.
+2 CP/M 2 – no time stamps or disk labels.
 \end_layout
 
 \begin_layout Description
-3 CP/M 3 -- time stamps and disk labels are present.
+3 CP/M 3 – time stamps and disk labels are present.
 \end_layout
 
 \begin_layout Description
@@ -4541,7 +4771,7 @@ Originally said by Microsoft with respect to Java.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="5" columns="3">
-<features rotate="0" tabularvalignment="middle">
+<features tabularvalignment="middle">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
 <column alignment="center" valignment="top" width="0pt">
@@ -4666,7 +4896,7 @@ Very limited
 \begin_inset Text
 
 \begin_layout Plain Layout
-2000, XP + ntwdm driver
+2000+ with ntwdm driver
 \end_layout
 
 \end_inset
@@ -4743,7 +4973,7 @@ The floppy drive can only read/write formats which are supported by the
 \end_layout
 
 \begin_layout Subsection
-Windows 2000 and XP with ntwdm driver
+Windows 2000 and later with ntwdm driver
 \end_layout
 
 \begin_layout Standard
@@ -5016,7 +5246,7 @@ This contains LibDsk functions not associated with a particular disk image.
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="13" columns="3">
-<features rotate="0" tabularvalignment="middle">
+<features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
@@ -5712,6 +5942,10 @@ The various parts of this filename specification are:
 
 \begin_layout Description
 port The local serial port to use.
+\begin_inset Separator latexpar
+\end_inset
+
+
 \end_layout
 
 \begin_deeper
@@ -6516,7 +6750,7 @@ Read / write sector whose ID may not match its position on disc, or which
  driver exposes this level of functionality.
  Currently it is implemented in the Linux, NTWDM and CPCEMU drivers, plus
  those using LDBS as their internal storage (LDBS itself, DSK, EDSK, ApriDisk,
- CFI, JV3, CopyQM, QRST, Teledisk).
+ CFI, JV3, CopyQM, QRST, Teledisk, DC42).
 \end_layout
 
 \begin_layout Subsubsection
@@ -6851,7 +7085,11 @@ DRV_CLASS dc_qrst =
 \end_layout
 
 \begin_layout LyX-Code
-    "QRST", 
+    "qrst
+\backslash
+0QRST
+\backslash
+0", 
 \end_layout
 
 \begin_layout LyX-Code
@@ -6892,7 +7130,7 @@ The driver's superclass.
 \end_layout
 
 \begin_layout Itemize
-The driver's name (as passed to 
+The driver's name(s) (as passed to 
 \family typewriter
 dsk_open()
 \family default
@@ -7715,7 +7953,7 @@ Driver header
 
 \begin_layout Standard
 This is done as for disc drivers.
- Create a structure based on REMOTE_DATA to hold your class's data -- see
+ Create a structure based on REMOTE_DATA to hold your class's data – see
  lib/rpctios.h and lib/rpcfork.h for examples.
 \end_layout
 
@@ -7774,7 +8012,7 @@ The first three entries in this structure are:
 \end_layout
 
 \begin_layout Itemize
-The size of your driver's instance data -- sizeof(your_REMOTE_DATA) structure.
+The size of your driver's instance data – sizeof(your_REMOTE_DATA) structure.
 \end_layout
 
 \begin_layout Itemize
@@ -8083,7 +8321,7 @@ The CopyQM files consist of a header, an optional comment (if indicated
 \begin_layout Standard
 \begin_inset Tabular
 <lyxtabular version="3" rows="30" columns="3">
-<features rotate="0" tabularvalignment="middle">
+<features tabularvalignment="middle">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
 <column alignment="left" valignment="top">
@@ -9389,10 +9627,20 @@ Byte 13h: Recording mode.
 2 MFM
 \end_layout
 
+\begin_layout Description
+16-47 Macintosh GCR (using the same values as dsk_recmode_t).
+\end_layout
+
 \begin_layout Standard
 Existing files should have zeroes in these bytes; hence the use of 0 for
  Unknown.
  LibDsk will guess the values in if the ones in the file are zero.
+ 
+\end_layout
+
+\begin_layout Standard
+No known disks with GCR recording mode exist in the wild, but they can be
+ generated by using dskconv to convert a Diskcopy GCR image to CPCEMU .DSK.
 \end_layout
 
 \end_body

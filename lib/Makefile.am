@@ -30,19 +30,21 @@ EXTRA_DIST=$(CLASSDPRE)/Drive.java \
 # If interfaces have been removed set the right-hand number to 0.
 # 
 #
-libdsk_la_LDFLAGS = -version-info 7:2:3
+libdsk_la_LDFLAGS = -version-info 8:1:3
 libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   dsklphys.c dskfmt.c   dskopen.c  dskpars.c \
 		   dskerror.c dskseek.c  dsksecid.c dskgeom.c \
 		   dsktread.c dsksgeom.c dskjni.c   dskreprt.c \
 		   dskcmt.c dskretry.c dskdirty.c dsktrkid.c dskrtrd.c \
 		   dskcopy.c dskiconv.c \
+	  	   blast.h blast.c \
 		   comp.h compi.h compress.h compress.inc compress.c \
 		   compsq.c compsq.h \
 		   compgz.c compgz.h \
 		   comptlzh.c comptlzh.h \
 		   compbz2.c compbz2.h \
 		   compdskf.c compdskf.h \
+		   compqrst.c compqrst.h \
 		   crctable.c crctable.h \
 		   crc16.c    crc16.h \
 		   rpccli.c  rpcfuncs.h  rpcmap.c  \
@@ -66,6 +68,7 @@ libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   drvimd.h   drvimd.c \
 		   drvlogi.h  drvlogi.c \
 		   drvsimh.h  drvsimh.c \
+		   drvgotek.h drvgotek.c \
 		   drvposix.h drvposix.c \
 		   drvnwasp.h drvnwasp.c \
 		   drvadisk.h drvadisk.c \
@@ -77,6 +80,7 @@ libdsk_la_SOURCES = dskread.c  dskwrite.c dskcheck.c dskstat.c \
 		   drvcfi.h   drvcfi.c \
 		   drvqm.h    drvqm.c \
 		   drvqrst.h  drvqrst.c \
+		   drvdc42.h  drvdc42.c \
 		   drvldbs.h  drvldbs.c ldbs.h ldbs.c
 
 JARCLASSES=$(CLASSDPRE)/Drive.class \

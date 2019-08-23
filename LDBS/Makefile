@@ -3,13 +3,14 @@ CC = gcc
 CFLAGS = -g -Wall
 
 ZIPFILES=dsk2ldbs.c  ldbs2dsk.c  ldbs.c  ldbsdump.c  ldbs.h  ldbstest.c \
-	ldbscopy.c ldbs_v2.c \
+	ldbscopy.c ldbs2raw.c ldbs_v2.c \
 	ldbs.html Makefile
 
 EXAMPLES=examples.txt chaos.ldbs md3.ldbs textfiles.ldbs reformat.ldbs \
 	32k.ldbs 32sectors.ldbs offsets.ldbs copies.ldbs gap3.ldbs
 
-all:	dsk2ldbs ldbs2dsk ldbstest ldbsdump saveldbs.com ldbscopy ldbs_v2
+all:	dsk2ldbs ldbs2dsk ldbstest ldbsdump saveldbs.com ldbscopy ldbs_v2 \
+	ldbs2raw
 
 zip:	$(ZIPFILES)
 	zip ldbs.zip $(ZIPFILES)
@@ -26,6 +27,9 @@ dsk2ldbs:	dsk2ldbs.o ldbs.o
 
 ldbs2dsk:	ldbs2dsk.o ldbs.o
 	$(CC) -o $@ ldbs2dsk.o ldbs.o
+
+ldbs2raw:	ldbs2raw.o ldbs.o
+	$(CC) -o $@ ldbs2raw.o ldbs.o
 
 ldbstest:	ldbstest.o ldbs.o
 	$(CC) -o $@ ldbstest.o ldbs.o

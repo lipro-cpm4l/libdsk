@@ -1,3 +1,81 @@
+2019-08-23 John Elliott
+
+	* libdsk-1.5.12 released.
+
+	* LDBS driver: Fixed geometry probe when dealing with non-power-of-2
+	 sector sizes.
+
+2019-07-27 John Elliott
+
+	* libdsk-1.5.11 released.
+
+2019-07-20 John Elliott
+
+	* New driver: dc42 (for Apple DiskCopy 4.2 disk images. This 
+	 required an update to LDBS to support GCR encoding, so the
+	 LDBS format now stands at version 0.4. This should be forward-
+	 and backward-compatible with existing files in LDBS 0.3 format.
+
+2019-07-06 John Elliott
+
+	* QRST: Added transparent decompression for QRST v5 disk images.
+
+	* Gotek driver: Added support for 720k disk image collections 
+	 (as written by the SFRM72-TU100K firmware)
+
+2019-02-17 John Elliott
+
+	* dsk_getgeom(): Added rudimentary support for detecting Apple 
+	 HFS 1.4Mb format. This allows dsklabel and lsgotek to display 
+	 the labels of Apple-format disc images.
+
+	 Support for 400k and 800k formats is going to have to wait until
+	 I can work out how to represent them in a DSK_GEOMETRY structure!
+
+	* Gotek driver: Added the ability to select which drive image is
+	 current without closing and reopening (using the driver-specific
+	 option GOTEK:PARTITION). This should improve performance of
+	 lsgotek under Windows.
+
+2019-01-17 John Elliott
+
+	* libdsk-1.5.10 released.
+
+2019-01-01 John Elliott
+
+	* dsktrans, dskform, dskdump: Output filetype always defaulted to 
+	 'dsk'. Attempt to come up with a reasonable default based on
+	 the filename (which can be overridden if required)
+
+	* The compression type 'none' can be used to disable auto-expansion
+	 of compressed disc images (necessary if you are writing compressed
+	 data such as the Slackware installer without decompression).
+
+	* Geometry probe: Rewrite the DFS boot block check so that LibDsk
+	 has a sporting chance of detecting DFS-format media.
+
+	* New utility: dsklabel (get / set label on DOS, CP/M or DFS media)
+
+	* New utility: lsgotek (list the drive images on a Gotek-format USB
+	 drive)
+
+	* New driver: gotek (allows access to Gotek-format drive emulation
+	 disc images stored on a USB key)
+
+	* More bug fixes from Mark Ogden: Incorrect results returned by the
+	 geometry probe in LDBS-based formats, and accessing sectors with
+	 dsk_lread() on disc images with 'extended surface' layout.
+
+	* dskutil: Swapped "sectors / track" and "sectors / cylinder"
+	 captions (Mark Ogden).
+
+	* Fixed some memory corruption issues detected by VS2017 analysis
+	 (Mark Ogden).
+
+	* dskform: Widened total_sectors32 to 32 bits (Mark Ogden).
+
+	* apridisk: Fixed a crash writing to Apridisk files.
+
 2018-09-18 John Elliott
 
 	* libdsk-1.5.9 released.

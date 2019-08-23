@@ -124,7 +124,7 @@ static dsk_err_t check_density(LDBSDISK_DSK_DRIVER *self,
 	
 	/* Check if the track density and recording mode match the density
 	 * and recording mode in the geometry. */
-	sector_size = 128 << self->ld_cur_track->sector[0].id_psh;
+	sector_size = self->ld_cur_track->sector[0].datalen;
 
 	rate	  = self->ld_cur_track->datarate;
 	recording = self->ld_cur_track->recmode;
@@ -182,8 +182,11 @@ static dsk_err_t check_density(LDBSDISK_DSK_DRIVER *self,
 		case 2: if ((geom->dg_fm & RECMODE_MASK) != RECMODE_MFM) 
 				return DSK_ERR_NOADDR;
 			break;
-		default:	/* GCR??? */
-			return DSK_ERR_NOADDR;
+		/* In all other cases, LibDsk recording mode matches 
+		 * on-disk recording mode */
+		default: if ((geom->dg_fm & RECMODE_MASK) != recording) 
+				return DSK_ERR_NOADDR;
+			break;
 	}
 	return DSK_ERR_OK;
 }
@@ -360,7 +363,7 @@ dsk_err_t ldbsdisk_secid(DSK_DRIVER *pdriver, const DSK_GEOMETRY *geom,
 		result->fmt_cylinder = self->ld_cur_track->sector[n].id_cyl;
 		result->fmt_head     = self->ld_cur_track->sector[n].id_head;
 		result->fmt_sector   = self->ld_cur_track->sector[n].id_sec;
-		result->fmt_secsize  = 128 << self->ld_cur_track->sector[n].id_psh;
+		result->fmt_secsize  = self->ld_cur_track->sector[n].datalen;
 	}	
 
 	++self->ld_sector;
@@ -394,7 +397,7 @@ static dsk_err_t lookup_sector(LDBSDISK_DSK_DRIVER *self, dsk_pcyl_t cyl_expect,
 	if (!*result) return DSK_ERR_NOADDR; /* No matching sector found */
 
 	/* Found and it's the right size */	
-	*size_actual = 128 << result[0]->id_psh;
+	*size_actual = result[0]->datalen;
 	if (*size_actual > size_expected)
 	{
 		*size_actual = size_expected;
@@ -413,10 +416,10 @@ dsk_err_t ldbsdisk_read(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 		      void *buf, dsk_pcyl_t cylinder,
 		      dsk_phead_t head, dsk_psect_t sector)
 {
+/* Don't dg_x_sector() here; if required it will have been done in dg_ls2ps() */
 	return ldbsdisk_xread(self, geom, buf, cylinder, head, cylinder,
 				dg_x_head(geom, head), 
-				dg_x_sector(geom, head, sector), 
-				geom->dg_secsize, 0);
+				sector, geom->dg_secsize, 0);
 }
 
 
@@ -539,8 +542,8 @@ dsk_err_t ldbsdisk_xread(DSK_DRIVER *pdriver, const DSK_GEOMETRY *geom, void *bu
 			/* Offset for multiple copies */
 			if (cursec->copies > 1)
 			{
-				offset = (rand() % cursec->copies) * 
-					(128 << cursec->id_psh);
+				size_t secsize = cursec->datalen + cursec->trail;
+				offset = (rand() % cursec->copies) * secsize;
 			}
 			/* Should never happen! */
 			if (offset + size_actual > sblen)
@@ -581,10 +584,10 @@ dsk_err_t ldbsdisk_write(DSK_DRIVER *self, const DSK_GEOMETRY *geom,
 			const void *buf, dsk_pcyl_t cylinder,
 			dsk_phead_t head, dsk_psect_t sector)
 {
+/* Don't dg_x_sector() here; if required it will have been done in dg_ls2ps() */
 	return ldbsdisk_xwrite(self, geom, buf, cylinder, head, cylinder,
 				dg_x_head(geom, head),
-				dg_x_sector(geom, head, sector), 
-				geom->dg_secsize, 0);
+				sector, geom->dg_secsize, 0);
 }
 
 dsk_err_t ldbsdisk_xwrite(DSK_DRIVER *pdriver, const DSK_GEOMETRY *geom, 
@@ -736,7 +739,12 @@ dsk_err_t ldbsdisk_format(DSK_DRIVER *pdriver, DSK_GEOMETRY *geom,
 		case RATE_HD: self->ld_cur_track->datarate = 2; break;
 		case RATE_ED: self->ld_cur_track->datarate = 3; break;
 	}
-	switch (geom->dg_fm & RECMODE_MASK)
+	if ((geom->dg_fm & RECMODE_MASK) >= RECMODE_GCR_FIRST &&
+	    (geom->dg_fm & RECMODE_MASK) <= RECMODE_GCR_LAST)
+	{
+		self->ld_cur_track->recmode = geom->dg_fm & RECMODE_MASK;
+	}
+	else switch (geom->dg_fm & RECMODE_MASK)
 	{
 		case RECMODE_FM:  self->ld_cur_track->recmode = 1; break;
 		case RECMODE_MFM: self->ld_cur_track->recmode = 2; break;
@@ -755,6 +763,7 @@ dsk_err_t ldbsdisk_format(DSK_DRIVER *pdriver, DSK_GEOMETRY *geom,
 		secent->id_head = format[sector].fmt_head;
 		secent->id_sec  = format[sector].fmt_sector;
 		secent->id_psh  = dsk_get_psh(format[sector].fmt_secsize);
+		secent->datalen = format[sector].fmt_secsize;
 		secent->st1 = 0;
 		secent->st2 = 0;
 		secent->copies = 0;
@@ -781,8 +790,70 @@ typedef struct
 	DSK_GEOMETRY dg;
 	int minsec[2], maxsec[2];
 	int extsurface;
-	int secsizes[8];
+	int n_secsizes;
+	unsigned short *sec_sizes;
 } GETGEOM_STATS;
+
+static dsk_err_t init_stats(GETGEOM_STATS *st)
+{
+	memset(st, 0, sizeof(GETGEOM_STATS));
+	st->sec_sizes = dsk_malloc(8 * sizeof(unsigned short));
+	if (!st->sec_sizes) return DSK_ERR_NOMEM;
+	memset(st->sec_sizes, 0, 8 * sizeof(unsigned short));
+	st->n_secsizes = 4;
+	return DSK_ERR_OK;
+}
+
+static void free_stats(GETGEOM_STATS *st)
+{
+	if (st->sec_sizes)
+	{
+		dsk_free(st->sec_sizes);
+		st->sec_sizes = NULL;
+		st->n_secsizes = 0;
+	}
+}
+
+
+static dsk_err_t record_secsize(GETGEOM_STATS *st, size_t size)
+{
+	int n;
+	unsigned short *p;
+
+/* See if it's a known sector size. If it is, increment the count. */
+	for (n = 0; n < st->n_secsizes; n++)
+	{
+		if (st->sec_sizes[n*2] == size)
+		{
+			if (st->sec_sizes[n*2+1] < 0xFFFF)
+			{
+				++st->sec_sizes[n*2+1];
+			}
+			return DSK_ERR_OK;
+		}
+	}
+/* See if there's a gap in the array */
+	for (n = 0; n < st->n_secsizes; n++)
+	{
+		if (st->sec_sizes[n*2] == 0 &&
+		    st->sec_sizes[n*2+1] == 0)
+		{
+			st->sec_sizes[n*2] = size;
+			st->sec_sizes[n*2+1] = 1;
+			return DSK_ERR_OK;
+		}
+	}
+/* If there's no empty slot, grow the array */
+	p = dsk_realloc(st->sec_sizes, 
+			4 * st->n_secsizes * sizeof(unsigned short));
+	if (!p) return DSK_ERR_NOMEM;
+
+	n = st->n_secsizes; 
+	st->n_secsizes *= 2;
+	st->sec_sizes[n*2] = size;
+	st->sec_sizes[n*2+1] = 1;
+	return DSK_ERR_OK;
+}
 
 
 static dsk_err_t getgeom_callback(PLDBS ldbs, dsk_pcyl_t cyl, dsk_phead_t head,
@@ -796,18 +867,16 @@ static dsk_err_t getgeom_callback(PLDBS ldbs, dsk_pcyl_t cyl, dsk_phead_t head,
 	if (cyl + 1 > stats->dg.dg_cylinders)
 		stats->dg.dg_cylinders = cyl + 1;	
 	if (head + 1 > stats->dg.dg_heads)
-		stats->dg.dg_heads = cyl + 1;	
+		stats->dg.dg_heads = head + 1;	
 	if (th->count > stats->dg.dg_sectors)
 		stats->dg.dg_sectors = th->count;
-	
-	if (se->id_psh < 8)
-	{
-		++stats->secsizes[se->id_psh];
-	}
+
+	record_secsize(stats, se->datalen);
 
 	h = head ? 1 : 0;
-	if (se->id_psh < stats->minsec[h]) stats->minsec[h] = se->id_psh;	
-	if (se->id_psh > stats->maxsec[h]) stats->maxsec[h] = se->id_psh;	
+	/* [1.5.10] We want sector ID here, not sector size */
+	if (se->id_sec < stats->minsec[h]) stats->minsec[h] = se->id_sec;	
+	if (se->id_sec > stats->maxsec[h]) stats->maxsec[h] = se->id_sec;	
 
 	/* Possibly 'extended surface' geometry if sectors on head 1 
 	 * have head IDs of 0 */
@@ -821,8 +890,10 @@ static dsk_err_t getgeom_callback(PLDBS ldbs, dsk_pcyl_t cyl, dsk_phead_t head,
 	}
 	switch (th->recmode)
 	{
+		case 0: break;
 		case 1: stats->dg.dg_fm = RECMODE_FM; break;
 		case 2: stats->dg.dg_fm = RECMODE_MFM; break;
+		default: stats->dg.dg_fm = th->recmode; break;
 	}
 
 	return DSK_ERR_OK;	
@@ -858,22 +929,28 @@ dsk_err_t ldbsdisk_getgeom(DSK_DRIVER *pdriver, DSK_GEOMETRY *geom)
 	 * fully-populated LDBS file contains enough information to 
 	 * give us a decent chance at determining the drive geometry 
 	 * ourselves. */
-	memset(&stats, 0, sizeof(stats));
+	err = init_stats(&stats);
+	if (err) return err;
+
 	dg_stdformat(&stats.dg, FMT_180K, NULL, NULL);
 	stats.minsec[0] = stats.minsec[1] = 256;
 	stats.maxsec[0] = stats.maxsec[1] = 0;
 
 	err = ldbs_all_sectors(self->ld_store, getgeom_callback,
 				SIDES_ALT, &stats);
-	if (err) return DSK_ERR_BADFMT;
+	if (err) 
+	{
+		free_stats(&stats);
+		return DSK_ERR_BADFMT;
+	}
 
 	/* Report the most frequent sector size */
-	for (n = 0; n < 8; n++)
+	for (n = 0; n < stats.n_secsizes; n++)
 	{
-		if (stats.secsizes[n] > count)
+		if (stats.sec_sizes[n*2+1] > count)
 		{
-			count = stats.secsizes[n];
-			stats.dg.dg_secsize = 128 << n;
+			count = stats.sec_sizes[n*2+1];
+			stats.dg.dg_secsize = stats.sec_sizes[n*2];
 		}
 	}
 
@@ -888,8 +965,10 @@ dsk_err_t ldbsdisk_getgeom(DSK_DRIVER *pdriver, DSK_GEOMETRY *geom)
 	}
 	if (stats.dg.dg_cylinders == 0 || stats.dg.dg_sectors == 0)
 	{
+		free_stats(&stats);
 		return DSK_ERR_BADFMT;
 	}
+	free_stats(&stats);
 	memcpy(geom, &stats.dg, sizeof(*geom));
 	return DSK_ERR_OK;
 }
@@ -938,7 +1017,7 @@ dsk_err_t ldbsdisk_trackids(DSK_DRIVER *pdriver, const DSK_GEOMETRY *geom,
 		(*result)[n].fmt_cylinder = cursec->id_cyl;
 		(*result)[n].fmt_head     = cursec->id_head;
 		(*result)[n].fmt_sector   = cursec->id_sec;
-		(*result)[n].fmt_secsize  = (128 << cursec->id_psh);
+		(*result)[n].fmt_secsize  = cursec->datalen;
 	}
 
 	return DSK_ERR_OK;
@@ -1043,6 +1122,13 @@ dsk_err_t ldbsdisk_option_get(DSK_DRIVER *self, const char *optname, int *value)
 			break;
 	}
 	if (idx >= MAXOPTION) return DSK_ERR_BADOPT;
+
+	/* If no DPB is populated, return DSK_ERR_NULLOPT */
+	if (ldbs_self->ld_dpb.spt == 0 && ldbs_self->ld_dpb.dsm == 0 &&
+	    ldbs_self->ld_dpb.drm == 0 && ldbs_self->ld_dpb.al[0] == 0)
+	{
+		return DSK_ERR_NULLOPT;
+	}
 
 	switch(idx)
 	{

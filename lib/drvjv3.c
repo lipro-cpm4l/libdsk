@@ -144,6 +144,7 @@ dsk_err_t jv3_add_sector(JV3_DSK_DRIVER *self, dsk_pcyl_t cylinder,
 	trkh->sector[nsec].id_head = head;
 	trkh->sector[nsec].id_sec  = sector;
 	trkh->sector[nsec].id_psh  = dsk_get_psh(seclen);
+	trkh->sector[nsec].datalen = seclen;
 	if (flags & JV3_DAM)   trkh->sector[nsec].st2 |= 0x40;
 	if (flags & JV3_ERROR) trkh->sector[nsec].st2 |= 0x20;
 	if (allsame == -1)
@@ -312,7 +313,7 @@ static dsk_err_t write_sector(PLDBS ldbs, dsk_pcyl_t cyl, dsk_phead_t head,
 			return DSK_ERR_SYSERR;
 		self->jv3_sector = 0;
 	}
-	flags = encode_size(0, seclen = (128 << se->id_psh));
+	flags = encode_size(0, seclen = se->datalen);
 	if (th->recmode != 1) flags |= JV3_DENSITY;
 	if (se->st2 & 0x20) flags |= JV3_ERROR;
 	if (se->st2 & 0x40) flags |= JV3_DAM;

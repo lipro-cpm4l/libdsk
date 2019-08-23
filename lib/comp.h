@@ -26,4 +26,4 @@
 #include "compbz2.h"
 #include "compdskf.h"
 #include "comptlzh.h"
-
+#include "compqrst.h"

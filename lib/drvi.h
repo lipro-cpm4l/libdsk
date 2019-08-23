@@ -41,21 +41,25 @@
 # include <assert.h>
 #endif
 
+#ifdef HAVE_WINDOWS_H 
+# include <windows.h>
+#endif
+
 #ifndef DISABLE_FLOPPY
-# ifdef HAVE_SYS_SYSMACROS_H
-#  include <sys/sysmacros.h>
-# endif
 # ifdef HAVE_LINUX_FD_H
 #  include "linux/fd.h"
 #  ifdef HAVE_LINUX_FDREG_H
 #   define LINUXFLOPPY 
 #   include "linux/fdreg.h"
+#   ifdef MAJOR_IN_MKDEV
+#    include <sys/mkdev.h>
+#   endif
+#   ifdef MAJOR_IN_SYSMACROS
+#    include <sys/sysmacros.h>
+#   endif
 #  endif
 # endif
 
-# ifdef HAVE_WINDOWS_H 
-#  include <windows.h>
-# endif
 
 #ifdef HAVE_WINIOCTL_H
 #  define WIN32FLOPPY 
@@ -105,6 +109,11 @@ dsk_err_t dsk_isetoption(DSK_DRIVER *self, const char *name, int value,
  * what the geometry of the image might be. */
 LDPUBLIC32 dsk_err_t  LDPUBLIC16 dg_bootsecgeom(DSK_GEOMETRY *self, const unsigned char *bootsect);
 
+/* Does the passed boot sector look like a Mac boot sector? */
+int dg_ismacboot(const unsigned char *bootsect);
+/* How many sectors would a Mac put on this track? */
+int dg_macspt(dsk_pcyl_t cylinder);
+
 
 /* "Extended surface" discs have sector IDs that don't match the sectors' 
  * location on disc. This means, anywhere we reflect dsk_read() to dsk_xread(),
@@ -132,6 +141,10 @@ int cp437_to_utf8(const char *src, char *dst, int limit);
  * If 'limit' is >= 0, it is the maximum size of the output buffer 
  * (including the terminating null) */
 int utf8_to_cp437(const char *src, char *dst, int limit);
+
+/* Equivalents for MacRoman */
+int macroman_to_utf8(const char *src, char *dst, int limit);
+int utf8_to_macroman(const char *src, char *dst, int limit);
 
 
 

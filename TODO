@@ -1,5 +1,66 @@
 TO BE DONE in LibDSK 1.5.x:
 
+- [Apple] Improve resource fork / MacBinary support in DC42 driver.
+- [QRST5] Reverse decompression of QRST5 file.
+
+- [Apple] Handle at least basic support of 400k and 800k MFS / HFS filesystems
+
+
+FUTURE LibDSK 1.9.x:
+
+- Redefine DSK_GEOMETRY (breaking change):
+
+
+	typedef struct dsk_zone
+	{
+		dsk_pcyl_t	dz_cylfrom;	/* Cylinder / head ranges */
+		dsk_pcyl_t	dz_cylto;	/* Zone applies if */
+		dsk_phead_t	dz_headfrom;	/* cyl / head fall within */
+		dsk_phead_t	dz_headto;	/* the range */
+
+		dsk_psect_t	dz_sectors;
+		dsk_psect_t	dz_secbase;
+		size_t		dz_secsize;
+		dsk_rate_t	dz_datarate;
+		dsk_gap_t	dz_rwgap;
+		dsk_gap_t	dz_fmtgap;
+		dsk_recmode_t	dz_recmode;	
+		dsk_flags_t	dz_flags;	/* Formerly part of recmode */
+		int		dz_nomulti;
+		int		dz_noskip;	
+	} DSK_ZONE;
+	
+
+	typedef struct struct dsk_geometry
+	{
+		dsk_sides_t	dg_sidedness;
+		dsk_pcyl_t	dg_cylinders;
+		dsk_phead_t	dg_heads;
+		int		dg_zonecount;
+		DSK_ZONE	dg_zone[1];
+	} DSK_GEOMETRY;
+
+	will need:
+		dsk_geometry_alloc(int zones);
+		dsk_geometry_clone()
+		Serialisation format for GEO2 block in LDBS
+
+	new ini file format:
+
+	[Type]
+	Description = foo
+	Sidedness = Alt
+	Cylinders = 40
+	Heads = 2
+	Zones = 2
+	Sectors[0] = 8	# Sectors[0]= abbreviates to Sectors=
+	Sectors[1] = 9
+
+	etc.
+
+	
+
+
 - [CopyQM] Use real CopyQM on real hardware to image some DOS-format
   floppies so I can see the BPB.
 
@@ -7,36 +68,6 @@ TO BE DONE in LibDSK 1.5.x:
 	* Need to try on a few more test cases. extextdsk tests all seem
 	 to pass; would be nice to try some old-style DSKs too.
 
-- Add an LDBS chapter to the documentation.
-
-- Of the following formats:
-	> Apridisk	converted to LDBS
-	> CFI		converted to LDBS
-	> CPC DSK	converted to LDBS
-	> CPC EDSK	converted to LDBS
-	> DOS16		can't convert
-	> DOS32		can't convert
-	> DSKF		*
-	> IMD		converted to LDBS
-	> INT25		can't convert
-	> JV3		converted to LDBS
-	> LDBS		converted by definition
-	> LINUX		can't convert
-	> LOGI		export & import
-	> MYZ80		export & import
-	> NTWDM		can't convert
-	> NWASP		export & import
-	> POSIX		export & import
-	> QM		converted to LDBS
-	> QRST		converted to LDBS
-	> RCPM		can't convert
-	> SIMH		export & import
-	> TELE		converted to LDBS
-	> WIN16		can't convert
-	> WIN32		can't convert
-	> YDSK		export & import
-
-	
 
 - The cpcemu driver contains a chunk of code to deal with multitrack reads
  and writes. Write some test cases to exercise it, and check that the LDBS 
@@ -83,7 +114,6 @@ TO BE DONE in LibDSK 1.5.x:
 	[nb: What sort of partition table do the likes of +3e use, because
 	 that's going to give all sorts more fun]
 
-
 * Weak-sector support is new and may be buggy.
 * Write more functions for dsktool.
 * The INT25/INT26 driver doesn't seem to work in a DJGPP compile; it fails
@@ -104,15 +134,5 @@ TO BE DONE in LibDSK 1.5.x:
 	>> May need to write a Win16 version of serslave.
 	>> May need to write a Win16 RPC client.
 
-* Support a reverse-cpmfs backend (that lets a directory appear as a disc 
- image).
-	>> File in directory called .libdsk.ini that gives LibDsk geometry
-	  and CP/M directory info
-	>> File in directory called .libdsk.boot containing boot sector.
-
-	>> Full of debug code
-	>> Default format is pcw720, not pcw180
-	>> Needs to be compilable on other OSes
-	>> Doesn't truncate files.
-
 * CopyQM: Compare to real BBC Master 512 disks 2-4.
+

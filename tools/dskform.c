@@ -1,7 +1,7 @@
 /***************************************************************************
  *                                                                         *
  *    LIBDSK: General floppy and diskimage access library                  *
- *    Copyright (C) 2001-2, 2018  John Elliott <seasip.webmaster@gmail.com>*
+ *    Copyright (C) 2001-2, 2019  John Elliott <seasip.webmaster@gmail.com>*
  *                                                                         *
  *    This library is free software; you can redistribute it and/or        *
  *    modify it under the terms of the GNU Library General Public          *
@@ -52,7 +52,8 @@ static int retries = 1;
 static int pcdos = 0;
 static int apricot = 0;
 
-int do_format(char *outfile, char *outtyp, char *outcomp, int forcehead, dsk_format_t format);
+int do_format(const char *outfile, const char *outtyp, const char *outcomp, 
+		int forcehead, dsk_format_t format);
 
 int help(int argc, char **argv)
 {
@@ -93,7 +94,7 @@ static void report_end(void)
 
 int main(int argc, char **argv)
 {
-	char *outtyp;
+	const char *outtyp;
 	char *outcomp;
 	int forcehead;
 	int stdret;
@@ -108,7 +109,7 @@ int main(int argc, char **argv)
         ignore_arg("-otype", 2, &argc, argv);
         ignore_arg("-oside", 2, &argc, argv);
         ignore_arg("-ocomp", 2, &argc, argv);
-        outtyp    = check_type("-type", &argc, argv); if (!outtyp) outtyp = "dsk";
+        outtyp    = check_type("-type", &argc, argv); 
         outcomp   = check_type("-comp", &argc, argv); 
         forcehead = check_forcehead("-side", &argc, argv);
 	format    = check_format("-format", &argc, argv);
@@ -118,6 +119,8 @@ int main(int argc, char **argv)
 
 	if (format == -1) format = FMT_180K;
 	args_complete(&argc, argv);
+
+	if (!outtyp) outtyp = guess_type(argv[1]);
 
 	return do_format(argv[1], outtyp, outcomp, forcehead, format);
 }
@@ -142,7 +145,7 @@ typedef struct bpb
 	unsigned short sectors_per_track;
 	unsigned short heads;
 	unsigned long hidden_sectors;	
-	unsigned short total_sectors32;
+	unsigned long total_sectors32;
 } BPB;
 
 BPB all_bpbs[] = 
@@ -395,7 +398,8 @@ printf("Heads            =  %x\n", thebpb.heads);
 
 
 
-int do_format(char *outfile, char *outtyp, char *outcomp, int forcehead, dsk_format_t format)
+int do_format(const char *outfile, const char *outtyp, const char *outcomp, 
+		int forcehead, dsk_format_t format)
 {
 	DSK_PDRIVER outdr = NULL;
 	dsk_err_t e;

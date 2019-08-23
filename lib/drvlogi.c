@@ -350,6 +350,7 @@ dsk_err_t logical_to_ldbs(DSK_DRIVER *self, struct ldbs **result, DSK_GEOMETRY *
 			th->sector[sec].id_head = head;
 			th->sector[sec].id_sec  = sec + geom->dg_secbase;
 			th->sector[sec].id_psh  = dsk_get_psh(geom->dg_secsize);
+			th->sector[sec].datalen = geom->dg_secsize;
 			th->sector[sec].copies = 0;
 			for (n = 1; n < (int)(geom->dg_secsize); n++)
 			{

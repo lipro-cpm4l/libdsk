@@ -46,6 +46,9 @@ extern DRV_CLASS dc_ldbsdisk;	/* LibDsk block store */
 extern DRV_CLASS dc_sap;	/* Thomson SAP */
 extern DRV_CLASS dc_rcpmfs;	/* Reverse-CP/MFS driver */
 extern DRV_CLASS dc_remote;	/* All remote drivers */
+extern DRV_CLASS dc_gotek1440;	/* Gotek USB device (1.4Mb disc images) */
+extern DRV_CLASS dc_gotek720;	/* Gotek USB device (720k disc images) */
+extern DRV_CLASS dc_dc42;	/* Apple DiskCopy 4.2 */
 #ifdef LINUXFLOPPY
 extern DRV_CLASS dc_linux;	/* Linux driver */
 #endif

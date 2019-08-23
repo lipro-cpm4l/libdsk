@@ -201,6 +201,8 @@ static dsk_err_t cfi_load_track(CFI_DSK_DRIVER *self, dsk_ltrack_t trk, FILE *fp
 		trkh->sector[sec].id_head = head;
 		trkh->sector[sec].id_sec = sec + self->cfi_geom.dg_secbase;
 		trkh->sector[sec].id_psh = dsk_get_psh(self->cfi_geom.dg_secsize);
+		trkh->sector[sec].datalen = self->cfi_geom.dg_secsize;
+
 		allsame = 1;
 		for (n = 0; n < self->cfi_geom.dg_secsize; n++)
 		{
@@ -267,7 +269,8 @@ static dsk_err_t cfi_save_track(PLDBS ldbs, dsk_pcyl_t cyl, dsk_phead_t head,
 
 	if (th->count == 0) return DSK_ERR_OK;	/* Vacuous track */
 
-	err = ldbs_load_track(ldbs, th, (void *)&ubuf, &ulen, 0);
+	err = ldbs_load_track(ldbs, th, (void *)&ubuf, &ulen, 0, 
+				LLTO_DATA_ONLY);
 	if (err) return err;
 
 	/* Compress the track using RLE. */

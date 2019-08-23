@@ -44,6 +44,7 @@ EXTRA_DIST= $(srcdir)/config/* \
 	    $(srcdir)/LDBS/ldbs.c	     \
 	    $(srcdir)/LDBS/ldbs.h	     \
 	    $(srcdir)/LDBS/ldbs2dsk.c	     \
+	    $(srcdir)/LDBS/ldbs2raw.c	     \
 	    $(srcdir)/LDBS/dsk2ldbs.c	     \
 	    $(srcdir)/LDBS/ldbsdump.c	     \
 	    $(srcdir)/LDBS/ldbscopy.c	     \

@@ -218,6 +218,11 @@ void dump_track(FILE *fp, long pos, int version)
 			peek2(trkhead + se_offset + 14 + se_len * n));
 
 		}
+		if (se_len >= 18)
+		{
+		    printf("                   Sector data length 0x%04x\n",
+			peek2(trkhead + se_offset + 16 + se_len * n));
+		}
 	}
 
 	for (n = 0; n < count; n++)

@@ -399,6 +399,7 @@ dsk_err_t simh_to_ldbs(DSK_DRIVER *self, struct ldbs **result,
 				trkh->sector[sec].id_head = head;
 				trkh->sector[sec].id_sec = sec;
 				trkh->sector[sec].id_psh = 0;
+				trkh->sector[sec].datalen = 128;
 				trkh->sector[sec].copies = 0;
 				for (n = 1; n < 128; n++)
 					if (secbuf[n] != secbuf[0])

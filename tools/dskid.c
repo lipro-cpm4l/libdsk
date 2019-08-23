@@ -136,10 +136,22 @@ const char *show_rate(dsk_rate_t r)
 
 const char *show_recmode(int recmode)
 {
-	switch (recmode & RECMODE_MASK)
+	static char buf[50];
+
+	recmode &= RECMODE_MASK;
+
+	switch (recmode)
 	{
 		case RECMODE_MFM: return "MFM";
 		case RECMODE_FM:  return "FM";
+		case RECMODE_GCR_MAC: return "GCR (Macintosh)";
+		case RECMODE_GCR_LISA: return "GCR (Lisa)";
+		case RECMODE_GCR_PRODOS: return "GCR (Apple II Prodos)";
+	}
+	if (recmode >= RECMODE_GCR_FIRST && recmode <= RECMODE_GCR_LAST)
+	{
+		sprintf(buf, "GCR (Apple %d)", recmode - RECMODE_GCR_FIRST);
+		return buf;
 	}
 	return "???";
 }

@@ -12,6 +12,8 @@ rem if errorlevel 1 goto abort
 if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../lib/compsq.c
 if errorlevel 1 goto abort
+%CC% %CFLAGS% -c ../lib/blast.c
+if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../lib/comptlzh.c
 if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../lib/crc16.c
@@ -38,15 +40,24 @@ if errorlevel 1 goto abort
 if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../lib/drvmyz80.c
 if errorlevel 1 goto abort
+%CC% %CFLAGS% -c ../lib/drvgotek.c
+if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../lib/drvjv3.c
 if errorlevel 1 goto abort
-%CC% %CFLAGS% -c ../lib/drvnwasp.c
-if errorlevel 1 goto abort
+rem This crashes the compiler!
+rem %CC% %CFLAGS% -c ../lib/drvnwasp.c
+rem if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../lib/drvposix.c
 if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../lib/drvqm.c
 if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../lib/drvqrst.c
+if errorlevel 1 goto abort
+%CC% %CFLAGS% -c ../lib/drvdc42.c
+if errorlevel 1 goto abort
+%CC% %CFLAGS% -c ../lib/compqrst.c
+if errorlevel 1 goto abort
+%CC% %CFLAGS% -c ../lib/drvsap.c
 if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../lib/drvsimh.c
 if errorlevel 1 goto abort
@@ -126,6 +137,8 @@ libr r libdsk.lib compress.obj
 if errorlevel 1 goto abort
 libr r libdsk.lib compsq.obj
 if errorlevel 1 goto abort
+libr r libdsk.lib blast.obj
+if errorlevel 1 goto abort
 libr r libdsk.lib comptlzh.obj
 if errorlevel 1 goto abort
 libr r libdsk.lib crc16.obj
@@ -152,17 +165,21 @@ libr r libdsk.lib drvldbs.obj
 if errorlevel 1 goto abort
 libr r libdsk.lib drvjv3.obj
 if errorlevel 1 goto abort
+libr r libdsk.lib drvgotek.obj
+if errorlevel 1 goto abort
 libr r libdsk.lib drvlogi.obj
 if errorlevel 1 goto abort
 libr r libdsk.lib drvmyz80.obj
 if errorlevel 1 goto abort
-libr r libdsk.lib drvnwasp.obj
-if errorlevel 1 goto abort
+rem libr r libdsk.lib drvnwasp.obj
+rem if errorlevel 1 goto abort
 libr r libdsk.lib drvposix.obj
 if errorlevel 1 goto abort
 libr r libdsk.lib drvqm.obj
 if errorlevel 1 goto abort
 libr r libdsk.lib drvqrst.obj
+if errorlevel 1 goto abort
+libr r libdsk.lib drvsap.obj
 if errorlevel 1 goto abort
 libr r libdsk.lib drvsimh.obj
 if errorlevel 1 goto abort
@@ -230,10 +247,16 @@ libr r libdsk.lib rpcpack.obj
 if errorlevel 1 goto abort
 libr r libdsk.lib rpcserv.obj
 if errorlevel 1 goto abort
+libr r libdsk.lib compqrst.obj
+if errorlevel 1 goto abort
+libr r libdsk.lib drvdc42.obj
+if errorlevel 1 goto abort
 rem
 rem Build the utilities
 rem
 :utils
+%CC% %CFLAGS% -c ../tools/labelopt.c
+if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../tools/utilopts.c
 if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../tools/formname.c
@@ -244,7 +267,7 @@ if errorlevel 1 goto abort
 if errorlevel 1 goto abort
 %CC% %CFLAGS% ../tools/dskconv.c utilopts.obj formname.obj libdsk.lib
 if errorlevel 1 goto abort
-%CC% %CFLAGS% ../tools/dskform.c utilopts.obj formname.obj libdsk.lib
+%CC% %CFLAGS% ../tools/dskform.c bootsec.obj utilopts.obj formname.obj libdsk.lib
 if errorlevel 1 goto abort
 %CC% %CFLAGS% -c ../tools/dsktrans.c 
 if errorlevel 1 goto abort
@@ -255,6 +278,10 @@ if errorlevel 1 goto abort
 %CC% %CFLAGS% ../tools/dskscan.c utilopts.obj formname.obj libdsk.lib
 if errorlevel 1 goto abort
 %CC% %CFLAGS% ../tools/dskutil.c utilopts.obj formname.obj libdsk.lib
+if errorlevel 1 goto abort
+%CC% %CFLAGS% ../tools/dsklabel.c labelopt.obj utilopts.obj libdsk.lib
+if errorlevel 1 goto abort
+%CC% %CFLAGS% ../tools/lsgotek.c labelopt.obj utilopts.obj libdsk.lib
 if errorlevel 1 goto abort
 
 

@@ -62,6 +62,7 @@ LDPUBLIC32 char * LDPUBLIC16 dsk_strerror(dsk_err_t err)
 		case DSK_ERR_UNKRPC:	return "RPC server did not recognise function.";
 		case DSK_ERR_BADMEDIA:	return "Disc is not suitable for this operation";
                 case DSK_ERR_CORRUPT:	return "Disc image file is corrupt.";
+		case DSK_ERR_NULLOPT:	return "Driver-specific option was not set.";
 		case DSK_ERR_UNKNOWN:	return "Controller returned unknown error.";
  	}
 	return "Unknown error.";
