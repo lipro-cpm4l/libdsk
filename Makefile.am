@@ -54,4 +54,5 @@ EXTRA_DIST= $(srcdir)/config/* \
 install-man:
 	cd man && make install-man
 
-
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = $(PACKAGE).pc
