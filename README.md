@@ -1,5 +1,5 @@
-[![Build status](https://ci.appveyor.com/api/projects/status/3t956eiqehhbakkd/branch/master?svg=true)](https://ci.appveyor.com/project/rexut/libdsk/branch/master)
-[![Build Status](https://travis-ci.org/lipro-cpm4l/libdsk.svg?branch=master)](https://travis-ci.org/lipro-cpm4l/libdsk)
+[![Build status](https://ci.appveyor.com/api/projects/status/3t956eiqehhbakkd/branch/cpm4l/libdsk-1.4.2?svg=true)](https://ci.appveyor.com/project/rexut/libdsk/branch/cpm4l/libdsk-1.4.2)
+[![Build Status](https://travis-ci.org/lipro-cpm4l/libdsk.svg?branch=cpm4l%2Flibdsk-1.4.2)](https://travis-ci.org/lipro-cpm4l/libdsk)
 
 LibDsk - Library for accessing floppy drives and disc images
 ============================================================
