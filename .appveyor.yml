@@ -3,7 +3,7 @@ os: Windows Server 2012
 
 environment:
   CYG_MIRROR: http://cygwin.mirror.constant.com
-  CYG_PACKAGES: autoconf,automake1.14,libtool,zip,make,gcc-core,perl,mingw64-i686-gcc-core,mingw64-x86_64-gcc-core,zlib-devel,libbz2-devel,sharutils
+  CYG_PACKAGES: autoconf,automake,libtool,zip,make,gcc-core,perl,mingw64-i686-gcc-core,mingw64-x86_64-gcc-core,zlib-devel,libbz2-devel,sharutils
   matrix:
   - CYG_ROOT: C:\cygwin
     CYG_CACHE: C:\cygwin\var\cache\setup
@@ -25,6 +25,7 @@ init:
   - git config --global core.autocrlf input
 
 build_script:
+  - cmd: if defined BASH (%BASH% -lc "cd $(cygpath ${APPVEYOR_BUILD_FOLDER}) && autoreconf --verbose --install")
   - cmd: if defined BASH (%BASH% -lc "cd $(cygpath ${APPVEYOR_BUILD_FOLDER}) && ./configure --with-zlib --with-bzlib")
   - cmd: if defined BASH (%BASH% -lc "cd $(cygpath ${APPVEYOR_BUILD_FOLDER}) && make all && make distcheck && make dist-bzip2 && make dist-xz && make dist-zip")
 
