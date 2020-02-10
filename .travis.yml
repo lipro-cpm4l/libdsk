@@ -1,6 +1,7 @@
 dist: xenial
 language: c
 compiler: gcc
+install: autoreconf --verbose --install
 before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y fakeroot
@@ -10,4 +11,4 @@ before_install:
   - sudo apt-get install -y zlib1g-dev
   - sudo apt-get install -y libbz2-dev
   - sudo apt-get install -y sharutils
-script: ACLOCAL=aclocal-1.15 AUTOMAKE=automake-1.15 ./configure --with-zlib --with-bzlib --prefix=/usr && make all && make distcheck && make dist-bzip2 && make dist-xz && make dist-zip && fakeroot make DESTDIR=${HOME}/sysroot install
+script: ./configure --with-zlib --with-bzlib --prefix=/usr && make all && make distcheck && make dist-bzip2 && make dist-xz && make dist-zip && fakeroot make DESTDIR=${HOME}/sysroot install
