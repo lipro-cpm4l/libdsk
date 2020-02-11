@@ -1,11 +1,9 @@
 ## Process this file with automake to produce Makefile.in
 
-SUBDIRS= . include lib tools man
+SUBDIRS= . include lib tools man doc
 ACLOCAL_AMFLAGS=-I m4
 
-EXTRA_DIST= $(srcdir)/config/* \
-	    $(srcdir)/m4/* \
-	    $(srcdir)/dskwrite/* \
+EXTRA_DIST= $(srcdir)/m4/* \
             $(srcdir)/rpcserv/*.c	     \
             $(srcdir)/rpcserv/*.h	     \
             $(srcdir)/rpcserv/ldserver.rc    \
